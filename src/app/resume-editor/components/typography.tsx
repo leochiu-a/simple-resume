@@ -8,7 +8,15 @@ Font.register({
 });
 Font.register({
   family: "Noto Sans",
-  src: "/fonts/NotoSans-Regular.ttf",
+  fonts: [
+    {
+      src: "/fonts/NotoSans-Regular.ttf",
+    },
+    {
+      src: "/fonts/NotoSans-bold.ttf",
+      fontWeight: "bold",
+    },
+  ],
 });
 
 const styles = StyleSheet.create({
@@ -17,18 +25,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     lineHeight: 1.5,
-    marginBottom: 8,
+    marginBottom: 2,
   },
   text: {
     fontFamily: "Noto Sans",
-    fontSize: 14,
+    fontSize: 12,
     lineHeight: 1.5,
-    marginBottom: 8,
+    marginBottom: 2,
   },
   subText: {
     fontFamily: "Noto Sans",
-    fontSize: 12,
-    lineHeight: 1.3,
+    fontSize: 10,
+    lineHeight: 1.2,
     color: "#B3B8C0",
   },
 });
@@ -39,9 +47,18 @@ export const Title = ({ children }: PropsWithChildren) => {
 
 export const Text = ({
   children,
-  bold,
+  bold = false,
 }: PropsWithChildren<{ bold?: boolean }>) => {
-  return <PDFText style={styles.text}>{children}</PDFText>;
+  return (
+    <PDFText
+      style={{
+        ...styles.text,
+        fontWeight: bold ? "bold" : "normal",
+      }}
+    >
+      {children}
+    </PDFText>
+  );
 };
 
 export const SubText = ({
