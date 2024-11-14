@@ -20,7 +20,7 @@ const ITEMS = [
 
 const EmploymentHistory = () => {
   return (
-    <View style={{ ...styles.flexCol, marginBottom: 12 }}>
+    <View style={{ marginBottom: 12 }}>
       <Title>Employment History</Title>
 
       <View style={{ ...styles.flexCol, marginBottom: 8 }}>
@@ -28,8 +28,8 @@ const EmploymentHistory = () => {
         <SubText>OCTOBER 2020 — NOVEMBER 2024</SubText>
       </View>
 
-      {ITEMS.map((item) => (
-        <Text key={item}>{`• ${item}`}</Text>
+      {ITEMS.map((item, index) => (
+        <Text key={item + index}>{`• ${item}`}</Text>
       ))}
     </View>
   );

@@ -1,11 +1,11 @@
 import { View } from "@react-pdf/renderer";
-import { styles } from "./styles";
 import { Text, Title } from "./typography";
 
 const Profile = () => {
   return (
-    <View style={{ ...styles.flexCol, marginBottom: 12 }}>
+    <View style={{ marginBottom: 12, width: "100%" }}>
       <Title>Profile</Title>
+
       <Text>
         Lorem Ipsum is simply dummy text of the printing and typesetting
         industry. Lorem Ipsum has been the industry's standard dummy text ever

@@ -5,7 +5,7 @@ import { Title, Text, SubText } from "./typography";
 
 const Education = () => {
   return (
-    <View style={{ ...styles.flexCol, marginBottom: 12 }}>
+    <View style={{ marginBottom: 12 }}>
       <Title>Education</Title>
 
       <View style={{ ...styles.flexCol, marginBottom: 12 }}>

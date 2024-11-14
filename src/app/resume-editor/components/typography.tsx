@@ -1,4 +1,5 @@
 import { Font, Text as PDFText, StyleSheet } from "@react-pdf/renderer";
+import type { Style } from "@react-pdf/types";
 import { PropsWithChildren } from "react";
 
 Font.register({
@@ -26,6 +27,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 1.5,
     marginBottom: 2,
+    display: "flex",
   },
   text: {
     fontFamily: "Noto Sans",
@@ -35,9 +37,10 @@ const styles = StyleSheet.create({
   },
   subText: {
     fontFamily: "Noto Sans",
-    fontSize: 10,
+    fontSize: 9,
     lineHeight: 1.2,
     color: "#B3B8C0",
+    letterSpacing: 1.5,
   },
 });
 
@@ -48,12 +51,14 @@ export const Title = ({ children }: PropsWithChildren) => {
 export const Text = ({
   children,
   bold = false,
-}: PropsWithChildren<{ bold?: boolean }>) => {
+  style,
+}: PropsWithChildren<{ bold?: boolean; style?: Style }>) => {
   return (
     <PDFText
       style={{
         ...styles.text,
         fontWeight: bold ? "bold" : "normal",
+        ...style,
       }}
     >
       {children}
@@ -63,7 +68,6 @@ export const Text = ({
 
 export const SubText = ({
   children,
-  bold,
 }: PropsWithChildren<{ bold?: boolean }>) => {
   return <PDFText style={styles.subText}>{children}</PDFText>;
 };
