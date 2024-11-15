@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { InputProps } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -8,10 +8,11 @@ interface LabeledBulletTextAreaFieldProps extends Omit<InputProps, "onChange"> {
   onChange: (value: string) => void;
 }
 
-const LabeledBulletTextAreaField = forwardRef<
-  HTMLInputElement,
-  LabeledBulletTextAreaFieldProps
->(({ label, className, ...props }) => {
+const LabeledBulletTextAreaField = ({
+  label,
+  className,
+  ...props
+}: LabeledBulletTextAreaFieldProps) => {
   const [items] = useState(() => (props.value as string)?.split(",") ?? []);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -41,7 +42,6 @@ const LabeledBulletTextAreaField = forwardRef<
       </div>
     </div>
   );
-});
-LabeledBulletTextAreaField.displayName = "LabeledBulletTextAreaField";
+};
 
 export { LabeledBulletTextAreaField };
