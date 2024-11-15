@@ -13,7 +13,8 @@ const Education = ({ educations }: { educations: EducationType[] }) => {
       {educations.map((education) => (
         <View style={{ ...styles.flexCol, marginBottom: 12 }}>
           <Text bold>
-            {education.degree} of {education.major}, {education.school}
+            {education.degree}
+            {education.major && ` of ${education.major}`}, {education.school}
           </Text>
           <SubText>{formatDateRange(education.timeline)}</SubText>
         </View>
