@@ -5,7 +5,7 @@ import {
   Link as PDFLink,
 } from "@react-pdf/renderer";
 import type { Style } from "@react-pdf/types";
-import { PropsWithChildren } from "react";
+import { ComponentProps, PropsWithChildren } from "react";
 
 Font.register({
   family: "Noto Serif",
@@ -68,68 +68,53 @@ const styles = StyleSheet.create({
   },
 });
 
-export const Title = ({
+const Typography = ({
   children,
+  as,
   style,
-}: PropsWithChildren<{ style?: Style }>) => {
-  return <PDFText style={{ ...styles.title, ...style }}>{children}</PDFText>;
-};
-
-export const SubTitle = ({
-  children,
-  fontFamily = "Noto Serif",
-}: PropsWithChildren<{ fontFamily?: "Noto Serif" | "Noto Sans" }>) => {
-  return (
-    <PDFText style={{ ...styles.subtitle, fontFamily }}>{children}</PDFText>
-  );
-};
-
-export const Text = ({
-  children,
-  bold = false,
-  style,
-}: PropsWithChildren<{ bold?: boolean; style?: Style }>) => {
-  return (
-    <PDFText
-      style={{
-        ...styles.text,
-        fontWeight: bold ? "bold" : "normal",
-        ...style,
-      }}
-    >
-      {children}
-    </PDFText>
-  );
-};
-
-export const SmallText = ({
-  children,
-  as = "text",
   href,
-  style,
+  bold,
 }: PropsWithChildren<{
+  fontFamily?: "Noto Serif" | "Noto Sans";
+  style?: Style;
   as?: "text" | "link";
   href?: string;
-  style?: Style;
+  bold?: boolean;
 }>) => {
   if (as === "link") {
     return (
-      <PDFText style={{ ...styles.smallText, ...style }}>
+      <PDFText
+        style={{
+          ...style,
+          fontWeight: bold ? "bold" : "normal",
+        }}
+      >
         <PDFLink href={href} style={styles.link}>
           {children}
         </PDFLink>
       </PDFText>
     );
   } else {
-    return (
-      <PDFText style={{ ...styles.smallText, ...style }}>{children}</PDFText>
-    );
+    return <PDFText style={{ ...style }}>{children}</PDFText>;
   }
 };
 
-export const SubText = ({
-  children,
-  style,
-}: PropsWithChildren<{ bold?: boolean; style?: Style }>) => {
-  return <PDFText style={{ ...styles.subText, ...style }}>{children}</PDFText>;
+const createTypographyComponent = (defaultStyle: Style) => {
+  const Component = ({
+    children,
+    style,
+    ...props
+  }: PropsWithChildren<ComponentProps<typeof Typography>>) => (
+    <Typography style={{ ...defaultStyle, ...style }} {...props}>
+      {children}
+    </Typography>
+  );
+
+  return Component;
 };
+
+export const Title = createTypographyComponent(styles.title);
+export const SubTitle = createTypographyComponent(styles.subtitle);
+export const Text = createTypographyComponent(styles.text);
+export const SmallText = createTypographyComponent(styles.smallText);
+export const SubText = createTypographyComponent(styles.subText);
