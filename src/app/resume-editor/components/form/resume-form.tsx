@@ -7,6 +7,7 @@ import Information from "./information";
 import SocialLinks from "./social-links";
 import Skills from "./skills";
 import Educations from "./educations";
+import EmploymentHistory from "./employment-history";
 
 const ResumeForm = () => {
   const { register } = useFormContext<Resume>();
@@ -22,6 +23,7 @@ const ResumeForm = () => {
 
       <SocialLinks />
       <Skills />
+      <EmploymentHistory />
       <Educations />
     </div>
   );

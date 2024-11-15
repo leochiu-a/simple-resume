@@ -8,6 +8,7 @@ export interface Resume {
   socialLinks: SocialLink[];
   skills: Skill[];
   educations: Education[];
+  employmentHistory: EmploymentHistory[];
 }
 
 export interface SocialLink {
@@ -27,4 +28,14 @@ export interface Education {
     from: string;
     to: string;
   };
+}
+
+export interface EmploymentHistory {
+  company: string;
+  jobTitle: string;
+  timeline: {
+    from: string;
+    to: string;
+  };
+  description: string;
 }

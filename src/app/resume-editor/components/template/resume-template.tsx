@@ -39,7 +39,7 @@ const ResumeTemplate = ({ resume }: { resume: Resume }) => {
             }}
           >
             <Profile profile={resume.profile} />
-            <EmploymentHistory />
+            <EmploymentHistory employmentHistory={resume.employmentHistory} />
             <Education educations={resume.educations} />
           </View>
         </View>

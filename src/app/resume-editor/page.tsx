@@ -65,6 +65,17 @@ const ResumeEditorPage = () => {
           },
         },
       ],
+      employmentHistory: [
+        {
+          company: "Google",
+          jobTitle: "Senior Engineer",
+          timeline: {
+            from: "2018-01-01",
+            to: "2020-01-01",
+          },
+          description: "A,B,C,D",
+        },
+      ],
     },
   });
   const { handleSubmit, watch } = formMethods;
