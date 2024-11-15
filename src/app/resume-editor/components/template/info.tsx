@@ -1,6 +1,7 @@
 import { View } from "@react-pdf/renderer";
 import { SmallText, SubText, SubTitle, Title } from "./typography";
 import { styles } from "./styles";
+import { SocialLink } from "@/types/resume";
 
 const Info = ({
   name,
@@ -8,12 +9,14 @@ const Info = ({
   city,
   phone,
   email,
+  links,
 }: {
   name: string;
   jobTitle: string;
   city: string;
   phone: string;
   email: string;
+  links: SocialLink[];
 }) => {
   return (
     <View
@@ -61,18 +64,11 @@ const Info = ({
         <View style={{ ...styles.flexCol }}>
           <SubTitle>Links</SubTitle>
           <View style={{ ...styles.flexCol, gap: "8pt" }}>
-            <SmallText as="link" href="https://medium.com">
-              Medium
-            </SmallText>
-            <SmallText as="link" href="https://github.com">
-              GitHub
-            </SmallText>
-            <SmallText as="link" href="https://threads.com">
-              Threads
-            </SmallText>
-            <SmallText as="link" href="https://threads.com">
-              Threads
-            </SmallText>
+            {links.map((link, index) => (
+              <SmallText as="link" href={link.url} key={index}>
+                {link.name}
+              </SmallText>
+            ))}
           </View>
         </View>
 

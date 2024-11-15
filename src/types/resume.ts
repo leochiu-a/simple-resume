@@ -5,4 +5,10 @@ export interface Resume {
   phone: string;
   email: string;
   profile: string;
+  socialLinks: SocialLink[];
+}
+
+export interface SocialLink {
+  name: string;
+  url: string;
 }
