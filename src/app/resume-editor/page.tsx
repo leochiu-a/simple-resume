@@ -1,24 +1,23 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import ResumeIframeCSR from "./components/resume-iframe";
 import ResumeTemplate from "./components/resume-template";
+import dynamic from "next/dynamic";
 
-import { usePDF } from "@react-pdf/renderer";
+const DownloadPDFButton = dynamic(
+  () => import("./components/download-pdf-button"),
+  {
+    ssr: false,
+  }
+);
 
 const ResumeEditorPage = () => {
-  const [instance] = usePDF({ document: <ResumeTemplate /> });
-
   return (
     <>
       <div className="border-b">
         <div className="flex h-16 items-center px-4">
           <h1 className="text-xl font-bold">Simple Resume</h1>
-          <Button className="ml-auto" variant="outline" asChild>
-            <a href={instance.url!} download>
-              {instance.loading ? "Loading" : "Download"}
-            </a>
-          </Button>
+          <DownloadPDFButton />
         </div>
       </div>
       <main>
