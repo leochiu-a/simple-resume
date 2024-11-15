@@ -84,13 +84,13 @@ const EmploymentHistory: FC = () => {
           variant="ghost"
           onClick={() =>
             append({
-              school: "",
-              degree: "",
-              major: "",
+              company: "",
+              jobTitle: "",
               timeline: {
                 from: "",
                 to: "",
               },
+              description: "",
             })
           }
         >
