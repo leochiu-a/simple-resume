@@ -21,7 +21,7 @@ const LabeledBulletTextAreaField = ({
     for (const child of (e.target as HTMLElement).children) {
       result.push(child.textContent);
     }
-    props.onChange?.(result.join(","));
+    props.onChange?.(result.join("|"));
   };
 
   return (

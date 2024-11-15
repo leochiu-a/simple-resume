@@ -24,7 +24,7 @@ const EmploymentHistory = ({
                 <SubText>{formatDateRange(timeline)}</SubText>
               </View>
 
-              {description.split(",").map((item, index) => (
+              {description.split("|").map((item, index) => (
                 <View
                   key={item + index}
                   style={{ ...styles.flexRow, gap: "4pt", paddingLeft: "12px" }}
