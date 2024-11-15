@@ -17,6 +17,18 @@ const Educations: FC = () => {
     name: "educations",
   });
 
+  const handleAdd = () => {
+    append({
+      school: "",
+      degree: "",
+      major: "",
+      timeline: {
+        from: "",
+        to: "",
+      },
+    });
+  };
+
   return (
     <>
       <Typography variant="h4">Educations</Typography>
@@ -78,20 +90,7 @@ const Educations: FC = () => {
           </Fragment>
         ))}
 
-        <Button
-          variant="ghost"
-          onClick={() =>
-            append({
-              school: "",
-              degree: "",
-              major: "",
-              timeline: {
-                from: "",
-                to: "",
-              },
-            })
-          }
-        >
+        <Button variant="ghost" onClick={handleAdd} type="button">
           <FaPlus className="mr-2 size-4" />
           Add
         </Button>

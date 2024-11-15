@@ -1,10 +1,5 @@
 import { FC, Fragment } from "react";
-import {
-  Controller,
-  useFieldArray,
-  useFormContext,
-  useWatch,
-} from "react-hook-form";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { FaPlus, FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +15,10 @@ const SocialLinksSection: FC = () => {
     control,
     name: "socialLinks",
   });
+
+  const handleAdd = () => {
+    append({ name: "", url: "" });
+  };
 
   return (
     <>
@@ -49,7 +48,7 @@ const SocialLinksSection: FC = () => {
           </Fragment>
         ))}
 
-        <Button variant="ghost" onClick={() => append({ name: "", url: "" })}>
+        <Button variant="ghost" onClick={handleAdd} type="button">
           <FaPlus className="mr-2 size-4" />
           Add
         </Button>

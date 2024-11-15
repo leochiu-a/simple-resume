@@ -95,7 +95,11 @@ const Typography = ({
       </PDFText>
     );
   } else {
-    return <PDFText style={{ ...style }}>{children}</PDFText>;
+    return (
+      <PDFText style={{ ...style, fontWeight: bold ? "bold" : "normal" }}>
+        {children}
+      </PDFText>
+    );
   }
 };
 

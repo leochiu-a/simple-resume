@@ -1,11 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { FormProvider, useForm } from "react-hook-form";
+import { useLocalStorage } from "usehooks-ts";
+
+import { Resume } from "@/types/resume";
 import ResumeForm from "./components/form/resume-form";
 import ResumeIframeCSR from "./components/template/resume-iframe";
 import ResumeTemplate from "./components/template/resume-template";
-import dynamic from "next/dynamic";
-import { Resume } from "@/types/resume";
+import { DEFAULT_RESUME } from "./constants";
 
 const DownloadPDFButton = dynamic(
   () => import("./components/template/download-pdf-button"),
@@ -15,75 +18,16 @@ const DownloadPDFButton = dynamic(
 );
 
 const ResumeEditorPage = () => {
+  const [value, setValue] = useLocalStorage("resume", DEFAULT_RESUME);
   const formMethods = useForm<Resume>({
-    defaultValues: {
-      name: "My Name",
-      wantedJob: "Senior job",
-      email: "good@gmail.com",
-      phone: "0123456789",
-      city: "Taipei",
-      profile:
-        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-      socialLinks: [
-        {
-          name: "Github",
-          url: "https://github.com",
-        },
-        {
-          name: "Medium",
-          url: "https://medium.com",
-        },
-        {
-          name: "Threads",
-          url: "https://threads.net",
-        },
-      ],
-      skills: [
-        { name: "TypeScript" },
-        { name: "React" },
-        { name: "Next.js" },
-        { name: "GraphQL" },
-        { name: "Redux" },
-      ],
-      educations: [
-        {
-          school: "University of California",
-          degree: "Bachelor",
-          major: "Computer Science",
-          timeline: {
-            from: "2014-01-01",
-            to: "2018-01-01",
-          },
-        },
-        {
-          school: "University of California",
-          degree: "Bachelor",
-          major: "Computer Science",
-          timeline: {
-            from: "2014-01-01",
-            to: "2018-01-01",
-          },
-        },
-      ],
-      employmentHistory: [
-        {
-          company: "Google",
-          jobTitle: "Senior Engineer",
-          timeline: {
-            from: "2018-01-01",
-            to: "2020-01-01",
-          },
-          description: "A,B,C,D",
-        },
-      ],
-    },
+    defaultValues: value,
   });
-  const { handleSubmit, watch } = formMethods;
-
+  const { watch, getValues } = formMethods;
   const resume = watch();
 
-  const submitForm = (data: Resume) => {
-    console.log(data);
+  const handleChange = () => {
+    const resume = getValues();
+    setValue(resume);
   };
 
   return (
@@ -97,7 +41,7 @@ const ResumeEditorPage = () => {
       <main>
         <FormProvider {...formMethods}>
           {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
-          <form id="resume-form" onSubmit={handleSubmit(submitForm)}>
+          <form id="resume-form" onChange={handleChange}>
             <div className="flex">
               <div className="w-1/2 p-12">
                 <ResumeForm />

@@ -1,7 +1,7 @@
 import { View } from "@react-pdf/renderer";
 import { SmallText, SubText, SubTitle, Title } from "./typography";
 import { styles } from "./styles";
-import { SocialLink } from "@/types/resume";
+import { Skill, SocialLink } from "@/types/resume";
 
 const Info = ({
   name,
@@ -10,6 +10,7 @@ const Info = ({
   phone,
   email,
   links,
+  skills,
 }: {
   name: string;
   jobTitle: string;
@@ -17,6 +18,7 @@ const Info = ({
   phone: string;
   email: string;
   links: SocialLink[];
+  skills: Skill[];
 }) => {
   return (
     <View
@@ -75,11 +77,9 @@ const Info = ({
         <View style={{ ...styles.flexCol }}>
           <SubTitle>Skills</SubTitle>
           <View style={{ ...styles.flexCol, gap: "6pt" }}>
-            <SmallText>TypeScript</SmallText>
-            <SmallText>React</SmallText>
-            <SmallText>Next.js</SmallText>
-            <SmallText>GraphQL</SmallText>
-            <SmallText>Redux</SmallText>
+            {skills.map((skill, index) => (
+              <SmallText key={index}>{skill.name}</SmallText>
+            ))}
           </View>
         </View>
       </View>

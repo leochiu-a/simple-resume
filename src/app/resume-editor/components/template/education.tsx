@@ -10,10 +10,11 @@ const Education = ({ educations }: { educations: EducationType[] }) => {
     <View style={{ paddingBottom: 12 }}>
       <Title>Education</Title>
 
-      {educations.map((education) => (
-        <View style={{ ...styles.flexCol, marginBottom: 12 }}>
+      {educations.map((education, index) => (
+        <View style={{ ...styles.flexCol, marginBottom: 12 }} key={index}>
           <Text bold>
-            {education.degree} of {education.major}, {education.school}
+            {education.degree}
+            {education.major && ` of ${education.major}`}, {education.school}
           </Text>
           <SubText>{formatDateRange(education.timeline)}</SubText>
         </View>
