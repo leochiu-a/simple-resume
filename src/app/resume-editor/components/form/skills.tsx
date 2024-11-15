@@ -1,4 +1,4 @@
-import { FC, Fragment, MouseEvent } from "react";
+import { FC, Fragment } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { FaPlus, FaTrash } from "react-icons/fa6";
 
