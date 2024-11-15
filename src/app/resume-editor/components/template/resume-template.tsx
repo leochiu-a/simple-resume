@@ -8,8 +8,9 @@ import EmploymentHistory from "./employment-history";
 import Education from "./education";
 import Info from "./info";
 import { A4_HEIGHT_PT } from "./constants";
+import { Resume } from "@/types/resume";
 
-const ResumeTemplate = () => {
+const ResumeTemplate = ({ resume }: { resume: Resume }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -21,7 +22,13 @@ const ResumeTemplate = () => {
               minHeight: `${A4_HEIGHT_PT}pt`,
             }}
           >
-            <Info />
+            <Info
+              name={resume.name}
+              jobTitle={resume.wantedJob}
+              email={resume.email}
+              phone={resume.phone}
+              city={resume.city}
+            />
           </View>
           <View
             style={{
@@ -29,9 +36,8 @@ const ResumeTemplate = () => {
               position: "relative",
               margin: "40pt 42px 0 220pt",
             }}
-            debug
           >
-            <Profile />
+            <Profile profile={resume.profile} />
             <EmploymentHistory />
             <Education />
           </View>

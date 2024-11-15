@@ -1,5 +1,5 @@
 import { View } from "@react-pdf/renderer";
-import { Title, Text, SubText } from "../typography";
+import { Title, Text, SubText } from "./typography";
 import { styles } from "./styles";
 
 const ITEMS = [
