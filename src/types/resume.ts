@@ -6,9 +6,14 @@ export interface Resume {
   email: string;
   profile: string;
   socialLinks: SocialLink[];
+  skills: Skill[];
 }
 
 export interface SocialLink {
   name: string;
   url: string;
+}
+
+export interface Skill {
+  name: string;
 }

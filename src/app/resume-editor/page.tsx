@@ -38,6 +38,13 @@ const ResumeEditorPage = () => {
           url: "https://threads.net",
         },
       ],
+      skills: [
+        { name: "TypeScript" },
+        { name: "React" },
+        { name: "Next.js" },
+        { name: "GraphQL" },
+        { name: "Redux" },
+      ],
     },
   });
   const { handleSubmit, watch } = formMethods;

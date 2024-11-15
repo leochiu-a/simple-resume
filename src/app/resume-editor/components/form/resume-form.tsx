@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Resume } from "@/types/resume";
 import Information from "./information";
 import SocialLinks from "./social-links";
+import Skills from "./skills";
 
 const ResumeForm = () => {
   const { register } = useFormContext<Resume>();
@@ -19,6 +20,7 @@ const ResumeForm = () => {
       </div>
 
       <SocialLinks />
+      <Skills />
     </div>
   );
 };
