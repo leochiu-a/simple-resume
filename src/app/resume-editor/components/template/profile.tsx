@@ -1,5 +1,5 @@
 import { View } from "@react-pdf/renderer";
-import { Text, Title } from "./typography";
+import { Text, Title } from "../typography";
 
 const Profile = () => {
   return (

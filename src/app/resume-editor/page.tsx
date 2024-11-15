@@ -1,11 +1,11 @@
 "use client";
 
-import ResumeIframeCSR from "./components/resume-iframe";
-import ResumeTemplate from "./components/resume-template";
+import ResumeIframeCSR from "./components/template/resume-iframe";
+import ResumeTemplate from "./components/template/resume-template";
 import dynamic from "next/dynamic";
 
 const DownloadPDFButton = dynamic(
-  () => import("./components/download-pdf-button"),
+  () => import("./components/template/download-pdf-button"),
   {
     ssr: false,
   }

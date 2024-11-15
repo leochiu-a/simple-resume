@@ -1,5 +1,5 @@
 import { View } from "@react-pdf/renderer";
-import { SmallText, SubText, SubTitle, Title } from "./typography";
+import { SmallText, SubText, SubTitle, Title } from "../typography";
 import { styles } from "./styles";
 
 const Info = () => {

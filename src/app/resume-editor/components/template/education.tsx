@@ -1,7 +1,7 @@
 import { View } from "@react-pdf/renderer";
 import React from "react";
 import { styles } from "./styles";
-import { Title, Text, SubText } from "./typography";
+import { Title, Text, SubText } from "../typography";
 
 const Education = () => {
   return (
