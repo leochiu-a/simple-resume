@@ -6,6 +6,7 @@ import { Resume } from "@/types/resume";
 import Information from "./information";
 import SocialLinks from "./social-links";
 import Skills from "./skills";
+import Educations from "./educations";
 
 const ResumeForm = () => {
   const { register } = useFormContext<Resume>();
@@ -21,6 +22,7 @@ const ResumeForm = () => {
 
       <SocialLinks />
       <Skills />
+      <Educations />
     </div>
   );
 };

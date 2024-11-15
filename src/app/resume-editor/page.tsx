@@ -45,6 +45,26 @@ const ResumeEditorPage = () => {
         { name: "GraphQL" },
         { name: "Redux" },
       ],
+      educations: [
+        {
+          school: "University of California",
+          degree: "Bachelor",
+          major: "Computer Science",
+          timeline: {
+            from: "2014-01-01",
+            to: "2018-01-01",
+          },
+        },
+        {
+          school: "University of California",
+          degree: "Bachelor",
+          major: "Computer Science",
+          timeline: {
+            from: "2014-01-01",
+            to: "2018-01-01",
+          },
+        },
+      ],
     },
   });
   const { handleSubmit, watch } = formMethods;

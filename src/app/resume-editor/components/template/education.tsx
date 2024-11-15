@@ -2,21 +2,22 @@ import { View } from "@react-pdf/renderer";
 import React from "react";
 import { styles } from "./styles";
 import { Title, Text, SubText } from "./typography";
+import { Education as EducationType } from "@/types/resume";
+import formatDateRange from "@/lib/formatDateRange";
 
-const Education = () => {
+const Education = ({ educations }: { educations: EducationType[] }) => {
   return (
     <View style={{ paddingBottom: 12 }}>
       <Title>Education</Title>
 
-      <View style={{ ...styles.flexCol, marginBottom: 12 }}>
-        <Text bold>Lorem</Text>
-        <SubText>OCTOBER 2020 — NOVEMBER 2024</SubText>
-      </View>
-
-      <View style={{ ...styles.flexCol, marginBottom: 12 }}>
-        <Text bold>Lorem</Text>
-        <SubText>OCTOBER 2020 — NOVEMBER 2024</SubText>
-      </View>
+      {educations.map((education) => (
+        <View style={{ ...styles.flexCol, marginBottom: 12 }}>
+          <Text bold>
+            {education.degree} of {education.major}, {education.school}
+          </Text>
+          <SubText>{formatDateRange(education.timeline)}</SubText>
+        </View>
+      ))}
     </View>
   );
 };
