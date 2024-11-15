@@ -29,6 +29,7 @@ const ResumeTemplate = ({ resume }: { resume: Resume }) => {
               phone={resume.phone}
               city={resume.city}
               links={resume.socialLinks}
+              skills={resume.skills}
             />
           </View>
           <View
