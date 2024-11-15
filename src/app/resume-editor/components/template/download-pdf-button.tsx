@@ -1,9 +1,10 @@
 import { usePDF } from "@react-pdf/renderer";
 import ResumeTemplate from "./resume-template";
 import { Button } from "@/components/ui/button";
+import { Resume } from "@/types/resume";
 
-const DownloadPDFButton = () => {
-  const [instance] = usePDF({ document: <ResumeTemplate /> });
+const DownloadPDFButton = ({ resume }: { resume: Resume }) => {
+  const [instance] = usePDF({ document: <ResumeTemplate resume={resume} /> });
 
   return (
     <Button className="ml-auto" variant="outline" asChild>

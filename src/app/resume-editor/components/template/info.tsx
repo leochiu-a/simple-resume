@@ -1,8 +1,23 @@
 import { View } from "@react-pdf/renderer";
 import { SmallText, SubText, SubTitle, Title } from "./typography";
 import { styles } from "./styles";
+import { SocialLink } from "@/types/resume";
 
-const Info = () => {
+const Info = ({
+  name,
+  jobTitle,
+  city,
+  phone,
+  email,
+  links,
+}: {
+  name: string;
+  jobTitle: string;
+  city: string;
+  phone: string;
+  email: string;
+  links: SocialLink[];
+}) => {
   return (
     <View
       style={{
@@ -12,7 +27,7 @@ const Info = () => {
       }}
     >
       <View style={{ marginHorizontal: "40pt", marginTop: "40pt" }}>
-        <Title style={{ fontSize: "16pt", marginBottom: 0 }}>Name</Title>
+        <Title style={{ fontSize: "16pt", marginBottom: 0 }}>{name}</Title>
       </View>
       <View
         style={{
@@ -23,7 +38,7 @@ const Info = () => {
         }}
       ></View>
       <SubText style={{ transformOrigin: "center", color: "#fff" }}>
-        FRONTEND ENGINEER
+        {jobTitle}
       </SubText>
 
       <View
@@ -38,10 +53,10 @@ const Info = () => {
         <View style={{ ...styles.flexCol }}>
           <SubTitle>Details</SubTitle>
           <View style={{ ...styles.flexCol, gap: "2pt" }}>
-            <SmallText>Taipei</SmallText>
-            <SmallText>0123456789</SmallText>
+            <SmallText>{city}</SmallText>
+            <SmallText>{phone}</SmallText>
             <SmallText style={{ textDecoration: "underline" }}>
-              good@gmail.com
+              {email}
             </SmallText>
           </View>
         </View>
@@ -49,18 +64,11 @@ const Info = () => {
         <View style={{ ...styles.flexCol }}>
           <SubTitle>Links</SubTitle>
           <View style={{ ...styles.flexCol, gap: "8pt" }}>
-            <SmallText as="link" href="https://medium.com">
-              Medium
-            </SmallText>
-            <SmallText as="link" href="https://github.com">
-              GitHub
-            </SmallText>
-            <SmallText as="link" href="https://threads.com">
-              Threads
-            </SmallText>
-            <SmallText as="link" href="https://threads.com">
-              Threads
-            </SmallText>
+            {links.map((link, index) => (
+              <SmallText as="link" href={link.url} key={index}>
+                {link.name}
+              </SmallText>
+            ))}
           </View>
         </View>
 
