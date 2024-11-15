@@ -23,14 +23,27 @@ const EmploymentHistory = () => {
     <View style={{ marginBottom: 12 }}>
       <Title>Employment History</Title>
 
-      <View style={{ ...styles.flexCol, marginBottom: 8 }}>
-        <Text bold>Lorem</Text>
-        <SubText>OCTOBER 2020 — NOVEMBER 2024</SubText>
-      </View>
+      <View style={{ ...styles.flexCol, gap: "12pt" }}>
+        {Array.from({ length: 2 }).map((_, index) => (
+          <View key={index} wrap={false}>
+            <View style={{ ...styles.flexCol, marginBottom: 8 }}>
+              <Text bold>Lorem</Text>
+              <SubText>OCTOBER 2020 — NOVEMBER 2024</SubText>
+            </View>
 
-      {ITEMS.map((item, index) => (
-        <Text key={item + index}>{`• ${item}`}</Text>
-      ))}
+            {ITEMS.map((item, index) => (
+              <View
+                key={item + index}
+                style={{ ...styles.flexRow, gap: "4pt", paddingLeft: "12px" }}
+                wrap={false}
+              >
+                <Text bold>•</Text>
+                <Text>{item}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 };

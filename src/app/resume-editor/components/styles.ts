@@ -16,7 +16,7 @@ export const styles = StyleSheet.create({
   },
   info: {
     backgroundColor: "#094C42",
-    width: "190px",
+    width: "190pt",
     height: "100%",
     flexShrink: 0,
   },
