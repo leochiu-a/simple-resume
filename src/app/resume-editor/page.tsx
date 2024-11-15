@@ -18,16 +18,16 @@ const DownloadPDFButton = dynamic(
 );
 
 const ResumeEditorPage = () => {
-  const [value] = useLocalStorage("resume", DEFAULT_RESUME);
+  const [value, setValue] = useLocalStorage("resume", DEFAULT_RESUME);
   const formMethods = useForm<Resume>({
     defaultValues: value,
   });
-  const { handleSubmit, watch } = formMethods;
-
+  const { watch, getValues } = formMethods;
   const resume = watch();
 
-  const submitForm = (data: Resume) => {
-    console.log(data);
+  const handleChange = () => {
+    const resume = getValues();
+    setValue(resume);
   };
 
   return (
@@ -41,7 +41,7 @@ const ResumeEditorPage = () => {
       <main>
         <FormProvider {...formMethods}>
           {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
-          <form id="resume-form" onSubmit={handleSubmit(submitForm)}>
+          <form id="resume-form" onChange={handleChange}>
             <div className="flex">
               <div className="w-1/2 p-12">
                 <ResumeForm />
