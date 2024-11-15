@@ -1,4 +1,4 @@
-import { FC, Fragment } from "react";
+import { FC, Fragment, MouseEvent } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { FaPlus, FaTrash } from "react-icons/fa6";
 
@@ -15,6 +15,10 @@ const Skills: FC = () => {
     control,
     name: "skills",
   });
+
+  const handleAdd = () => {
+    append({ name: "" });
+  };
 
   return (
     <>
@@ -37,7 +41,7 @@ const Skills: FC = () => {
           </Fragment>
         ))}
 
-        <Button variant="ghost" onClick={() => append({ name: "" })}>
+        <Button variant="ghost" onClick={handleAdd} type="button">
           <FaPlus className="mr-2 size-4" />
           Add
         </Button>

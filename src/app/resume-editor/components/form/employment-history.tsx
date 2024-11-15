@@ -18,6 +18,18 @@ const EmploymentHistory: FC = () => {
     name: "employmentHistory",
   });
 
+  const handleAdd = () => {
+    append({
+      company: "",
+      jobTitle: "",
+      timeline: {
+        from: "",
+        to: "",
+      },
+      description: "",
+    });
+  };
+
   return (
     <>
       <Typography variant="h4">Employment History</Typography>
@@ -80,20 +92,7 @@ const EmploymentHistory: FC = () => {
           </Fragment>
         ))}
 
-        <Button
-          variant="ghost"
-          onClick={() =>
-            append({
-              company: "",
-              jobTitle: "",
-              timeline: {
-                from: "",
-                to: "",
-              },
-              description: "",
-            })
-          }
-        >
+        <Button variant="ghost" onClick={handleAdd} type="button">
           <FaPlus className="mr-2 size-4" />
           Add
         </Button>
