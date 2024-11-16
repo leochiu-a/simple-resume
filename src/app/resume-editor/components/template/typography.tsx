@@ -24,6 +24,8 @@ Font.register({
     },
   ],
 });
+// https://github.com/diegomura/react-pdf/issues/1418
+Font.registerHyphenationCallback((word) => ["", word, ""]);
 
 const styles = StyleSheet.create({
   title: {
