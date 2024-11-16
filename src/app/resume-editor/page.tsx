@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 
@@ -18,6 +19,7 @@ const DownloadPDFButton = dynamic(
 );
 
 const ResumeEditorPage = () => {
+  const [mounted, setMounted] = useState(false);
   const [value, setValue] = useLocalStorage("resume", DEFAULT_RESUME);
   const formMethods = useForm<Resume>({
     defaultValues: value,
@@ -29,6 +31,13 @@ const ResumeEditorPage = () => {
     const resume = getValues();
     setValue(resume);
   };
+
+  // prevent hydration error caused by getting value from local storage on server side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 
 import { InputProps } from "@/components/ui/input";
+import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { cn } from "@/lib/utils";
 
 interface LabeledBulletTextAreaFieldProps extends Omit<InputProps, "onChange"> {
@@ -13,7 +14,9 @@ const LabeledBulletTextAreaField = ({
   className,
   ...props
 }: LabeledBulletTextAreaFieldProps) => {
-  const [items] = useState(() => (props.value as string)?.split(",") ?? []);
+  const [items] = useState(
+    () => (props.value as string)?.split(SPLIT_TEXT) ?? []
+  );
   const ref = useRef<HTMLDivElement>(null);
 
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
@@ -21,7 +24,7 @@ const LabeledBulletTextAreaField = ({
     for (const child of (e.target as HTMLElement).children) {
       result.push(child.textContent);
     }
-    props.onChange?.(result.join("|"));
+    props.onChange?.(result.join(SPLIT_TEXT));
   };
 
   return (
