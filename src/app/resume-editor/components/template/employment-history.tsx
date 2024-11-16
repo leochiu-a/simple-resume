@@ -3,6 +3,7 @@ import { Title, Text, SubText } from "./typography";
 import { styles } from "./styles";
 import { EmploymentHistory as EmploymentHistoryType } from "@/types/resume";
 import formatDateRange from "@/lib/formatDateRange";
+import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
 const EmploymentHistory = ({
   employmentHistory,
@@ -24,7 +25,7 @@ const EmploymentHistory = ({
                 <SubText>{formatDateRange(timeline)}</SubText>
               </View>
 
-              {description.split("|").map((item, index) => (
+              {description.split(SPLIT_TEXT).map((item, index) => (
                 <View
                   key={item + index}
                   style={{ ...styles.flexRow, gap: "4pt", paddingLeft: "12px" }}
