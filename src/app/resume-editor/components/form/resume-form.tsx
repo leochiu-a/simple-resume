@@ -18,7 +18,11 @@ const ResumeForm = () => {
 
       <Typography variant="h4">Profile</Typography>
       <div className="mb-8 mt-4 space-y-4">
-        <Textarea {...register("profile")} rows={5} />
+        <Textarea
+          {...register("profile")}
+          rows={5}
+          className="field-sizing-content"
+        />
       </div>
 
       <SocialLinks />
