@@ -19,7 +19,7 @@ Font.register({
       src: "/fonts/NotoSans-Regular.ttf",
     },
     {
-      src: "/fonts/NotoSans-bold.ttf",
+      src: "/fonts/NotoSans-Bold.ttf",
       fontWeight: "bold",
     },
   ],
