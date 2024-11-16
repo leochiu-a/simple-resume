@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 
 import { Resume } from "@/types/resume";
@@ -24,13 +24,12 @@ const ResumeEditorPage = () => {
   const formMethods = useForm<Resume>({
     defaultValues: value,
   });
-  const { watch, getValues } = formMethods;
-  const resume = watch();
+  const { control } = formMethods;
+  const resume = useWatch({ control }) as Resume;
 
-  const handleChange = () => {
-    const resume = getValues();
+  useEffect(() => {
     setValue(resume);
-  };
+  }, [resume, setValue]);
 
   // prevent hydration error caused by getting value from local storage on server side
   useEffect(() => {
@@ -50,7 +49,7 @@ const ResumeEditorPage = () => {
       <main>
         <FormProvider {...formMethods}>
           {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
-          <form id="resume-form" onChange={handleChange}>
+          <form id="resume-form">
             <div className="flex">
               <div className="w-1/2 p-12">
                 <ResumeForm />
