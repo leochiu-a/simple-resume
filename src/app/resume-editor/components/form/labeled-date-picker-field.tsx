@@ -9,7 +9,7 @@ interface LabeledDatePickerFieldProps {
   value: {
     from: string | null;
     to: string | null;
-  } | null;
+  };
   onChange: (value: { from: string | null; to: string | null }) => void;
 }
 
@@ -19,7 +19,7 @@ const LabeledDatePickerField = ({
   onChange,
   value,
 }: LabeledDatePickerFieldProps) => {
-  const [checked, setChecked] = useState(false);
+  const [checked, setChecked] = useState(() => value.to === null);
 
   const handleChangeFromMonth = useCallback(
     (date: Date) => {
