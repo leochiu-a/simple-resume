@@ -48,7 +48,7 @@ const SocialLinksSection: FC = () => {
           </Fragment>
         ))}
 
-        <Button variant="ghost" onClick={handleAdd} type="button">
+        <Button variant="outline" onClick={handleAdd} type="button">
           <FaPlus className="mr-2 size-4" />
           Add
         </Button>
