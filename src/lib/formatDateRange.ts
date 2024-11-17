@@ -1,22 +1,25 @@
-import { format, parseISO, isValid } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface DateRange {
-  from: string;
-  to: string;
+  from: string | null;
+  to: string | null;
 }
 
-const formatDateRange = ({ from, to }: DateRange): string => {
-  const fromDate = parseISO(from);
-  const toDate = parseISO(to);
+const formatDate = (date: string) => {
+  const dateFormatted = format(parseISO(date), "MMMM yyyy").toUpperCase();
 
-  if (!isValid(fromDate) || !isValid(toDate)) {
-    return "";
-  }
+  return dateFormatted;
+};
 
-  const fromFormatted = format(fromDate, "MMMM yyyy").toUpperCase();
-  const toFormatted = format(toDate, "MMMM yyyy").toUpperCase();
+const formatDateRange = (
+  timeline: DateRange,
+  placeholder: string
+): string => {
+  const { from, to } = timeline;
+  const fromDate = from ? formatDate(from) : "";
+  const toDate = to ? formatDate(to) : placeholder;
 
-  return `${fromFormatted} — ${toFormatted}`;
+  return `${fromDate} — ${toDate}`;
 };
 
 export default formatDateRange;
