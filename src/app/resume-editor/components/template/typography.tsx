@@ -83,25 +83,18 @@ const Typography = ({
   href?: string;
   bold?: boolean;
 }>) => {
+  const textStyle: Style = { fontWeight: bold ? "bold" : "normal", ...style };
+
   if (as === "link") {
     return (
-      <PDFText
-        style={{
-          ...style,
-          fontWeight: bold ? "bold" : "normal",
-        }}
-      >
+      <PDFText style={textStyle}>
         <PDFLink href={href} style={styles.link}>
           {children}
         </PDFLink>
       </PDFText>
     );
   } else {
-    return (
-      <PDFText style={{ ...style, fontWeight: bold ? "bold" : "normal" }}>
-        {children}
-      </PDFText>
-    );
+    return <PDFText style={textStyle}>{children}</PDFText>;
   }
 };
 
