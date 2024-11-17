@@ -21,16 +21,6 @@ const LabeledDatePickerField = ({
 }: LabeledDatePickerFieldProps) => {
   const [checked, setChecked] = useState(false);
 
-  const handleCheckedChange = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        onChange?.({ from: value?.from ?? null, to: null });
-      }
-      setChecked(checked);
-    },
-    [onChange, value?.from]
-  );
-
   const handleChangeFromMonth = useCallback(
     (date: Date) => {
       onChange?.({ from: date.toISOString(), to: value?.to ?? null });
@@ -43,6 +33,18 @@ const LabeledDatePickerField = ({
       onChange?.({ from: value?.from ?? null, to: date.toISOString() });
     },
     [onChange, value?.from]
+  );
+
+  const handleCheckedChange = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        onChange?.({ from: value?.from ?? null, to: null });
+      } else {
+        handleChangeToMonth(new Date());
+      }
+      setChecked(checked);
+    },
+    [handleChangeToMonth, onChange, value?.from]
   );
 
   return (
