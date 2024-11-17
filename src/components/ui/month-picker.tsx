@@ -134,12 +134,14 @@ export interface MonthPickerProps {
   onMonthChange?: (newMonth: Date) => void;
   placeholder?: string;
   value?: Date | null;
+  className?: string;
 }
 
 const MonthPicker: FC<MonthPickerProps> = ({
   onMonthChange,
   placeholder = "Pick a date",
   value,
+  className,
 }) => {
   const [date, setDate] = useState<Date | null | undefined>(null);
 
@@ -159,7 +161,8 @@ const MonthPicker: FC<MonthPickerProps> = ({
           variant={"outline"}
           className={cn(
             "w-[280px] justify-start text-left font-normal",
-            !date && "text-muted-foreground"
+            !date && "text-muted-foreground",
+            className
           )}
         >
           <FaCalendar className="mr-2 size-4" />

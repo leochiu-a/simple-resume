@@ -22,7 +22,7 @@ const EmploymentHistory = ({
                 <Text bold>
                   {jobTitle}, {company}
                 </Text>
-                <SubText>{formatDateRange(timeline)}</SubText>
+                <SubText>{formatDateRange(timeline, "Present")}</SubText>
               </View>
 
               {description.split(SPLIT_TEXT).map((item, index) => (

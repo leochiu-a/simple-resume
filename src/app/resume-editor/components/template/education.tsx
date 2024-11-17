@@ -16,7 +16,7 @@ const Education = ({ educations }: { educations: EducationType[] }) => {
             {education.degree}
             {education.major && ` of ${education.major}`}, {education.school}
           </Text>
-          <SubText>{formatDateRange(education.timeline)}</SubText>
+          <SubText>{formatDateRange(education.timeline, "In school")}</SubText>
         </View>
       ))}
     </View>

@@ -9,7 +9,7 @@ interface LabeledDatePickerFieldProps {
   value: {
     from: string | null;
     to: string | null;
-  } | null;
+  };
   onChange: (value: { from: string | null; to: string | null }) => void;
 }
 
@@ -19,17 +19,7 @@ const LabeledDatePickerField = ({
   onChange,
   value,
 }: LabeledDatePickerFieldProps) => {
-  const [checked, setChecked] = useState(false);
-
-  const handleCheckedChange = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        onChange?.({ from: value?.from ?? null, to: null });
-      }
-      setChecked(checked);
-    },
-    [onChange, value?.from]
-  );
+  const [checked, setChecked] = useState(() => value.to === null);
 
   const handleChangeFromMonth = useCallback(
     (date: Date) => {
@@ -45,11 +35,23 @@ const LabeledDatePickerField = ({
     [onChange, value?.from]
   );
 
+  const handleCheckedChange = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        onChange?.({ from: value?.from ?? null, to: null });
+      } else {
+        handleChangeToMonth(new Date());
+      }
+      setChecked(checked);
+    },
+    [handleChangeToMonth, onChange, value?.from]
+  );
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between">
         <div>{label}</div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-center">
           <Switch checked={checked} onCheckedChange={handleCheckedChange} />
           {switchText}
         </div>
@@ -60,12 +62,14 @@ const LabeledDatePickerField = ({
           onMonthChange={handleChangeFromMonth}
           placeholder="From"
           value={value?.from ? new Date(value.from) : null}
+          className="flex-1"
         />
         {!checked && (
           <MonthPicker
             onMonthChange={handleChangeToMonth}
             placeholder="To"
             value={value?.to ? new Date(value.to) : null}
+            className="flex-1"
           />
         )}
       </div>
