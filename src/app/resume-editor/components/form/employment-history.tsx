@@ -35,7 +35,7 @@ const EmploymentHistory: FC = () => {
       <Typography variant="h4">Employment History</Typography>
       <div className="mb-8 mt-4 space-y-4">
         {fields.map((field, index) => (
-          <Fragment key={field.id}>
+          <div key={field.id} className="border-dotted border-b-2 pb-4">
             <div className="mt-4 grid grid-cols-2 gap-4">
               <Controller
                 control={control}
@@ -85,14 +85,18 @@ const EmploymentHistory: FC = () => {
               />
             </div>
             <Tooltip title="Delete">
-              <button onClick={() => remove(index)} className="max-w-max">
-                <FaTrash />
-              </button>
+              <Button
+                variant="outline"
+                onClick={() => remove(index)}
+                className="mt-4"
+              >
+                <FaTrash className="mr-2 size-4" /> Delete
+              </Button>
             </Tooltip>
-          </Fragment>
+          </div>
         ))}
 
-        <Button variant="ghost" onClick={handleAdd} type="button">
+        <Button variant="outline" onClick={handleAdd} type="button">
           <FaPlus className="mr-2 size-4" />
           Add
         </Button>

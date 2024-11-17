@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
@@ -41,8 +42,12 @@ const ResumeEditorPage = () => {
   return (
     <>
       <div className="border-b">
-        <div className="flex h-16 items-center px-4">
-          <h1 className="text-xl font-bold">Simple Resume</h1>
+        <div className="flex h-16 items-center px-12">
+          <Link href="/">
+            <h1 className="text-xl font-bold">
+              Simple Resume
+            </h1>
+          </Link>
           <DownloadPDFButton resume={resume} />
         </div>
       </div>
