@@ -62,12 +62,14 @@ const LabeledDatePickerField = ({
           onMonthChange={handleChangeFromMonth}
           placeholder="From"
           value={value?.from ? new Date(value.from) : null}
+          className="flex-1"
         />
         {!checked && (
           <MonthPicker
             onMonthChange={handleChangeToMonth}
             placeholder="To"
             value={value?.to ? new Date(value.to) : null}
+            className="flex-1"
           />
         )}
       </div>
