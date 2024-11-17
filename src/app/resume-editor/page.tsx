@@ -11,6 +11,7 @@ import ResumeForm from "./components/form/resume-form";
 import ResumeIframeCSR from "./components/template/resume-iframe";
 import ResumeTemplate from "./components/template/resume-template";
 import { DEFAULT_RESUME } from "./constants";
+import Image from "next/image";
 
 const DownloadPDFButton = dynamic(
   () => import("./components/template/download-pdf-button"),
@@ -44,11 +45,19 @@ const ResumeEditorPage = () => {
       <div className="border-b">
         <div className="flex h-16 items-center px-12">
           <Link href="/">
-            <h1 className="text-xl font-bold">
-              Simple Resume
-            </h1>
+            <h1 className="text-xl font-bold">Simple Resume</h1>
           </Link>
-          <DownloadPDFButton resume={resume} />
+          <div className="ml-auto flex gap-4 items-center">
+            <DownloadPDFButton resume={resume} />
+            <Link href="https://github.com/leochiu-a/simple-resume" target="_blank">
+              <Image
+                src="/github-mark.png"
+                alt="github-mark"
+                width={36}
+                height={36}
+              />
+            </Link>
+          </div>
         </div>
       </div>
       <main>

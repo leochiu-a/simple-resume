@@ -15,7 +15,7 @@ const DownloadPDFButton = ({ resume }: { resume: Resume }) => {
   }, [resume, update]);
 
   return (
-    <Button className="ml-auto" variant="outline" asChild>
+    <Button  variant="outline" asChild>
       <a href={instance.url!} download>
         {instance.loading ? "Loading" : "Download"}
       </a>
