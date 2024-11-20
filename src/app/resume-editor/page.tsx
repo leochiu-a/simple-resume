@@ -2,16 +2,17 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
+import debounce from "lodash/debounce";
 
 import { Resume } from "@/types/resume";
 import ResumeForm from "./components/form/resume-form";
 import ResumeIframeCSR from "./components/template/resume-iframe";
 import ResumeTemplate from "./components/template/resume-template";
 import { DEFAULT_RESUME } from "./constants";
-import Image from "next/image";
 
 const DownloadPDFButton = dynamic(
   () => import("./components/template/download-pdf-button"),
@@ -29,9 +30,17 @@ const ResumeEditorPage = () => {
   const { control } = formMethods;
   const resume = useWatch({ control }) as Resume;
 
+  const saveResume = useMemo(
+    () =>
+      debounce((resume: Resume) => {
+        setValue(resume);
+      }, 300),
+    [setValue]
+  );
+
   useEffect(() => {
-    setValue(resume);
-  }, [resume, setValue]);
+    saveResume(resume);
+  }, [resume, saveResume]);
 
   // prevent hydration error caused by getting value from local storage on server side
   useEffect(() => {
@@ -49,7 +58,10 @@ const ResumeEditorPage = () => {
           </Link>
           <div className="ml-auto flex gap-4 items-center">
             <DownloadPDFButton resume={resume} />
-            <Link href="https://github.com/leochiu-a/simple-resume" target="_blank">
+            <Link
+              href="https://github.com/leochiu-a/simple-resume"
+              target="_blank"
+            >
               <Image
                 src="/github-mark.png"
                 alt="github-mark"
