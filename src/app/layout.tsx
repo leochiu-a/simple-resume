@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/react";
 
 import "./globals.css";
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
+        <NextTopLoader showSpinner={false} />
         {children}
         <Analytics />
       </body>
