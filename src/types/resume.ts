@@ -9,6 +9,7 @@ export interface Resume {
   skills: Skill[];
   educations: Education[];
   employmentHistory: EmploymentHistory[];
+  visibility: Visibility;
 }
 
 export interface SocialLink {
@@ -38,4 +39,12 @@ export interface EmploymentHistory {
     to: string;
   };
   description: string;
+}
+
+export interface Visibility {
+  profile: boolean;
+  socialLinks: boolean;
+  skills: boolean;
+  educations: boolean;
+  employmentHistory: boolean;
 }

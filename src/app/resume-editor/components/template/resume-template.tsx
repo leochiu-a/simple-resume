@@ -30,6 +30,7 @@ const ResumeTemplate = ({ resume }: { resume: Resume }) => {
               city={resume.city}
               links={resume.socialLinks}
               skills={resume.skills}
+              visibility={resume.visibility}
             />
           </View>
           <View
@@ -39,9 +40,13 @@ const ResumeTemplate = ({ resume }: { resume: Resume }) => {
               margin: "40pt 42px 0 220pt",
             }}
           >
-            <Profile profile={resume.profile} />
-            <EmploymentHistory employmentHistory={resume.employmentHistory} />
-            <Education educations={resume.educations} />
+            {resume.visibility.profile && <Profile profile={resume.profile} />}
+            {resume.visibility.employmentHistory && (
+              <EmploymentHistory employmentHistory={resume.employmentHistory} />
+            )}
+            {resume.visibility.educations && (
+              <Education educations={resume.educations} />
+            )}
           </View>
         </View>
       </Page>
