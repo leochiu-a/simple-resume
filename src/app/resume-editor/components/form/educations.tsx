@@ -9,6 +9,7 @@ import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
 import { LabeledDatePickerField } from "./labeled-date-picker-field";
 import { LabeledInputField } from "./labeled-input-field";
+import VisibleSwitch from "./visible-switch";
 
 const Educations: FC = () => {
   const { control } = useFormContext<Resume>();
@@ -31,7 +32,14 @@ const Educations: FC = () => {
 
   return (
     <>
-      <Typography variant="h4">Educations</Typography>
+      <Typography variant="h4" className="flex items-center gap-2">
+        <span>Educations</span>
+        <Controller
+          control={control}
+          name="visibility.educations"
+          render={({ field }) => <VisibleSwitch {...field} />}
+        />
+      </Typography>
       <div className="mb-8 mt-4 space-y-4">
         {fields.map((field, index) => (
           <div key={field.id} className="border-dotted border-b-2 pb-4">

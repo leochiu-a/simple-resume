@@ -1,7 +1,7 @@
 import { View } from "@react-pdf/renderer";
 import { SmallText, SubText, SubTitle, Title } from "./typography";
 import { styles } from "./styles";
-import { Skill, SocialLink } from "@/types/resume";
+import { Skill, SocialLink, Visibility } from "@/types/resume";
 
 const Info = ({
   name,
@@ -11,6 +11,7 @@ const Info = ({
   email,
   links,
   skills,
+  visibility,
 }: {
   name: string;
   jobTitle: string;
@@ -19,6 +20,7 @@ const Info = ({
   email: string;
   links: SocialLink[];
   skills: Skill[];
+  visibility: Visibility;
 }) => {
   return (
     <View
@@ -63,25 +65,29 @@ const Info = ({
           </View>
         </View>
 
-        <View style={{ ...styles.flexCol }}>
-          <SubTitle>Links</SubTitle>
-          <View style={{ ...styles.flexCol, gap: "8pt" }}>
-            {links.map((link, index) => (
-              <SmallText as="link" href={link.url} key={index}>
-                {link.name}
-              </SmallText>
-            ))}
+        {visibility.socialLinks && (
+          <View style={{ ...styles.flexCol }}>
+            <SubTitle>Links</SubTitle>
+            <View style={{ ...styles.flexCol, gap: "8pt" }}>
+              {links.map((link, index) => (
+                <SmallText as="link" href={link.url} key={index}>
+                  {link.name}
+                </SmallText>
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
-        <View style={{ ...styles.flexCol }}>
-          <SubTitle>Skills</SubTitle>
-          <View style={{ ...styles.flexCol, gap: "6pt" }}>
-            {skills.map((skill, index) => (
-              <SmallText key={index}>{skill.name}</SmallText>
-            ))}
+        {visibility.skills && (
+          <View style={{ ...styles.flexCol }}>
+            <SubTitle>Skills</SubTitle>
+            <View style={{ ...styles.flexCol, gap: "6pt" }}>
+              {skills.map((skill, index) => (
+                <SmallText key={index}>{skill.name}</SmallText>
+              ))}
+            </View>
           </View>
-        </View>
+        )}
       </View>
     </View>
   );

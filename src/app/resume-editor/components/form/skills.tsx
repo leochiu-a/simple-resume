@@ -8,6 +8,7 @@ import { Typography } from "@/components/ui/typography";
 
 import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
+import VisibleSwitch from "./visible-switch";
 
 const Skills: FC = () => {
   const { control } = useFormContext<Resume>();
@@ -22,7 +23,14 @@ const Skills: FC = () => {
 
   return (
     <>
-      <Typography variant="h4">Skills</Typography>
+      <Typography variant="h4" className="flex items-center gap-2">
+        <span>Skills</span>
+        <Controller
+          control={control}
+          name="visibility.skills"
+          render={({ field }) => <VisibleSwitch {...field} />}
+        />
+      </Typography>
       <div className="mb-8 mt-4 space-y-4">
         {fields.map((field, index) => (
           <Fragment key={field.id}>

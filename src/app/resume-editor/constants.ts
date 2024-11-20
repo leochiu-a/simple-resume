@@ -58,4 +58,11 @@ export const DEFAULT_RESUME = {
       description: "A,B,C,D",
     },
   ],
+  visibility: {
+    profile: true,
+    socialLinks: true,
+    skills: true,
+    educations: true,
+    employmentHistory: true,
+  },
 };
