@@ -27,7 +27,7 @@ const DownloadPDFButton = ({ resume }: { resume: Resume }) => {
   }, [instance.loading, instance.url, startDownload]);
 
   return (
-    <Button variant="outline" onClick={downloadResume}>
+    <Button variant="outline" type="button" onClick={downloadResume}>
       {instance.loading ? <LoadingSpinner /> : "Download"}
     </Button>
   );

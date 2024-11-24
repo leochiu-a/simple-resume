@@ -51,13 +51,12 @@ const ResumeEditorPage = () => {
 
   return (
     <>
-      <div className="border-b">
-        <div className="flex h-16 items-center px-12">
+      <nav className="border-b sticky top-0 bg-white">
+        <div className="flex h-12 items-center px-12">
           <Link href="/">
             <h1 className="text-xl font-bold">Simple Resume</h1>
           </Link>
           <div className="ml-auto flex gap-4 items-center">
-            <DownloadPDFButton resume={resume} />
             <Link
               href="https://github.com/leochiu-a/simple-resume"
               target="_blank"
@@ -71,21 +70,23 @@ const ResumeEditorPage = () => {
             </Link>
           </div>
         </div>
-      </div>
+      </nav>
       <main>
         <FormProvider {...formMethods}>
           {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
           <form id="resume-form">
             <div className="flex">
-              <div className="w-1/2 p-12">
+              <div className="w-1/2 mx-12 my-8">
                 <ResumeForm />
               </div>
-              <div className="sticky top-0 mb-[-220px] h-screen w-1/2">
-                <div className="m-8">
-                  <div className="flex origin-top justify-center">
+              <div className="sticky top-[calc(48px+32px)] h-[calc(100vh-48px-32px)] w-1/2">
+                <div className="m-8 mt-0">
+                  <div className="flex origin-top justify-center flex-col	items-center gap-4">
                     <ResumeIframeCSR>
                       <ResumeTemplate resume={resume} />
                     </ResumeIframeCSR>
+
+                    <DownloadPDFButton resume={resume} />
                   </div>
                 </div>
               </div>
