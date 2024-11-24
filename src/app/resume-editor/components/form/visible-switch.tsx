@@ -1,5 +1,6 @@
 import React from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
+import { Tooltip } from "@/components/ui/tooltip";
 
 const VisibleSwitch = ({
   value: visible,
@@ -13,9 +14,11 @@ const VisibleSwitch = ({
   };
 
   return (
-    <button onClick={handleChange} type="button">
-      {visible ? <FaEye /> : <FaEyeSlash />}
-    </button>
+    <Tooltip title={visible ? "Hide section" : "Show Section"}>
+      <button onClick={handleChange} type="button">
+        {visible ? <FaEye /> : <FaEyeSlash />}
+      </button>
+    </Tooltip>
   );
 };
 
