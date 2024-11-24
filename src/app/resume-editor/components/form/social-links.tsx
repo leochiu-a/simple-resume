@@ -5,24 +5,26 @@ import { FaPlus, FaTrash } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Typography } from "@/components/ui/typography";
-
 import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+
 import VisibleSwitch from "./visible-switch";
 
 const SocialLinksSection: FC = () => {
-  const { control } = useFormContext<Resume>();
+  const { control, watch } = useFormContext<Resume>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "socialLinks",
   });
+  const visible = watch("visibility.socialLinks");
 
   const handleAdd = () => {
     append({ name: "", url: "" });
   };
 
   return (
-    <>
+    <div className={cn(!visible && "opacity-50")}>
       <Typography variant="h4" className="flex items-center gap-2">
         <span>Website & Social links</span>
         <Controller
@@ -61,7 +63,7 @@ const SocialLinksSection: FC = () => {
           Add
         </Button>
       </div>
-    </>
+    </div>
   );
 };
 

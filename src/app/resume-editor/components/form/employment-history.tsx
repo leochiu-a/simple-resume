@@ -1,23 +1,25 @@
-import { FC, Fragment } from "react";
+import { FC } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { FaPlus, FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
-
 import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+
 import { LabeledDatePickerField } from "./labeled-date-picker-field";
 import { LabeledInputField } from "./labeled-input-field";
 import { LabeledBulletTextAreaField } from "./labeled-bullet-textarea-field";
 import VisibleSwitch from "./visible-switch";
 
 const EmploymentHistory: FC = () => {
-  const { control } = useFormContext<Resume>();
+  const { control, watch } = useFormContext<Resume>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "employmentHistory",
   });
+  const visible = watch("visibility.employmentHistory");
 
   const handleAdd = () => {
     append({
@@ -32,7 +34,7 @@ const EmploymentHistory: FC = () => {
   };
 
   return (
-    <>
+    <div className={cn(!visible && "opacity-50")}>
       <Typography variant="h4" className="flex items-center gap-2">
         <span>Employment History</span>
         <Controller
@@ -109,7 +111,7 @@ const EmploymentHistory: FC = () => {
           Add
         </Button>
       </div>
-    </>
+    </div>
   );
 };
 
