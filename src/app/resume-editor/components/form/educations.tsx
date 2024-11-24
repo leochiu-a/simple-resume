@@ -1,22 +1,24 @@
-import { FC, Fragment } from "react";
+import { FC } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { FaPlus, FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
-
 import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+
 import { LabeledDatePickerField } from "./labeled-date-picker-field";
 import { LabeledInputField } from "./labeled-input-field";
 import VisibleSwitch from "./visible-switch";
 
 const Educations: FC = () => {
-  const { control } = useFormContext<Resume>();
+  const { control, watch } = useFormContext<Resume>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "educations",
   });
+  const visible = watch("visibility.educations");
 
   const handleAdd = () => {
     append({
@@ -31,7 +33,7 @@ const Educations: FC = () => {
   };
 
   return (
-    <>
+    <div className={cn(!visible && "opacity-50")}>
       <Typography variant="h4" className="flex items-center gap-2">
         <span>Educations</span>
         <Controller
@@ -108,7 +110,7 @@ const Educations: FC = () => {
           Add
         </Button>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -4,12 +4,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Typography } from "@/components/ui/typography";
 import { Resume } from "@/types/resume";
 import VisibleSwitch from "./visible-switch";
+import { cn } from "@/lib/utils";
 
 const Profile = () => {
-  const { register, control } = useFormContext<Resume>();
+  const { register, control, watch } = useFormContext<Resume>();
+  const visible = watch("visibility.profile");
 
   return (
-    <>
+    <div className={cn(!visible && "opacity-50")}>
       <Typography variant="h4" className="flex items-center gap-2">
         <span>Profile</span>
         <Controller
@@ -25,7 +27,7 @@ const Profile = () => {
           className="field-sizing-content"
         />
       </div>
-    </>
+    </div>
   );
 };
 
