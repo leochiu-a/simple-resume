@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Resume } from "@/types/resume";
 import { useEffect, useState } from "react";
 import { LoadingSpinner } from "@/components/ui/spinner";
+import dynamic from "next/dynamic";
 
 const DownloadPDFButton = ({ resume }: { resume: Resume }) => {
   const [instance, update] = usePDF({
@@ -33,4 +34,8 @@ const DownloadPDFButton = ({ resume }: { resume: Resume }) => {
   );
 };
 
-export default DownloadPDFButton;
+const DownloadPDFButtonCSR = dynamic(() => Promise.resolve(DownloadPDFButton), {
+  ssr: false,
+});
+
+export default DownloadPDFButtonCSR;
