@@ -1,25 +1,17 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import debounce from "lodash/debounce";
 
 import { Resume } from "@/types/resume";
 import ResumeForm from "./components/form/resume-form";
-import ResumeIframeCSR from "./components/template/resume-iframe";
-import ResumeTemplate from "./components/template/resume-template";
+import ResumePreviewDialog from "./components/resume-preview-dialog";
+import ResumePreview from "./components/resume-preview";
 import { DEFAULT_RESUME } from "./constants";
-
-const DownloadPDFButton = dynamic(
-  () => import("./components/template/download-pdf-button"),
-  {
-    ssr: false,
-  }
-);
 
 const ResumeEditorPage = () => {
   const [mounted, setMounted] = useState(false);
@@ -29,6 +21,8 @@ const ResumeEditorPage = () => {
   });
   const { control } = formMethods;
   const resume = useWatch({ control }) as Resume;
+
+  const matches = useMediaQuery("(min-width: 768px)");
 
   const saveResume = useMemo(
     () =>
@@ -52,7 +46,7 @@ const ResumeEditorPage = () => {
   return (
     <>
       <nav className="border-b sticky top-0 bg-white">
-        <div className="flex h-12 items-center px-12">
+        <div className="flex h-12 items-center md:px-12 px-4">
           <Link href="/">
             <h1 className="text-xl font-bold">Simple Resume</h1>
           </Link>
@@ -75,21 +69,16 @@ const ResumeEditorPage = () => {
         <FormProvider {...formMethods}>
           {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
           <form id="resume-form">
-            <div className="flex">
-              <div className="w-1/2 mx-12 my-8">
+            <div className="md:flex">
+              <div className="md:w-1/2 md:mx-12 mx-4 my-8">
                 <ResumeForm />
               </div>
-              <div className="sticky top-[calc(48px+32px)] h-[calc(100vh-48px-32px)] w-1/2">
-                <div className="m-8 mt-0">
-                  <div className="flex origin-top justify-center flex-col	items-center gap-4">
-                    <ResumeIframeCSR>
-                      <ResumeTemplate resume={resume} />
-                    </ResumeIframeCSR>
 
-                    <DownloadPDFButton resume={resume} />
-                  </div>
-                </div>
-              </div>
+              {matches ? (
+                <ResumePreview resume={resume} />
+              ) : ( 
+                <ResumePreviewDialog resume={resume} />
+              )}
             </div>
           </form>
         </FormProvider>

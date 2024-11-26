@@ -46,7 +46,7 @@ const EmploymentHistory: FC = () => {
       <div className="mb-8 mt-4 space-y-4">
         {fields.map((field, index) => (
           <div key={field.id} className="border-dotted border-b-2 pb-4">
-            <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="mt-4 grid md:grid-cols-2 grid-cols-1 gap-4">
               <Controller
                 control={control}
                 name={`employmentHistory.${index}.company`}
@@ -89,7 +89,7 @@ const EmploymentHistory: FC = () => {
                     label="Description"
                     onChange={field.onChange}
                     value={field.value}
-                    className="col-span-2"
+                    className="md:col-span-2"
                   />
                 )}
               />
