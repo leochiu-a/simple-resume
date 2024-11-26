@@ -46,7 +46,7 @@ const ResumeEditorPage = () => {
   return (
     <>
       <nav className="border-b sticky top-0 bg-white">
-        <div className="flex h-12 items-center px-12">
+        <div className="flex h-12 items-center md:px-12 px-4">
           <Link href="/">
             <h1 className="text-xl font-bold">Simple Resume</h1>
           </Link>
@@ -70,7 +70,7 @@ const ResumeEditorPage = () => {
           {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
           <form id="resume-form">
             <div className="md:flex">
-              <div className="md:w-1/2 mx-12 my-8">
+              <div className="md:w-1/2 md:mx-12 mx-4 my-8">
                 <ResumeForm />
               </div>
 

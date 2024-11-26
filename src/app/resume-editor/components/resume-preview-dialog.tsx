@@ -23,13 +23,13 @@ const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
   return (
     <>
       <Dialog open={open} onOpenChange={handleChangeOpen}>
-        <DialogContent className="max-h-[calc(100dvh)] max-w-screen h-screen p-0">
+        <DialogContent className="max-h-[calc(100dvh)] max-w-screen h-screen p-0 border-0">
           <DialogHeader>
             <DialogTitle className="grid place-items-center sticky top-0 h-16">
               <DownloadPDFButton resume={resume} />
             </DialogTitle>
             <DialogDescription className="overflow-auto h-[calc(100dvh-64px)]">
-              <div className="m-8 flex justify-center">
+              <div className="m-4 flex justify-center">
                 <ResumeIframeCSR>
                   <ResumeTemplate resume={resume} />
                 </ResumeIframeCSR>

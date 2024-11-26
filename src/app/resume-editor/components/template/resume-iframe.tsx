@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { PropsWithChildren, useEffect, useState } from "react";
 import Frame from "react-frame-component";
+import { useMediaQuery } from "usehooks-ts";
+
 import { A4_HEIGHT_PX, A4_WIDTH_PX } from "./constants";
 
 const INITIAL_CONTENT = `
@@ -21,17 +23,28 @@ const INITIAL_CONTENT = `
 
 const useResumeScale = () => {
   const [scale, setScale] = useState(0.5);
+  const matches = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
     const getDefaultScale = () => {
-      const screenHeightPx = window.innerHeight;
-      const navHeight = 48;
-      const dockHeight = 48;
-      const resumePadding = 32 * 2;
-      const resumeHeight =
-        screenHeightPx - navHeight - dockHeight - resumePadding;
+      let scale: number;
 
-      const scale = resumeHeight / A4_HEIGHT_PX;
+      if (matches) {
+        const screenHeightPx = window.innerHeight;
+        const navHeight = 48;
+        const dockHeight = 48;
+        const resumePaddingY = 32 * 2;
+        const resumeHeight =
+          screenHeightPx - navHeight - dockHeight - resumePaddingY;
+
+        scale = resumeHeight / A4_HEIGHT_PX;
+      } else {
+        const screenWidthPx = window.innerWidth;
+        const resumePaddingX = 16 * 2;
+        const resumeWidth = screenWidthPx - resumePaddingX;
+
+        scale = resumeWidth / A4_WIDTH_PX;
+      }
 
       return scale;
     };
@@ -47,7 +60,7 @@ const useResumeScale = () => {
     return () => {
       window.removeEventListener("resize", setDefaultScale);
     };
-  }, []);
+  }, [matches]);
 
   return scale;
 };
