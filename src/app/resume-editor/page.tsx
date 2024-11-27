@@ -11,7 +11,9 @@ import { Resume } from "@/types/resume";
 import ResumeForm from "./components/form/resume-form";
 import ResumePreviewDialog from "./components/resume-preview-dialog";
 import ResumePreview from "./components/resume-preview";
+import { ModeToggle } from "./components/mode-toggle";
 import { DEFAULT_RESUME } from "./constants";
+import { useTheme } from "next-themes";
 
 const ResumeEditorPage = () => {
   const [mounted, setMounted] = useState(false);
@@ -23,6 +25,8 @@ const ResumeEditorPage = () => {
   const resume = useWatch({ control }) as Resume;
 
   const matches = useMediaQuery("(min-width: 768px)");
+  const { resolvedTheme } = useTheme();
+  console.log(resolvedTheme);
 
   const saveResume = useMemo(
     () =>
@@ -45,18 +49,21 @@ const ResumeEditorPage = () => {
 
   return (
     <>
-      <nav className="border-b sticky top-0 bg-white">
+      <nav className="border-b sticky top-0 bg-white dark:bg-inherit z-10">
         <div className="flex h-12 items-center md:px-12 px-4">
           <Link href="/">
             <h1 className="text-xl font-bold">Simple Resume</h1>
           </Link>
           <div className="ml-auto flex gap-4 items-center">
+            <ModeToggle />
             <Link
               href="https://github.com/leochiu-a/simple-resume"
               target="_blank"
             >
               <Image
-                src="/github-mark.png"
+                src={
+                  resolvedTheme === 'dark' ? "/github-mark-white.png" : "/github-mark.png"
+                }
                 alt="github-mark"
                 width={36}
                 height={36}
@@ -76,7 +83,7 @@ const ResumeEditorPage = () => {
 
               {matches ? (
                 <ResumePreview resume={resume} />
-              ) : ( 
+              ) : (
                 <ResumePreviewDialog resume={resume} />
               )}
             </div>

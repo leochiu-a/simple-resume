@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/react";
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +24,14 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <NextTopLoader showSpinner={false} />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

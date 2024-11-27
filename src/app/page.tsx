@@ -16,7 +16,7 @@ export default function Home() {
 
         <Link href="/resume-editor">
           <ShimmerButton>
-            <div className="flex gap-2 items-center flex-col sm:flex-row">
+            <div className="text-white">
               Create Resume
             </div>
           </ShimmerButton>
