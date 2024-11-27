@@ -25,7 +25,7 @@ const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
       <Dialog open={open} onOpenChange={handleChangeOpen}>
         <DialogContent className="max-h-[calc(100dvh)] max-w-screen h-screen p-0 border-0">
           <DialogHeader>
-            <DialogTitle className="grid place-items-center sticky top-0 h-16">
+            <DialogTitle className="grid place-items-center sticky top-0 h-16 border-b">
               <DownloadPDFButton resume={resume} />
             </DialogTitle>
             <DialogDescription className="overflow-auto h-[calc(100dvh-64px)]">
