@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { MouseEvent } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -15,10 +15,33 @@ import {
 export function ModeToggle() {
   const { setTheme } = useTheme();
 
-  const handleSetTheme = (theme: string) => {
+  const handleSetTheme = (event: MouseEvent<HTMLDivElement>, theme: string) => {
     if ("startViewTransition" in document) {
-      document.startViewTransition(() => {
+      const x = event.clientX;
+      const y = event.clientY;
+      const endRadius = Math.hypot(
+        Math.max(x, innerWidth - x),
+        Math.max(y, innerHeight - y)
+      );
+
+      const transition = document.startViewTransition(() => {
         setTheme(theme);
+      });
+
+      transition.ready.then(() => {
+        document.documentElement.animate(
+          {
+            clipPath: [
+              `circle(0px at ${x}px ${y}px)`,
+              `circle(${endRadius}px at ${x}px ${y}px)`,
+            ],
+          },
+          {
+            duration: 500,
+            easing: "ease-in-out",
+            pseudoElement: "::view-transition-new(root)",
+          }
+        );
       });
     } else {
       setTheme(theme);
@@ -35,13 +58,13 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleSetTheme("light")}>
+        <DropdownMenuItem onClick={(e) => handleSetTheme(e, "light")}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetTheme("dark")}>
+        <DropdownMenuItem onClick={(e) => handleSetTheme(e, "dark")}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetTheme("system")}>
+        <DropdownMenuItem onClick={(e) => handleSetTheme(e, "system")}>
           System
         </DropdownMenuItem>
       </DropdownMenuContent>
