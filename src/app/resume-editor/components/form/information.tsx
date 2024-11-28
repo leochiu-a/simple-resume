@@ -3,17 +3,16 @@
 import { FC } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
-import { Typography } from "@/components/ui/typography";
-
 import { LabeledInputField } from "./labeled-input-field";
+import { SectionCard, SectionTitle, SectionBody } from "./section-card";
 
 const Information: FC = () => {
   const { control } = useFormContext();
 
   return (
-    <>
-      <Typography variant="h4">Information</Typography>
-      <div className="mb-8 mt-4 grid grid-cols-2 gap-4">
+    <SectionCard>
+      <SectionTitle>Information</SectionTitle>
+      <SectionBody className="grid grid-cols-2 gap-4 space-y-0">
         <Controller
           name="wantedJob"
           control={control}
@@ -45,8 +44,8 @@ const Information: FC = () => {
           control={control}
           render={({ field }) => <LabeledInputField label="City" {...field} />}
         />
-      </div>
-    </>
+      </SectionBody>
+    </SectionCard>
   );
 };
 
