@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
@@ -13,7 +14,6 @@ import ResumePreviewDialog from "./components/resume-preview-dialog";
 import ResumePreview from "./components/resume-preview";
 import { ModeToggle } from "./components/mode-toggle";
 import { DEFAULT_RESUME } from "./constants";
-import { useTheme } from "next-themes";
 
 const ResumeEditorPage = () => {
   const [mounted, setMounted] = useState(false);
@@ -26,7 +26,6 @@ const ResumeEditorPage = () => {
 
   const matches = useMediaQuery("(min-width: 768px)");
   const { resolvedTheme } = useTheme();
-  console.log(resolvedTheme);
 
   const saveResume = useMemo(
     () =>
