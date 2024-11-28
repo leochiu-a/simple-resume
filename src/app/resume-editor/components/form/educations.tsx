@@ -45,7 +45,7 @@ const Educations: FC = () => {
       <SectionBody>
         {fields.map((field, index) => (
           <div key={field.id} className="border-dotted border-b-2 pb-4">
-            <div className="mt-4 grid md:grid-cols-2 gap-4">
+            <div className="mt-4 grid xl:grid-cols-2 grid-cols-1 gap-4">
               <Controller
                 control={control}
                 name={`educations.${index}.degree`}

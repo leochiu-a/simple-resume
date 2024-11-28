@@ -24,7 +24,7 @@ const ResumeEditorPage = () => {
   const { control } = formMethods;
   const resume = useWatch({ control }) as Resume;
 
-  const matches = useMediaQuery("(min-width: 768px)");
+  const matches = useMediaQuery("(min-width: 1024px)");
   const { resolvedTheme } = useTheme();
 
   const saveResume = useMemo(
@@ -75,8 +75,8 @@ const ResumeEditorPage = () => {
         <FormProvider {...formMethods}>
           {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
           <form id="resume-form">
-            <div className="md:flex">
-              <div className="md:w-1/2 md:mx-12 mx-4 my-8">
+            <div className="lg:flex">
+              <div className="lg:w-1/2 lg:mx-12 mx-4 my-8">
                 <ResumeForm />
               </div>
 
