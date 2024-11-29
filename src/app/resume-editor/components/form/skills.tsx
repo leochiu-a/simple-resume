@@ -4,11 +4,11 @@ import { FaPlus, FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Typography } from "@/components/ui/typography";
 import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import VisibleSwitch from "./visible-switch";
+import { SectionBody, SectionCard, SectionTitle } from "./section-card";
 
 const Skills: FC = () => {
   const { control, watch } = useFormContext<Resume>();
@@ -23,16 +23,16 @@ const Skills: FC = () => {
   };
 
   return (
-    <div className={cn(!visible && "opacity-50")}>
-      <Typography variant="h4" className="flex items-center gap-2">
+    <SectionCard className={cn(!visible && "opacity-50")}>
+      <SectionTitle>
         <span>Skills</span>
         <Controller
           control={control}
           name="visibility.skills"
           render={({ field }) => <VisibleSwitch {...field} />}
         />
-      </Typography>
-      <div className="mb-8 mt-4 space-y-4">
+      </SectionTitle>
+      <SectionBody>
         {fields.map((field, index) => (
           <Fragment key={field.id}>
             <div className="mt-4 flex gap-4">
@@ -54,8 +54,8 @@ const Skills: FC = () => {
           <FaPlus className="mr-2 size-4" />
           Add
         </Button>
-      </div>
-    </div>
+      </SectionBody>
+    </SectionCard>
   );
 };
 

@@ -3,7 +3,6 @@ import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { FaPlus, FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
-import { Typography } from "@/components/ui/typography";
 import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -12,6 +11,7 @@ import { LabeledDatePickerField } from "./labeled-date-picker-field";
 import { LabeledInputField } from "./labeled-input-field";
 import { LabeledBulletTextAreaField } from "./labeled-bullet-textarea-field";
 import VisibleSwitch from "./visible-switch";
+import { SectionBody, SectionCard, SectionTitle } from "./section-card";
 
 const EmploymentHistory: FC = () => {
   const { control, watch } = useFormContext<Resume>();
@@ -34,19 +34,19 @@ const EmploymentHistory: FC = () => {
   };
 
   return (
-    <div className={cn(!visible && "opacity-50")}>
-      <Typography variant="h4" className="flex items-center gap-2">
+    <SectionCard className={cn(!visible && "opacity-50")}>
+      <SectionTitle>
         <span>Employment History</span>
         <Controller
           control={control}
           name="visibility.employmentHistory"
           render={({ field }) => <VisibleSwitch {...field} />}
         />
-      </Typography>
-      <div className="mb-8 mt-4 space-y-4">
+      </SectionTitle>
+      <SectionBody>
         {fields.map((field, index) => (
           <div key={field.id} className="border-dotted border-b-2 pb-4">
-            <div className="mt-4 grid md:grid-cols-2 grid-cols-1 gap-4">
+            <div className="mt-4 grid xl:grid-cols-2 grid-cols-1 gap-4">
               <Controller
                 control={control}
                 name={`employmentHistory.${index}.company`}
@@ -89,7 +89,7 @@ const EmploymentHistory: FC = () => {
                     label="Description"
                     onChange={field.onChange}
                     value={field.value}
-                    className="md:col-span-2"
+                    className="xl:col-span-2"
                   />
                 )}
               />
@@ -110,8 +110,8 @@ const EmploymentHistory: FC = () => {
           <FaPlus className="mr-2 size-4" />
           Add
         </Button>
-      </div>
-    </div>
+      </SectionBody>
+    </SectionCard>
   );
 };
 
