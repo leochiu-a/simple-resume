@@ -1,5 +1,5 @@
 import { FaPalette } from "react-icons/fa6";
-import { ChromePicker } from "react-color";
+import { Sketch as SketchPicker } from "@uiw/react-color";
 
 import { Resume } from "@/types/resume";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ const ResumePreview = ({ resume }: { resume: Resume }) => {
               {displayColorPicker && (
                 <div className="absolute bottom-12">
                   <div className="fixed inset-0" onClick={toggleColorPicker} />
-                  <ChromePicker
+                  <SketchPicker
                     color={backgroundColor}
                     onChange={changeBackgroundColor}
                   />
