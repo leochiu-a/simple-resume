@@ -10,7 +10,13 @@ import Info from "./info";
 import { A4_HEIGHT_PT } from "./constants";
 import { Resume } from "@/types/resume";
 
-const ResumeTemplate = ({ resume }: { resume: Resume }) => {
+const ResumeTemplate = ({
+  resume,
+  backgroundColor,
+}: {
+  resume: Resume;
+  backgroundColor: string;
+}) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -18,6 +24,7 @@ const ResumeTemplate = ({ resume }: { resume: Resume }) => {
           <View
             style={{
               ...styles.info,
+              backgroundColor,
               position: "absolute",
               minHeight: `${A4_HEIGHT_PT}pt`,
             }}
