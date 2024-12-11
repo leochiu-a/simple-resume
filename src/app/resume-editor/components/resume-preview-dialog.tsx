@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Sketch as SketchPicker } from "@uiw/react-color";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,6 @@ import ResumeIframeCSR from "./template/resume-iframe";
 import ResumeTemplate from "./template/resume-template";
 import DownloadPDFButton from "./template/download-pdf-button";
 import { FaPalette } from "react-icons/fa6";
-import { ChromePicker } from "react-color";
 
 const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
   const [open, setOpen] = useState(false);
@@ -50,7 +50,7 @@ const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
                       className="fixed inset-0"
                       onClick={toggleColorPicker}
                     />
-                    <ChromePicker
+                    <SketchPicker
                       color={backgroundColor}
                       onChange={changeBackgroundColor}
                     />
