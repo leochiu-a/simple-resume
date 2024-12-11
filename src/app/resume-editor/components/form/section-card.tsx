@@ -23,5 +23,5 @@ export const SectionCard = ({
   children,
   className,
 }: PropsWithChildren<{ className?: string }>) => {
-  return <Card className={cn("p-6 mb-8", className)}>{children}</Card>;
+  return <Card className={cn("p-6 mb-8 rounded-lg", className)}>{children}</Card>;
 };
