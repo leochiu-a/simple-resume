@@ -9,12 +9,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Resume } from "@/types/resume";
+
+import useColorPicker from "../hooks/useColorPicker";
 import ResumeIframeCSR from "./template/resume-iframe";
 import ResumeTemplate from "./template/resume-template";
 import DownloadPDFButton from "./template/download-pdf-button";
+import { FaPalette } from "react-icons/fa6";
+import { ChromePicker } from "react-color";
 
 const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
   const [open, setOpen] = useState(false);
+  const {
+    displayColorPicker,
+    backgroundColor,
+    toggleColorPicker,
+    changeBackgroundColor,
+  } = useColorPicker();
 
   const handleChangeOpen = (open: boolean) => {
     setOpen(open);
@@ -25,13 +35,41 @@ const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
       <Dialog open={open} onOpenChange={handleChangeOpen}>
         <DialogContent className="max-h-[calc(100dvh)] max-w-screen h-screen p-0 border-0">
           <DialogHeader>
-            <DialogTitle className="grid place-items-center sticky top-0 h-16 border-b">
-              <DownloadPDFButton resume={resume} />
+            <DialogTitle className="flex justify-center items-center gap-3 sticky top-0 h-16 border-b z-10">
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={toggleColorPicker}
+                >
+                  <FaPalette />
+                </Button>
+                {displayColorPicker && (
+                  <div className="absolute top-12">
+                    <div
+                      className="fixed inset-0"
+                      onClick={toggleColorPicker}
+                    />
+                    <ChromePicker
+                      color={backgroundColor}
+                      onChange={changeBackgroundColor}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <DownloadPDFButton
+                resume={resume}
+                backgroundColor={backgroundColor}
+              />
             </DialogTitle>
             <DialogDescription className="overflow-auto h-[calc(100dvh-64px)]">
               <div className="m-4 flex justify-center">
                 <ResumeIframeCSR>
-                  <ResumeTemplate resume={resume} />
+                  <ResumeTemplate
+                    resume={resume}
+                    backgroundColor={backgroundColor}
+                  />
                 </ResumeIframeCSR>
               </div>
             </DialogDescription>

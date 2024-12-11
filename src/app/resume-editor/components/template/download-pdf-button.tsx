@@ -6,15 +6,25 @@ import { useEffect, useState } from "react";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import dynamic from "next/dynamic";
 
-const DownloadPDFButton = ({ resume }: { resume: Resume }) => {
+const DownloadPDFButton = ({
+  resume,
+  backgroundColor,
+}: {
+  resume: Resume;
+  backgroundColor: string;
+}) => {
   const [instance, update] = usePDF({
-    document: <ResumeTemplate resume={resume} />,
+    document: (
+      <ResumeTemplate resume={resume} backgroundColor={backgroundColor} />
+    ),
   });
   const [startDownload, setStartDownload] = useState(false);
 
   const downloadResume = () => {
     setStartDownload(true);
-    update(<ResumeTemplate resume={resume} />);
+    update(
+      <ResumeTemplate resume={resume} backgroundColor={backgroundColor} />
+    );
   };
 
   useEffect(() => {

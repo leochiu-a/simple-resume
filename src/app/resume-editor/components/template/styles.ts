@@ -15,7 +15,6 @@ export const styles = StyleSheet.create({
     flexDirection: "column",
   },
   info: {
-    backgroundColor: "#094C42",
     width: "190pt",
     height: "100%",
     flexShrink: 0,
