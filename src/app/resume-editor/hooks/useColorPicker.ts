@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ColorResult } from "react-color";
+import { ColorResult } from "@uiw/react-color";
 
 const useColorPicker = () => {
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
