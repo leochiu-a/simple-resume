@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -17,7 +17,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.4",
-    "@react-pdf/renderer": "^4.0.1",
+    "@react-pdf/renderer": "^4.3.0",
     "@uiw/react-color": "^2.3.3",
     "@vercel/analytics": "^1.4.1",
     "class-variance-authority": "^0.7.0",
@@ -26,11 +26,11 @@
     "framer-motion": "^11.11.17",
     "lodash": "^4.17.21",
     "lucide-react": "^0.456.0",
-    "next": "^14.2.17",
+    "next": "15.5.3",
     "next-themes": "^0.4.3",
     "nextjs-toploader": "^3.7.15",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
     "react-frame-component": "^5.2.7",
     "react-hook-form": "^7.53.2",
     "react-icons": "^5.3.0",
@@ -44,15 +44,21 @@
     "@react-pdf/types": "^2.7.0",
     "@types/lodash": "^4.17.13",
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "19.1.13",
+    "@types/react-dom": "19.1.9",
     "eslint": "^8",
-    "eslint-config-next": "^14.2.17",
+    "eslint-config-next": "15.5.3",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },
-  "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
+  "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b",
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.1.13",
+      "@types/react-dom": "19.1.9"
+    }
+  }
 }
