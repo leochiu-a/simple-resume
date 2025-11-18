@@ -1,5 +1,7 @@
 # Simple RESUME
 
+![](public/image.png)
+
 A online tool to create a resume.
 
 Online site: https://simple-resume-nu.vercel.app/resume-editor
