@@ -92,7 +92,7 @@ const ResumeIframe = ({ children }: PropsWithChildren) => {
           style={{ width: "100%", height: "100%" }}
           initialContent={INITIAL_CONTENT}
         >
-          <div>{children}</div>
+          <div style={{ position: "relative" }}>{children}</div>
         </Frame>
       </div>
     </div>
