@@ -6,8 +6,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
  * accessible name (it renders only an icon), so it is located structurally: it
  * is the only `div.relative > button` on the page, sitting next to Download.
  */
-export const paletteButton = (page: Page): Locator =>
-  page.locator("div.relative > button");
+export const paletteButton = (page: Page): Locator => page.locator("div.relative > button");
 
 export const downloadButton = (page: Page): Locator =>
   page.getByRole("button", { name: "Download", exact: true });
@@ -41,9 +40,7 @@ export function readPdfFacts(path: string): PdfFacts {
   const raw = buf.toString("latin1");
 
   const fonts = [
-    ...new Set(
-      [...raw.matchAll(/\/BaseFont\s*\/([A-Za-z0-9+\-,]+)/g)].map((m) => m[1])
-    ),
+    ...new Set([...raw.matchAll(/\/BaseFont\s*\/([A-Za-z0-9+\-,]+)/g)].map((m) => m[1])),
   ];
 
   return {

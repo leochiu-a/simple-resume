@@ -45,9 +45,7 @@ const SocialLinksSection: FC = () => {
               <Controller
                 control={control}
                 name={`socialLinks.${index}.url`}
-                render={({ field }) => (
-                  <Input placeholder="https://medium.com" {...field} />
-                )}
+                render={({ field }) => <Input placeholder="https://medium.com" {...field} />}
               />
               <Tooltip title="Delete">
                 <button onClick={() => remove(index)}>

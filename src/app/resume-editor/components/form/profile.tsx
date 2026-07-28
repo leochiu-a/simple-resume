@@ -21,11 +21,7 @@ const Profile = () => {
         />
       </SectionTitle>
       <SectionBody>
-        <Textarea
-          {...register("profile")}
-          rows={5}
-          className="field-sizing-content"
-        />
+        <Textarea {...register("profile")} rows={5} className="field-sizing-content" />
       </SectionBody>
     </SectionCard>
   );

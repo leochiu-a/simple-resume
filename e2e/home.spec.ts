@@ -23,9 +23,7 @@ test.describe("home page", () => {
    * This is the invariant that makes the removed `isMounted` gate unnecessary:
    * sparkles are generated in an effect, which never runs during SSR.
    */
-  test("server renders no sparkles, so hydration cannot mismatch", async ({
-    request,
-  }) => {
+  test("server renders no sparkles, so hydration cannot mismatch", async ({ request }) => {
     const html = await (await request.get("/")).text();
 
     expect(html).toContain("Simple Resume");
@@ -42,9 +40,7 @@ test.describe("home page", () => {
 
     // Positions are regenerated on an interval; the rendered set must change.
     const snapshot = () =>
-      sparkles(page).evaluateAll((nodes) =>
-        nodes.map((n) => n.getAttribute("style")).join("|")
-      );
+      sparkles(page).evaluateAll((nodes) => nodes.map((n) => n.getAttribute("style")).join("|"));
 
     const first = await snapshot();
     await expect

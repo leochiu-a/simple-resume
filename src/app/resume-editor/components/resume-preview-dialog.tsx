@@ -19,12 +19,8 @@ import { FaPalette } from "react-icons/fa6";
 
 const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
   const [open, setOpen] = useState(false);
-  const {
-    displayColorPicker,
-    backgroundColor,
-    toggleColorPicker,
-    changeBackgroundColor,
-  } = useColorPicker();
+  const { displayColorPicker, backgroundColor, toggleColorPicker, changeBackgroundColor } =
+    useColorPicker();
 
   const handleChangeOpen = (open: boolean) => {
     setOpen(open);
@@ -37,39 +33,23 @@ const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
           <DialogHeader>
             <DialogTitle className="flex justify-center items-center gap-3 sticky top-0 h-16 border-b z-10">
               <div className="relative">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={toggleColorPicker}
-                >
+                <Button variant="outline" type="button" onClick={toggleColorPicker}>
                   <FaPalette />
                 </Button>
                 {displayColorPicker && (
                   <div className="absolute top-12">
-                    <div
-                      className="fixed inset-0"
-                      onClick={toggleColorPicker}
-                    />
-                    <SketchPicker
-                      color={backgroundColor}
-                      onChange={changeBackgroundColor}
-                    />
+                    <div className="fixed inset-0" onClick={toggleColorPicker} />
+                    <SketchPicker color={backgroundColor} onChange={changeBackgroundColor} />
                   </div>
                 )}
               </div>
 
-              <DownloadPDFButton
-                resume={resume}
-                backgroundColor={backgroundColor}
-              />
+              <DownloadPDFButton resume={resume} backgroundColor={backgroundColor} />
             </DialogTitle>
             <DialogDescription className="overflow-auto h-[calc(100dvh-64px)]">
               <div className="m-4 flex justify-center">
                 <ResumeIframeCSR>
-                  <ResumeTemplate
-                    resume={resume}
-                    backgroundColor={backgroundColor}
-                  />
+                  <ResumeTemplate resume={resume} backgroundColor={backgroundColor} />
                 </ResumeIframeCSR>
               </div>
             </DialogDescription>

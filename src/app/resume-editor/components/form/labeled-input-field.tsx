@@ -14,7 +14,7 @@ const LabeledInputField = forwardRef<HTMLInputElement, LabeledInputFieldProps>(
         <Input {...props} ref={ref} />
       </div>
     );
-  }
+  },
 );
 LabeledInputField.displayName = "LabeledInputField";
 

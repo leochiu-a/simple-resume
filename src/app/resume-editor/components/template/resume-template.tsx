@@ -51,9 +51,7 @@ const ResumeTemplate = ({
             {resume.visibility.employmentHistory && (
               <EmploymentHistory employmentHistory={resume.employmentHistory} />
             )}
-            {resume.visibility.educations && (
-              <Education educations={resume.educations} />
-            )}
+            {resume.visibility.educations && <Education educations={resume.educations} />}
           </View>
         </View>
       </Page>

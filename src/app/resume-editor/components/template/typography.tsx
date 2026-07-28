@@ -1,9 +1,4 @@
-import {
-  Font,
-  Text as PDFText,
-  StyleSheet,
-  Link as PDFLink,
-} from "@react-pdf/renderer";
+import { Font, Text as PDFText, StyleSheet, Link as PDFLink } from "@react-pdf/renderer";
 import type { Style } from "@react-pdf/types";
 import { ComponentProps, PropsWithChildren } from "react";
 

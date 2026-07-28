@@ -15,29 +15,27 @@ const EmploymentHistory = ({
       <Title>Employment History</Title>
 
       <View style={{ ...styles.flexCol, gap: "12pt" }}>
-        {employmentHistory.map(
-          ({ company, timeline, jobTitle, description }, index) => (
-            <View key={index} wrap={false}>
-              <View style={{ ...styles.flexCol, marginBottom: 8 }}>
-                <Text bold>
-                  {jobTitle}, {company}
-                </Text>
-                <SubText>{formatDateRange(timeline, "Present")}</SubText>
-              </View>
-
-              {description.split(SPLIT_TEXT).map((item, index) => (
-                <View
-                  key={item + index}
-                  style={{ ...styles.flexRow, gap: "4pt", paddingLeft: "12px" }}
-                  wrap={false}
-                >
-                  <Text bold>•</Text>
-                  <Text>{item}</Text>
-                </View>
-              ))}
+        {employmentHistory.map(({ company, timeline, jobTitle, description }, index) => (
+          <View key={index} wrap={false}>
+            <View style={{ ...styles.flexCol, marginBottom: 8 }}>
+              <Text bold>
+                {jobTitle}, {company}
+              </Text>
+              <SubText>{formatDateRange(timeline, "Present")}</SubText>
             </View>
-          )
-        )}
+
+            {description.split(SPLIT_TEXT).map((item, index) => (
+              <View
+                key={item + index}
+                style={{ ...styles.flexRow, gap: "4pt", paddingLeft: "12px" }}
+                wrap={false}
+              >
+                <Text bold>•</Text>
+                <Text>{item}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
       </View>
     </View>
   );

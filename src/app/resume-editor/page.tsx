@@ -32,7 +32,7 @@ const ResumeEditorPage = () => {
       debounce((resume: Resume) => {
         setValue(resume);
       }, 300),
-    [setValue]
+    [setValue],
   );
 
   useEffect(() => {
@@ -55,14 +55,9 @@ const ResumeEditorPage = () => {
           </Link>
           <div className="ml-auto flex gap-4 items-center">
             <ModeToggle />
-            <Link
-              href="https://github.com/leochiu-a/simple-resume"
-              target="_blank"
-            >
+            <Link href="https://github.com/leochiu-a/simple-resume" target="_blank">
               <Image
-                src={
-                  resolvedTheme === 'dark' ? "/github-mark-white.png" : "/github-mark.png"
-                }
+                src={resolvedTheme === "dark" ? "/github-mark-white.png" : "/github-mark.png"}
                 alt="github-mark"
                 width={36}
                 height={36}

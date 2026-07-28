@@ -25,10 +25,7 @@ export interface MonthCalendarProps {
   onMonthChange?: (newMonth: Date) => void;
 }
 
-const MonthCalendar: FC<MonthCalendarProps> = ({
-  currentMonth = new Date(),
-  onMonthChange,
-}) => {
+const MonthCalendar: FC<MonthCalendarProps> = ({ currentMonth = new Date(), onMonthChange }) => {
   const [currentYear, setCurrentYear] = useState(format(currentMonth, "yyyy"));
   const firstDayCurrentYear = parse(currentYear, "yyyy", new Date());
 
@@ -67,7 +64,7 @@ const MonthCalendar: FC<MonthCalendarProps> = ({
                 className={cn(
                   buttonVariants({ variant: "outline" }),
                   "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                  "absolute left-1"
+                  "absolute left-1",
                 )}
                 type="button"
                 onClick={previousYear}
@@ -80,7 +77,7 @@ const MonthCalendar: FC<MonthCalendarProps> = ({
                 className={cn(
                   buttonVariants({ variant: "outline" }),
                   "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                  "absolute right-1 disabled:bg-slate-100"
+                  "absolute right-1 disabled:bg-slate-100",
                 )}
                 type="button"
                 disabled={isFuture(add(firstDayCurrentYear, { years: 1 }))}
@@ -90,11 +87,7 @@ const MonthCalendar: FC<MonthCalendarProps> = ({
               </button>
             </div>
           </div>
-          <div
-            className="grid w-full grid-cols-3 gap-2"
-            role="grid"
-            aria-labelledby="month-picker"
-          >
+          <div className="grid w-full grid-cols-3 gap-2" role="grid" aria-labelledby="month-picker">
             {months.map((month) => (
               <div
                 key={month.toString()}
@@ -109,7 +102,7 @@ const MonthCalendar: FC<MonthCalendarProps> = ({
                       "bg-slate-900 text-slate-50 hover:bg-slate-900 hover:text-slate-50 focus:bg-slate-900 focus:text-slate-50 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-50 dark:hover:text-slate-900 dark:focus:bg-slate-50 dark:focus:text-slate-900",
                     !isEqual(month, currentMonth) &&
                       isEqual(month, getStartOfCurrentMonth()) &&
-                      "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
+                      "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50",
                   )}
                   disabled={isFuture(month)}
                   role="gridcell"
@@ -117,9 +110,7 @@ const MonthCalendar: FC<MonthCalendarProps> = ({
                   type="button"
                   onClick={() => onMonthChange?.(month)}
                 >
-                  <time dateTime={format(month, "yyyy-MM-dd")}>
-                    {format(month, "MMM")}
-                  </time>
+                  <time dateTime={format(month, "yyyy-MM-dd")}>{format(month, "MMM")}</time>
                 </button>
               </div>
             ))}
@@ -162,7 +153,7 @@ const MonthPicker: FC<MonthPickerProps> = ({
           className={cn(
             "md:w-[280px] justify-start text-left font-normal",
             !date && "text-muted-foreground",
-            className
+            className,
           )}
         >
           <FaCalendar className="mr-2 size-4" />
@@ -170,10 +161,7 @@ const MonthPicker: FC<MonthPickerProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <MonthCalendar
-          currentMonth={date ?? new Date()}
-          onMonthChange={handleMonthChange}
-        />
+        <MonthCalendar currentMonth={date ?? new Date()} onMonthChange={handleMonthChange} />
       </PopoverContent>
     </Popover>
   );

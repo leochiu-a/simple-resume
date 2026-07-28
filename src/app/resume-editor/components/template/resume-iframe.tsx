@@ -34,8 +34,7 @@ const useResumeScale = () => {
         const navHeight = 48;
         const dockHeight = 48;
         const resumePaddingY = 32 * 2;
-        const resumeHeight =
-          screenHeightPx - navHeight - dockHeight - resumePaddingY;
+        const resumeHeight = screenHeightPx - navHeight - dockHeight - resumePaddingY;
 
         scale = resumeHeight / A4_HEIGHT_PX;
       } else {
@@ -88,10 +87,7 @@ const ResumeIframe = ({ children }: PropsWithChildren) => {
         }}
         className={`origin-top-left bg-white shadow-xl`}
       >
-        <Frame
-          style={{ width: "100%", height: "100%" }}
-          initialContent={INITIAL_CONTENT}
-        >
+        <Frame style={{ width: "100%", height: "100%" }} initialContent={INITIAL_CONTENT}>
           <div style={{ position: "relative" }}>{children}</div>
         </Frame>
       </div>

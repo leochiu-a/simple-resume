@@ -7,9 +7,7 @@ import { downloadButton, readPdfFacts } from "./helpers";
  * @react-pdf/renderer 4.5.1 upgrade touched.
  */
 test.describe("PDF download", () => {
-  test("produces a valid single-page PDF with fonts and links embedded", async ({
-    page,
-  }) => {
+  test("produces a valid single-page PDF with fonts and links embedded", async ({ page }) => {
     await page.goto("/resume-editor");
 
     const button = downloadButton(page);

@@ -36,9 +36,7 @@ test.describe("resume editor", () => {
    * InputEvent<HTMLDivElement>, which is why the handler had to be retyped —
    * this asserts the handler still collects every bullet and propagates it.
    */
-  test("editing the bullet list propagates each bullet to the preview", async ({
-    page,
-  }) => {
+  test("editing the bullet list propagates each bullet to the preview", async ({ page }) => {
     const bullets = page.locator("div[contenteditable]").first();
     await expect(bullets).toBeVisible();
 

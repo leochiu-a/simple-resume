@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "react", "nextjs", "jsx-a11y", "import"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "node": true,
+    "es2024": true
+  },
+  "ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts"],
+  "rules": {
+    "no-console": "error",
+
+    // oxlint's jsx-a11y correctness set is wider than the subset
+    // eslint-config-next/core-web-vitals used to enable, so these three started
+    // firing on pre-existing markup (the click-to-close overlays in
+    // resume-preview{,-dialog}.tsx and the gridcell role in month-picker.tsx).
+    // Kept as warnings so the signal stays visible without blocking, matching
+    // how the old ESLint config handled newly-introduced rules.
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn",
+    "jsx-a11y/prefer-tag-over-role": "warn"
+  }
+}

@@ -14,17 +14,13 @@ const DownloadPDFButton = ({
   backgroundColor: string;
 }) => {
   const [instance, update] = usePDF({
-    document: (
-      <ResumeTemplate resume={resume} backgroundColor={backgroundColor} />
-    ),
+    document: <ResumeTemplate resume={resume} backgroundColor={backgroundColor} />,
   });
   const [startDownload, setStartDownload] = useState(false);
 
   const downloadResume = () => {
     setStartDownload(true);
-    update(
-      <ResumeTemplate resume={resume} backgroundColor={backgroundColor} />
-    );
+    update(<ResumeTemplate resume={resume} backgroundColor={backgroundColor} />);
   };
 
   useEffect(() => {

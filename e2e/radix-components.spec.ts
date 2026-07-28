@@ -79,9 +79,7 @@ test.describe("background colour picker", () => {
     // The picker is dismissed by its own full-screen click-catcher overlay.
     // It carries no z-index, so the sticky nav (z-10) still sits on top of it —
     // the click has to land below the nav for the overlay to receive it.
-    await page
-      .locator("div.fixed.inset-0")
-      .click({ position: { x: 200, y: 500 } });
+    await page.locator("div.fixed.inset-0").click({ position: { x: 200, y: 500 } });
 
     await expect(page.locator(".w-color-sketch")).toBeHidden();
     await expectBodyUnlocked(page);

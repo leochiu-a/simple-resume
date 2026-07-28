@@ -10,12 +10,8 @@ import ResumeTemplate from "./template/resume-template";
 import DownloadPDFButton from "./template/download-pdf-button";
 
 const ResumePreview = ({ resume }: { resume: Resume }) => {
-  const {
-    displayColorPicker,
-    backgroundColor,
-    toggleColorPicker,
-    changeBackgroundColor,
-  } = useColorPicker();
+  const { displayColorPicker, backgroundColor, toggleColorPicker, changeBackgroundColor } =
+    useColorPicker();
 
   return (
     <div className="sticky top-[calc(48px+32px)] h-[calc(100vh-48px-32px)] w-1/2">
@@ -27,28 +23,18 @@ const ResumePreview = ({ resume }: { resume: Resume }) => {
 
           <div className="flex gap-3">
             <div className="relative">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={toggleColorPicker}
-              >
+              <Button variant="outline" type="button" onClick={toggleColorPicker}>
                 <FaPalette />
               </Button>
               {displayColorPicker && (
                 <div className="absolute bottom-12">
                   <div className="fixed inset-0" onClick={toggleColorPicker} />
-                  <SketchPicker
-                    color={backgroundColor}
-                    onChange={changeBackgroundColor}
-                  />
+                  <SketchPicker color={backgroundColor} onChange={changeBackgroundColor} />
                 </div>
               )}
             </div>
 
-            <DownloadPDFButton
-              resume={resume}
-              backgroundColor={backgroundColor}
-            />
+            <DownloadPDFButton resume={resume} backgroundColor={backgroundColor} />
           </div>
         </div>
       </div>

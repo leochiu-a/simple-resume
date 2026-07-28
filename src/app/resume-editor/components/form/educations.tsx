@@ -50,33 +50,21 @@ const Educations: FC = () => {
                 control={control}
                 name={`educations.${index}.degree`}
                 render={({ field }) => (
-                  <LabeledInputField
-                    label="Degree"
-                    placeholder="Degree"
-                    {...field}
-                  />
+                  <LabeledInputField label="Degree" placeholder="Degree" {...field} />
                 )}
               />
               <Controller
                 control={control}
                 name={`educations.${index}.school`}
                 render={({ field }) => (
-                  <LabeledInputField
-                    label="School"
-                    placeholder="School"
-                    {...field}
-                  />
+                  <LabeledInputField label="School" placeholder="School" {...field} />
                 )}
               />
               <Controller
                 control={control}
                 name={`educations.${index}.major`}
                 render={({ field }) => (
-                  <LabeledInputField
-                    label="Major"
-                    placeholder="Major"
-                    {...field}
-                  />
+                  <LabeledInputField label="Major" placeholder="Major" {...field} />
                 )}
               />
               <Controller
@@ -94,11 +82,7 @@ const Educations: FC = () => {
             </div>
 
             <Tooltip title="Delete">
-              <Button
-                variant="outline"
-                onClick={() => remove(index)}
-                className="mt-4"
-              >
+              <Button variant="outline" onClick={() => remove(index)} className="mt-4">
                 <FaTrash className="mr-2 size-4" /> Delete
               </Button>
             </Tooltip>

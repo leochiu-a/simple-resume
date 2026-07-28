@@ -41,9 +41,7 @@ const Info = ({
           margin: "10pt",
         }}
       ></View>
-      <SubText style={{ transformOrigin: "center", color: "#fff" }}>
-        {jobTitle}
-      </SubText>
+      <SubText style={{ transformOrigin: "center", color: "#fff" }}>{jobTitle}</SubText>
 
       <View
         style={{
@@ -59,9 +57,7 @@ const Info = ({
           <View style={{ ...styles.flexCol, gap: "2pt" }}>
             <SmallText>{city}</SmallText>
             <SmallText>{phone}</SmallText>
-            <SmallText style={{ textDecoration: "underline" }}>
-              {email}
-            </SmallText>
+            <SmallText style={{ textDecoration: "underline" }}>{email}</SmallText>
           </View>
         </View>
 

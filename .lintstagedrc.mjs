@@ -1,12 +1,13 @@
 import path from "node:path";
 
-const buildEslintCommand = (filenames) =>
-  `eslint --fix ${filenames
-    .map((f) => path.relative(process.cwd(), f))
-    .join(" ")}`;
+const toRelative = (filenames) => filenames.map((f) => path.relative(process.cwd(), f)).join(" ");
 
 const config = {
-  "*.{js,jsx,ts,tsx}": [buildEslintCommand],
+  "*.{js,jsx,mjs,cjs,ts,tsx}": [
+    (filenames) => `oxlint --fix ${toRelative(filenames)}`,
+    (filenames) => `oxfmt ${toRelative(filenames)}`,
+  ],
+  "*.{json,md}": [(filenames) => `oxfmt ${toRelative(filenames)}`],
 };
 
 export default config;

@@ -11,7 +11,6 @@ interface DotPatternProps extends SVGProps<SVGSVGElement> {
   cy?: number;
   cr?: number;
   className?: string;
-
 }
 export function DotPattern({
   width = 16,
@@ -31,7 +30,7 @@ export function DotPattern({
       aria-hidden="true"
       className={cn(
         "pointer-events-none absolute inset-0 h-full w-full fill-neutral-400/80",
-        className
+        className,
       )}
       {...props}
     >

@@ -27,8 +27,7 @@ export const typographyVariants = cva("text-xl", {
 });
 
 export interface TypographyProps
-  extends React.HTMLAttributes<HTMLHeadingElement>,
-    VariantProps<typeof typographyVariants> {}
+  extends React.HTMLAttributes<HTMLHeadingElement>, VariantProps<typeof typographyVariants> {}
 
 const Typography = React.forwardRef<HTMLHeadingElement, TypographyProps>(
   ({ className, variant, affects, ...props }, ref) => {
@@ -40,7 +39,7 @@ const Typography = React.forwardRef<HTMLHeadingElement, TypographyProps>(
         {...props}
       />
     );
-  }
+  },
 );
 Typography.displayName = "H1";
 

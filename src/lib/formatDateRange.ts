@@ -11,10 +11,7 @@ const formatDate = (date: string) => {
   return dateFormatted;
 };
 
-const formatDateRange = (
-  timeline: DateRange,
-  placeholder: string
-): string => {
+const formatDateRange = (timeline: DateRange, placeholder: string): string => {
   const { from, to } = timeline;
   const fromDate = from ? formatDate(from) : "";
   const toDate = to ? formatDate(to) : placeholder;

@@ -51,22 +51,14 @@ const EmploymentHistory: FC = () => {
                 control={control}
                 name={`employmentHistory.${index}.company`}
                 render={({ field }) => (
-                  <LabeledInputField
-                    label="Company"
-                    placeholder="Company"
-                    {...field}
-                  />
+                  <LabeledInputField label="Company" placeholder="Company" {...field} />
                 )}
               />
               <Controller
                 control={control}
                 name={`employmentHistory.${index}.jobTitle`}
                 render={({ field }) => (
-                  <LabeledInputField
-                    label="Job title"
-                    placeholder="Software Engineer"
-                    {...field}
-                  />
+                  <LabeledInputField label="Job title" placeholder="Software Engineer" {...field} />
                 )}
               />
               <Controller
@@ -95,11 +87,7 @@ const EmploymentHistory: FC = () => {
               />
             </div>
             <Tooltip title="Delete">
-              <Button
-                variant="outline"
-                onClick={() => remove(index)}
-                className="mt-4"
-              >
+              <Button variant="outline" onClick={() => remove(index)} className="mt-4">
                 <FaTrash className="mr-2 size-4" /> Delete
               </Button>
             </Tooltip>
