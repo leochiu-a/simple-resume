@@ -68,6 +68,14 @@ const callTool = (page: Page, name: string, args: Record<string, unknown> = {}) 
 
 const textOf = (result: ToolResult) => result.content.map((block) => block.text).join("\n");
 
+/**
+ * The editor saves to localStorage on a 300ms debounce. Tests that reload with
+ * a patched resume have to wait for that first, or the reload races the save
+ * and there is nothing to patch.
+ */
+const waitForStoredResume = (page: Page) =>
+  expect.poll(() => page.evaluate(() => window.localStorage.getItem("resume"))).not.toBeNull();
+
 test.describe("WebMCP resume tools", () => {
   let errors: string[] = [];
 
@@ -114,6 +122,54 @@ test.describe("WebMCP resume tools", () => {
       from: "2018-01",
       bullets: ["A,B,C,D"],
     });
+  });
+
+  // The "Present" switch stores `to: null` rather than "", so a resume with an
+  // ongoing job used to crash get-resume on `.slice(0, 7)`.
+  test("get-resume survives an ongoing entry stored as null", async ({ page }) => {
+    await waitForStoredResume(page);
+    await page.addInitScript(() => {
+      const stored = JSON.parse(window.localStorage.getItem("resume") as string);
+
+      stored.employmentHistory[0].timeline.to = null;
+      stored.educations[0].timeline = { from: null, to: null };
+      window.localStorage.setItem("resume", JSON.stringify(stored));
+    });
+    await page.goto("/resume-editor");
+    await expect(page.getByText(/Agent ready/)).toBeVisible();
+
+    const result = await callTool(page, "get-resume");
+
+    expect(result.isError).toBeFalsy();
+
+    const resume = JSON.parse(textOf(result));
+
+    expect(resume.employmentHistory[0]).toMatchObject({ index: 0, from: "2018-01", to: "" });
+    expect(resume.educations[0]).toMatchObject({ index: 0, from: "", to: "" });
+    expect(errors).toEqual([]);
+  });
+
+  test("update-employment leaves an ongoing job ongoing when `to` is omitted", async ({ page }) => {
+    await waitForStoredResume(page);
+    await page.addInitScript(() => {
+      const stored = JSON.parse(window.localStorage.getItem("resume") as string);
+
+      stored.employmentHistory[0].timeline.to = null;
+      window.localStorage.setItem("resume", JSON.stringify(stored));
+    });
+    await page.goto("/resume-editor");
+    await expect(page.getByText(/Agent ready/)).toBeVisible();
+
+    const result = await callTool(page, "update-employment", {
+      index: 0,
+      jobTitle: "Staff Engineer",
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(
+      JSON.parse(textOf(await callTool(page, "get-resume"))).employmentHistory[0],
+    ).toMatchObject({ jobTitle: "Staff Engineer", to: "" });
+    await expect(preview(page).getByText(/— Present/)).toBeVisible();
   });
 
   test("update-basic-info writes through to the form and the preview", async ({ page }) => {

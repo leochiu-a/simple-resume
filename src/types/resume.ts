@@ -21,23 +21,23 @@ export interface Skill {
   name: string;
 }
 
+/** `null` is what the date picker stores for an ongoing entry — see LabeledDatePickerField. */
+export interface Timeline {
+  from: string | null;
+  to: string | null;
+}
+
 export interface Education {
   school: string;
   degree: string;
   major: string;
-  timeline: {
-    from: string;
-    to: string;
-  };
+  timeline: Timeline;
 }
 
 export interface EmploymentHistory {
   company: string;
   jobTitle: string;
-  timeline: {
-    from: string;
-    to: string;
-  };
+  timeline: Timeline;
   description: string;
 }
 

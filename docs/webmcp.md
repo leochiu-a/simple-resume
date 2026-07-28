@@ -227,8 +227,12 @@ so this is a toggle, not a delete.
 `YYYY-MM` and storing the 1st of that month, because the editor's picker only ever renders month +
 year. Unparseable input becomes `""`.
 
-**Empty string means Present.** `to: ""` renders as `PRESENT` in the resume. Omitting `to` on an
+**Empty string means Present.** `to: ""` renders as `— Present` in the resume. Omitting `to` on an
 update leaves the existing value alone; passing `""` explicitly clears it.
+
+The editor's "Present" switch stores `null` rather than `""`, so both shapes exist in `localStorage`.
+The agent never sees the difference — `get-resume` reports either as `""`, and an update that omits
+`to` preserves whichever was stored.
 
 **Bullets are an array to the agent, one string in storage.** Job descriptions are stored as a single
 string joined by `|` (see `SPLIT_TEXT`). The tools convert in both directions, so an agent only ever
