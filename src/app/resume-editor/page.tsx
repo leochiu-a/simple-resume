@@ -13,6 +13,8 @@ import ResumeForm from "./components/form/resume-form";
 import ResumePreviewDialog from "./components/resume-preview-dialog";
 import ResumePreview from "./components/resume-preview";
 import { ModeToggle } from "./components/mode-toggle";
+import WebMcpStatusBadge from "./components/webmcp-status";
+import { useResumeMcp } from "./hooks/useResumeMcp";
 import { DEFAULT_RESUME } from "./constants";
 
 const ResumeEditorPage = () => {
@@ -26,6 +28,7 @@ const ResumeEditorPage = () => {
 
   const matches = useMediaQuery("(min-width: 1024px)");
   const { resolvedTheme } = useTheme();
+  const { status: mcpStatus, toolCount: mcpToolCount } = useResumeMcp(formMethods);
 
   const saveResume = useMemo(
     () =>
@@ -54,6 +57,7 @@ const ResumeEditorPage = () => {
             <h1 className="text-xl font-bold">Simple Resume</h1>
           </Link>
           <div className="ml-auto flex gap-4 items-center">
+            <WebMcpStatusBadge status={mcpStatus} toolCount={mcpToolCount} />
             <ModeToggle />
             <Link href="https://github.com/leochiu-a/simple-resume" target="_blank">
               <Image
