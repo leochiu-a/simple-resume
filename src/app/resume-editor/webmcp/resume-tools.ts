@@ -2,7 +2,14 @@ import { UseFormReturn } from "react-hook-form";
 
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { defineTool, toolError, toolText, WebMcpTool } from "@/lib/webmcp";
-import { Education, EmploymentHistory, Resume, SocialLink, Visibility } from "@/types/resume";
+import {
+  Education,
+  EmploymentHistory,
+  Resume,
+  SocialLink,
+  Timeline,
+  Visibility,
+} from "@/types/resume";
 
 const SECTIONS = ["profile", "socialLinks", "skills", "educations", "employmentHistory"] as const;
 
@@ -18,8 +25,11 @@ const toIsoMonth = (value: string | undefined | null) => {
   return match ? `${match[1]}-${match[2]}-01` : "";
 };
 
-const toIsoMonthOr = (value: string | undefined, fallback: string) =>
+const toIsoMonthOr = (value: string | undefined, fallback: string | null) =>
   value === undefined ? fallback : toIsoMonth(value);
+
+/** Ongoing entries are stored as `null`, which the agent sees as `""`. */
+const toAgentMonth = (value: string | null) => (value ?? "").slice(0, 7);
 
 /** Bullet lines live in one string joined by SPLIT_TEXT — see LabeledBulletTextAreaField. */
 const toBulletText = (bullets: string[]) => bullets.join(SPLIT_TEXT);
@@ -37,8 +47,8 @@ const toAgentView = (resume: Resume) => ({
     index,
     company: job.company,
     jobTitle: job.jobTitle,
-    from: job.timeline.from.slice(0, 7),
-    to: job.timeline.to.slice(0, 7),
+    from: toAgentMonth(job.timeline.from),
+    to: toAgentMonth(job.timeline.to),
     bullets: fromBulletText(job.description),
   })),
   educations: resume.educations.map((education, index) => ({
@@ -46,14 +56,14 @@ const toAgentView = (resume: Resume) => ({
     school: education.school,
     degree: education.degree,
     major: education.major,
-    from: education.timeline.from.slice(0, 7),
-    to: education.timeline.to.slice(0, 7),
+    from: toAgentMonth(education.timeline.from),
+    to: toAgentMonth(education.timeline.to),
   })),
   skills: resume.skills.map((skill) => skill.name),
 });
 
-const describeTimeline = ({ from, to }: { from: string; to: string }) =>
-  `${from.slice(0, 7) || "?"} — ${to.slice(0, 7) || "Present"}`;
+const describeTimeline = ({ from, to }: Timeline) =>
+  `${toAgentMonth(from) || "?"} — ${toAgentMonth(to) || "Present"}`;
 
 /**
  * Builds the tool set the agent uses to fill in the resume.

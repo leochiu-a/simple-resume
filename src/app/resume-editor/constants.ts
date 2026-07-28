@@ -1,4 +1,6 @@
-export const DEFAULT_RESUME = {
+import { Resume } from "@/types/resume";
+
+export const DEFAULT_RESUME: Resume = {
   name: "My Name",
   wantedJob: "Senior job",
   email: "good@gmail.com",
