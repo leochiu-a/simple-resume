@@ -18,8 +18,21 @@ export const defineTool = <Args>(
   },
 ): WebMcpTool => tool as unknown as WebMcpTool;
 
-export const isWebMcpSupported = () =>
-  typeof document !== "undefined" && "modelContext" in document && !!document.modelContext;
+/**
+ * Resolves the ModelContext across the origin-trial transition window.
+ *
+ * The draft moved the getter from `Navigator` to `Document` on 2026-05-27, but
+ * Chrome shipped it on `navigator` first and only deprecated that in 150, so a
+ * build may expose either surface or both. Prefer the spec-current `document`
+ * and fall back to the deprecated alias.
+ */
+export const getModelContext = (): ModelContext | undefined => {
+  if (typeof document === "undefined") return undefined;
+
+  return document.modelContext ?? navigator.modelContext;
+};
+
+export const isWebMcpSupported = () => !!getModelContext();
 
 /** A successful tool result carrying a single text block. */
 export const toolText = (text: string): ModelContextToolResult => ({
@@ -37,7 +50,7 @@ export const toolError = (text: string): ModelContextToolResult => ({
  * per-document, so this must run after mount and be torn down on unmount.
  */
 export const registerTools = async (tools: WebMcpTool[], signal: AbortSignal) => {
-  const { modelContext } = document;
+  const modelContext = getModelContext();
   if (!modelContext) return;
 
   for (const tool of tools) {

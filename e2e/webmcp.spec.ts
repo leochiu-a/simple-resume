@@ -9,8 +9,11 @@ import { collectConsoleErrors, preview } from "./helpers";
  * AbortSignal-based unregistration, and MCP content-block results — and then
  * drive the resume tools exactly as an agent would.
  */
-const installModelContextStub = async (page: Page) => {
-  await page.addInitScript(() => {
+const installModelContextStub = async (
+  page: Page,
+  surface: "document" | "navigator" = "document",
+) => {
+  await page.addInitScript((target) => {
     const tools = new Map<string, { execute: (args: unknown) => unknown }>();
 
     const modelContext = {
@@ -29,10 +32,11 @@ const installModelContextStub = async (page: Page) => {
       dispatchEvent: () => true,
     };
 
-    Object.defineProperty(Document.prototype, "modelContext", {
-      configurable: true,
-      get: () => modelContext,
-    });
+    Object.defineProperty(
+      target === "navigator" ? Navigator.prototype : Document.prototype,
+      "modelContext",
+      { configurable: true, get: () => modelContext },
+    );
 
     Object.defineProperty(window, "__webmcp", {
       value: {
@@ -40,7 +44,7 @@ const installModelContextStub = async (page: Page) => {
         call: (name: string, args: unknown = {}) => tools.get(name)?.execute(args),
       },
     });
-  });
+  }, surface);
 };
 
 interface ToolResult {
@@ -208,6 +212,27 @@ test.describe("WebMCP resume tools", () => {
 
     expect(result.isError).toBe(true);
     expect(textOf(result)).toContain("Valid sections");
+  });
+
+  /**
+   * Chrome shipped WebMCP on `navigator` before the draft moved it to `document`
+   * and only deprecated the alias in 150, so an origin-trial build may expose
+   * just the legacy surface. Registration has to fall back to it.
+   */
+  test("registration falls back to the deprecated navigator surface", async ({ browser }) => {
+    const context = await browser.newContext();
+    const legacyPage = await context.newPage();
+    await installModelContextStub(legacyPage, "navigator");
+    await legacyPage.goto("/resume-editor");
+
+    await expect(legacyPage.getByText("Agent ready · 12 tools")).toBeVisible();
+    expect(await legacyPage.evaluate(() => "modelContext" in document)).toBe(false);
+    expect(await listTools(legacyPage)).toHaveLength(12);
+
+    await callTool(legacyPage, "update-basic-info", { name: "Grace Hopper" });
+    await expect(preview(legacyPage).getByText("Grace Hopper")).toBeVisible();
+
+    await context.close();
   });
 
   test("tools are unregistered when the editor unmounts", async ({ page }) => {

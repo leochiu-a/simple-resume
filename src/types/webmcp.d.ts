@@ -57,3 +57,12 @@ interface Document {
   /** Present only in browsers that implement WebMCP. */
   readonly modelContext?: ModelContext;
 }
+
+interface Navigator {
+  /**
+   * @deprecated The draft moved the getter to `Document` on 2026-05-27. Chrome
+   * shipped it here first and only deprecated it in 150, so it is still the only
+   * surface on some origin-trial builds. Read it through `getModelContext()`.
+   */
+  readonly modelContext?: ModelContext;
+}

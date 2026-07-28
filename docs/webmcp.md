@@ -11,9 +11,9 @@ WebMCP is a **W3C Web Machine Learning Community Group draft** (latest draft 202
 W3C Standard and is not on the Standards Track, so treat everything here as experimental — the API
 can still change under us. Two changes have already landed that older tutorials get wrong:
 
-- The getter moved off `Navigator` to `Document` on **2026-05-27**. This app uses
-  `document.modelContext`. `navigator.modelContext` is only a deprecated alias where it still exists
-  at all, and Chrome marked it deprecated in 150.
+- The getter moved off `Navigator` to `Document` on **2026-05-27**. Chrome shipped it on `navigator`
+  first and only deprecated that alias in 150, so a given build may expose either surface or both.
+  `getModelContext()` prefers `document.modelContext` and falls back to `navigator.modelContext`.
 - There is **no `unregisterTool`**, and no way to update a registered tool. Unregistration happens by
   aborting the `AbortSignal` passed to `registerTool`.
 
@@ -32,6 +32,29 @@ The nav bar reports which case you are in:
 
 To call tools by hand, use the Chrome DevTools WebMCP panel or the Model Context Tool Inspector
 extension.
+
+### Checking support in the console
+
+`document.modelContext` prints as `ModelContext {ontoolchange: null}`, which looks empty but is not —
+`ontoolchange` is the only own property, and `registerTool` / `getTools` live on the prototype. To see
+what you actually have:
+
+```js
+const mc = document.modelContext ?? navigator.modelContext;
+({
+  surface: document.modelContext ? "document" : navigator.modelContext ? "navigator" : "none",
+  registerTool: typeof mc?.registerTool,
+  tools: await mc?.getTools(),
+});
+```
+
+### Deploying to a real origin
+
+The `chrome://flags` switch only affects your own browser. For WebMCP to work for _other people_ on a
+production origin during the Chrome origin trial, the site has to serve a registered origin-trial
+token — either an `Origin-Trial` response header or a `<meta http-equiv="origin-trial">` tag. **This
+app does not ship a token**, so on the deployed site the tools only appear for visitors who enabled
+the flag themselves (or who are on a browser with native support).
 
 ## How it is wired
 
