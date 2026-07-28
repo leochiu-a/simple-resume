@@ -19,9 +19,9 @@ const LabeledBulletTextAreaField = ({
   );
   const ref = useRef<HTMLDivElement>(null);
 
-  const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+  const handleInput = (e: React.InputEvent<HTMLDivElement>) => {
     const result = [];
-    for (const child of (e.target as HTMLElement).children) {
+    for (const child of e.currentTarget.children) {
       result.push(child.textContent);
     }
     props.onChange?.(result.join(SPLIT_TEXT));
