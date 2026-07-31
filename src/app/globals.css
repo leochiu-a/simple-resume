@@ -67,3 +67,77 @@ body {
     field-sizing: content;
   }
 }
+
+/**
+ * The landing page runs on its own palette rather than the editor's shadcn tokens:
+ * it is a printed page, not an application surface. `--ink` is the colour the
+ * visitor picked for the sheet and is set inline by the accent provider; every
+ * other token here is fixed.
+ */
+@layer components {
+  [data-landing] {
+    --paper: #f7f4ee;
+    --paper-raised: #fffdf8;
+    --graphite: #17150f;
+    --graphite-soft: #6d6659;
+    --rule: #ded6c6;
+    /* Light paper takes the picked colour as-is. */
+    --ink-display: var(--ink);
+  }
+
+  .dark [data-landing] {
+    --paper: #100f0d;
+    --paper-raised: #1a1815;
+    --graphite: #f5f1e9;
+    --graphite-soft: #9b9488;
+    --rule: #2f2b24;
+    /* Two of the four templates default to near-black, which would disappear
+       here — so on dark paper the picked colour is lifted towards white before
+       it is used for anything but the sheet itself. */
+    --ink-display: color-mix(in oklab, var(--ink) 42%, #fffaf0);
+  }
+
+  /**
+   * The hero's entrance, one element at a time.
+   *
+   * Deliberately CSS rather than a JS animation library: the resting state is
+   * visible and the keyframe only supplies the "from", so a hero that never gets
+   * animated is a hero that is simply already there. Driving it from JS meant an
+   * interrupted animation could strand the whole thing at `opacity: 0`, which is
+   * exactly the failure a landing page cannot afford.
+   */
+  @keyframes landing-rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+
+  .landing-rise {
+    /* `both` holds the from-state through the stagger delay. */
+    animation: landing-rise 0.75s cubic-bezier(0.22, 0.68, 0.14, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-rise {
+      animation: none;
+    }
+  }
+
+  /* Print grain. Fixed, so it sits still while the page scrolls under it. */
+  [data-landing]::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media print {
+    [data-landing]::before {
+      display: none;
+    }
+  }
+}

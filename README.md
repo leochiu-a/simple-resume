@@ -2,23 +2,23 @@
 
 ![](public/image.png)
 
-A online tool to create a resume.
+An online tool to create a resume — with no account, and nothing uploaded anywhere.
 
-Online site: https://simple-resume-nu.vercel.app/resume-editor
+Online site: https://simple-resume-nu.vercel.app
 
 ## Features
 
 - Create a resume easily.
 - Pick between [four templates](#templates) and tint any of them with the colour picker.
 - Export the resume as a PDF, or as a [standalone HTML file](#html-export).
-- The resume data is stored in local storage.
+- The resume data is stored in local storage — there is no account and no server to send it to.
 - Build the resume by talking to a browser AI agent, via [WebMCP](#webmcp-experimental).
 
 ## Tech Stack
 
-- Next.js 14
-- React 18
-- Tailwind
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS
 - Shadcn UI
 - react-pdf/renderer
 
@@ -28,7 +28,35 @@ Online site: https://simple-resume-nu.vercel.app/resume-editor
 2. Change the directory cd `simple-resume`
 3. Install the dependency `pnpm i`
 4. Start a development server `pnpm dev`
-5. Open your browser and visit http://localhost:3000/resume-editor
+5. Open your browser and visit http://localhost:3000 — the editor itself is at
+   [/resume-editor](http://localhost:3000/resume-editor)
+
+## Landing page
+
+The front page at `/` is set as a printed page rather than an app surface: its own paper palette in
+[`globals.css`](src/app/globals.css) under `[data-landing]`, Fraunces for display, Archivo for body
+copy and IBM Plex Mono for labels. The editor is untouched by all of it and keeps the system stack.
+
+Two things about it are worth knowing before editing
+[`src/components/landing/`](src/components/landing):
+
+- **The hero's sheet is a real template, not a screenshot.** It renders the registry's own
+  `template.render()` into an iframe carrying `SHEET_DOCUMENT`, exactly as the editor's preview and
+  the picker's thumbnails do — so a template that changes shows up here without anyone remembering
+  to retake a picture. The frame is never remounted: switching template or colour swaps only the
+  children inside it, which is why the paper does not flash. Adding a template to
+  [`registry.tsx`](src/app/resume-editor/components/template/registry.tsx) adds it to the hero's
+  picker too, with no other edit.
+- **The colour picked for the sheet is the whole page's accent.** `AccentProvider` publishes it as
+  the CSS variable `--ink`, which is why every section below the hero can tint itself while staying a
+  server component. Read `--ink-display` rather than `--ink` for anything that is not the sheet: two
+  of the four templates default to near-black, and dark paper lifts that towards white so it does
+  not disappear.
+
+The hero's entrance is a CSS animation (`.landing-rise`) rather than a JS one. The resting state is
+visible and the keyframe only supplies the `from`, so a reveal that never runs is a hero that is
+simply already there — driving it from JS meant an interrupted animation could strand the whole pitch
+at `opacity: 0`.
 
 ## Templates
 
