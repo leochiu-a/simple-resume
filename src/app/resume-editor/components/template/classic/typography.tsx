@@ -1,26 +1,8 @@
-import { Font, Text as PDFText, StyleSheet, Link as PDFLink } from "@react-pdf/renderer";
+import { Text as PDFText, StyleSheet, Link as PDFLink } from "@react-pdf/renderer";
 import type { Style } from "@react-pdf/types";
 import { ComponentProps, PropsWithChildren } from "react";
 
-Font.register({
-  family: "Noto Serif",
-  src: "/fonts/NotoSerif-Bold.ttf",
-  fontWeight: "bold",
-});
-Font.register({
-  family: "Noto Sans",
-  fonts: [
-    {
-      src: "/fonts/NotoSans-Regular.ttf",
-    },
-    {
-      src: "/fonts/NotoSans-Bold.ttf",
-      fontWeight: "bold",
-    },
-  ],
-});
-// https://github.com/diegomura/react-pdf/issues/1418
-Font.registerHyphenationCallback((word) => ["", word, ""]);
+import "../fonts";
 
 const styles = StyleSheet.create({
   title: {
