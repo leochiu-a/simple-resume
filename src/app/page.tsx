@@ -1,26 +1,31 @@
-import Link from "next/link";
+import AccentProvider from "@/components/landing/accent";
+import SiteNav from "@/components/landing/site-nav";
+import Hero from "@/components/landing/hero";
+import Outputs from "@/components/landing/outputs";
+import Agent from "@/components/landing/agent";
+import Privacy from "@/components/landing/privacy";
+import SiteFooter from "@/components/landing/site-footer";
 
-import { Typography } from "@/components/ui/typography";
-import ShimmerButton from "@/components/magicui/shimmer-button";
-import SparklesText from "@/components/magicui/sparkles-text";
-import DotPattern from "@/components/magicui/dot-pattern";
-
+/**
+ * The landing page argues the product in the order the visitor cares about it:
+ * where the resume lives, what comes out of it, that an agent can write it, and
+ * what exactly is and is not sent anywhere.
+ *
+ * `AccentProvider` holds the template and colour the hero's sheet is showing and
+ * publishes the colour as `--ink`, which is why the sections under it can tint
+ * themselves while staying server components.
+ */
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-4 row-start-2 items-center sm:items-start relative z-10">
-        <SparklesText text="Simple Resume" className="text-center" />
-        <Typography variant="p" affects="removePMargin">
-          A online tool to create a resume
-        </Typography>
-
-        <Link href="/resume-editor">
-          <ShimmerButton>
-            <div className="text-white">Create Resume</div>
-          </ShimmerButton>
-        </Link>
+    <AccentProvider>
+      <SiteNav />
+      <main>
+        <Hero />
+        <Outputs />
+        <Agent />
+        <Privacy />
       </main>
-      <DotPattern className="[mask-image:radial-gradient(400px_circle_at_center,white,transparent)]" />
-    </div>
+      <SiteFooter />
+    </AccentProvider>
   );
 }

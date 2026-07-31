@@ -47,9 +47,9 @@ export const themeToggle = (page: Page): Locator =>
  */
 export const preview = (page: Page) => page.frameLocator('iframe[title="Resume preview"]');
 
-/** Sparkle SVGs injected by SparklesText, siblings of the <strong> heading. */
-export const sparkles = (page: Page): Locator =>
-  page.locator("span.relative.inline-block:has(strong) > svg");
+/** The landing page's hero sheet, which is a third iframe-hosted sheet — the same
+ *  rendering as the editor's preview, addressed by its own title. */
+export const landingSheet = (page: Page) => page.frameLocator('iframe[title="Template preview"]');
 
 export interface PdfFacts {
   bytes: number;
