@@ -9,7 +9,7 @@ Online site: https://simple-resume-nu.vercel.app/resume-editor
 ## Features
 
 - Create a resume easily.
-- Pick between [two templates](#templates) and tint either one with the colour picker.
+- Pick between [four templates](#templates) and tint any of them with the colour picker.
 - Export the resume as a PDF, or as a [standalone HTML file](#html-export).
 - The resume data is stored in local storage.
 - Build the resume by talking to a browser AI agent, via [WebMCP](#webmcp-experimental).
@@ -32,34 +32,64 @@ Online site: https://simple-resume-nu.vercel.app/resume-editor
 
 ## Templates
 
-The button to the left of the colour picker switches between two layouts:
+The button to the left of the colour picker switches between four layouts:
 
-- **Classic** — serif headings against a full-height colour sidebar.
-- **Modern** — two columns, a tinted contact panel on the left, and uppercase letterspaced
-  headings sitting on hairline rules.
+| Template     | Layout                                                                                              | The colour picker tints |
+| ------------ | --------------------------------------------------------------------------------------------------- | ----------------------- |
+| **Classic**  | Two columns, serif headings on a full-height colour sidebar                                         | the sidebar             |
+| **Modern**   | Two columns, tinted contact panel on the left, uppercase headings on hairline rules                 | the panel               |
+| **Formal**   | Single column, centered serif header over a dashed rule                                             | the name                |
+| **Timeline** | Banded header, 70/30 columns with the rail on the **right**, dated timeline entries and pill skills | the name and job titles |
 
-Both render the same resume to all three outputs: the live preview, the PDF, and the standalone
-HTML export. The colour picker tints the sidebar in Classic and the contact panel in Modern, so
-switching template resets the colour to that template's own default rather than carrying over a
-choice made for the other. Modern flips its own text between ink and white depending on how dark
-the picked colour is, so the panel stays readable at either end.
+All four render the same resume to all three outputs: the live preview, the PDF, and the standalone
+HTML export. Because each one tints a different area, switching template resets the colour to that
+template's own default rather than carrying over a choice made for another. Modern additionally
+flips its own text between ink and white depending on how dark the picked colour is, so the panel
+stays readable at either end.
 
-Each template lives in its own folder — `template/classic/` and `template/modern/` — holding its PDF
-document, its HTML builder, and whatever styles and sections it needs. What sits directly in
-`template/` is only what both share: font registration, the A4 dimensions, the HTML escaping
-helpers, the preview iframe, the picker, and the download buttons. Templates are registered in one
-place, [`registry.tsx`](src/app/resume-editor/components/template/registry.tsx), so adding a third
-means a new folder and a single entry. Coverage lives in
-[`e2e/template-picker.spec.ts`](e2e/template-picker.spec.ts).
+### Adding a template
 
-One thing to know before writing a template: the preview does not rasterise the PDF. It renders the
-very same @react-pdf element tree into an iframe, where the primitives land as unknown DOM elements
-(`<VIEW>`, `<TEXT>`) and their style objects are applied as plain CSS. That makes the preview cheap
-and instant, but it means sizes need explicit units (`"11.19pt"`, not `11.19`), every flex container
-has to spell out `display: "flex"`, and `Svg` draws nothing. See
-[`units.ts`](src/app/resume-editor/components/template/modern/units.ts) and
-[`contact-icons.tsx`](src/app/resume-editor/components/template/modern/contact-icons.tsx) for how the
-Modern template works within that.
+Each template lives in its own folder — `template/classic/`, `template/modern/`, `template/formal/`,
+`template/timeline/` — holding its PDF document, its HTML builder, and whatever styles and sections
+it needs. What sits directly in `template/` is only what they share: font registration, the A4
+dimensions, the HTML escaping helpers, the preview iframe, the picker, and the download buttons.
+Templates are registered in one place,
+[`registry.tsx`](src/app/resume-editor/components/template/registry.tsx), so adding one means a new
+folder and a single entry. Each has its own spec under `e2e/`, and
+[`e2e/template-picker.spec.ts`](e2e/template-picker.spec.ts) asserts the full set — add yours to its
+`EXPECTED_TEMPLATES` or it will fail.
+
+Only two fonts are available: **Noto Sans** (400/700) and **Noto Serif** (**bold only** — see
+[`fonts.ts`](src/app/resume-editor/components/template/fonts.ts)). A serif template therefore uses
+Noto Serif for bold display text and Noto Sans for body copy, as Classic and Formal both do.
+
+### The preview is not a rasterised PDF
+
+This is the thing to understand before writing a template, and it has cost real debugging time more
+than once. The preview renders the _very same_ @react-pdf element tree into an iframe, where the
+primitives land as unknown DOM elements (`<VIEW>`, `<TEXT>`) and their style objects are applied as
+plain CSS. That makes it cheap and instant, but every gap between yoga and the browser becomes a
+silent visual bug:
+
+- **Sizes need explicit units**, as strings: `"11.19pt"`, never `11.19`. A bare number means points
+  in the PDF and _pixels_ in the preview — the layout quietly shrinks by a quarter. Hence the `pt()`
+  helper each template carries in its `units.ts`.
+- **Every flex container must spell out `display: "flex"`.** It is not the CSS default.
+- **`Svg`, `Path` and `Circle` draw nothing.** Build shapes from `View` with `borderRadius` and
+  `borderWidth` — see
+  [`contact-icons.tsx`](src/app/resume-editor/components/template/modern/contact-icons.tsx) and
+  [`marker.tsx`](src/app/resume-editor/components/template/timeline/marker.tsx). The same applies to
+  `Image`, which is why no template shows a photo.
+- **`Link` becomes `<link>`, which the browser's own stylesheet hides.** Any link style needs
+  `display: "flex"`.
+- **Set `boxSizing: "border-box"` on anything bordered.** Yoga puts borders inside the box; the
+  browser defaults to content-box, so a bordered dot renders at the wrong size in the preview only.
+- **No CSS grid, no `calc()`, no `::before`/`::after`.** Use `flexWrap` with percentage widths,
+  flex sizing, and explicit `Text` elements for bullets and separators.
+
+Because none of this shows up in a passing test, verify a template by looking at its actual PDF.
+`poppler` is not a dependency; on macOS `qlmanage -t -s 1400 -o <dir> <pdf>` rasterises a page to
+PNG.
 
 ## HTML export
 
