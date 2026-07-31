@@ -2,7 +2,7 @@ import { Text as PDFText, StyleSheet, Link as PDFLink } from "@react-pdf/rendere
 import type { Style } from "@react-pdf/types";
 import { ComponentProps, PropsWithChildren } from "react";
 
-import "./fonts";
+import "../fonts";
 
 const styles = StyleSheet.create({
   title: {

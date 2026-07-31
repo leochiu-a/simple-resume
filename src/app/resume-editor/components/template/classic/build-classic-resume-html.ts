@@ -2,7 +2,7 @@ import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { Resume } from "@/types/resume";
 
-import { escapeHtml, safeHref, GOOGLE_FONTS_LINKS } from "./html-utils";
+import { escapeHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
 
 /**
  * Builds a standalone HTML document for a resume — the same A4 layout the PDF

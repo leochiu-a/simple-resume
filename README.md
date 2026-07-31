@@ -44,9 +44,12 @@ switching template resets the colour to that template's own default rather than 
 choice made for the other. Modern flips its own text between ink and white depending on how dark
 the picked colour is, so the panel stays readable at either end.
 
-A template owns both of its renderers and is registered in one place —
-[`registry.tsx`](src/app/resume-editor/components/template/registry.tsx) — so adding a third means
-adding a `Document` component, an HTML builder, and a single entry. Coverage lives in
+Each template lives in its own folder — `template/classic/` and `template/modern/` — holding its PDF
+document, its HTML builder, and whatever styles and sections it needs. What sits directly in
+`template/` is only what both share: font registration, the A4 dimensions, the HTML escaping
+helpers, the preview iframe, the picker, and the download buttons. Templates are registered in one
+place, [`registry.tsx`](src/app/resume-editor/components/template/registry.tsx), so adding a third
+means a new folder and a single entry. Coverage lives in
 [`e2e/template-picker.spec.ts`](e2e/template-picker.spec.ts).
 
 One thing to know before writing a template: the preview does not rasterise the PDF. It renders the
@@ -70,9 +73,9 @@ falls back to a system stack, so the file still renders correctly offline. The l
 sidebar above the content below 700px, and `@media print` restores the A4 sheet — printing the
 exported file gives back a PDF.
 
-The builder lives in
-[`build-resume-html.ts`](src/app/resume-editor/components/template/build-resume-html.ts), with
-coverage in [`e2e/html-export.spec.ts`](e2e/html-export.spec.ts).
+Each template owns its builder — for example
+[`build-classic-resume-html.ts`](src/app/resume-editor/components/template/classic/build-classic-resume-html.ts)
+— with coverage in [`e2e/html-export.spec.ts`](e2e/html-export.spec.ts).
 
 ## WebMCP (experimental)
 

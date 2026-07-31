@@ -7,10 +7,10 @@ import Profile from "./profile";
 import EmploymentHistory from "./employment-history";
 import Education from "./education";
 import Info from "./info";
-import { A4_HEIGHT_PT } from "./constants";
+import { A4_HEIGHT_PT } from "../constants";
 import { Resume } from "@/types/resume";
 
-const ResumeTemplate = ({
+const ClassicTemplate = ({
   resume,
   backgroundColor,
 }: {
@@ -59,4 +59,4 @@ const ResumeTemplate = ({
   );
 };
 
-export default ResumeTemplate;
+export default ClassicTemplate;

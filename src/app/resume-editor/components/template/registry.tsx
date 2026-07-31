@@ -3,8 +3,8 @@ import type { DocumentProps } from "@react-pdf/renderer";
 
 import { Resume } from "@/types/resume";
 
-import ResumeTemplate from "./resume-template";
-import buildResumeHtml from "./build-resume-html";
+import ClassicTemplate from "./classic/classic-template";
+import buildClassicResumeHtml from "./classic/build-classic-resume-html";
 import ModernTemplate from "./modern/modern-template";
 import buildModernResumeHtml from "./modern/build-modern-resume-html";
 import { DEFAULT_PANEL_COLOR } from "./modern/panel-color";
@@ -36,8 +36,8 @@ export const TEMPLATES: TemplateDefinition[] = [
     label: "Classic",
     description: "Serif headings on a full-height colour sidebar.",
     defaultColor: "#094C42",
-    render: (props) => <ResumeTemplate {...props} />,
-    buildHtml: buildResumeHtml,
+    render: (props) => <ClassicTemplate {...props} />,
+    buildHtml: buildClassicResumeHtml,
   },
   {
     id: "modern",
