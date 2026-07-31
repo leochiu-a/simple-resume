@@ -30,11 +30,16 @@ test.describe("template picker", () => {
     await page.goto("/resume-editor");
   });
 
-  test("starts on Classic and offers Modern", async ({ page }) => {
+  // Kept in the order they appear in the registry's TEMPLATES. Adding a template
+  // means adding it here too — the assertion below is exact so a new one cannot
+  // slip in unnoticed.
+  const EXPECTED_TEMPLATES = [/Classic/, /Modern/, /Formal/, /Timeline/];
+
+  test("starts on Classic and offers every registered template", async ({ page }) => {
     await expect(templatePicker(page)).toContainText("Classic");
 
     await templatePicker(page).click();
-    await expect(page.getByRole("menuitem")).toHaveText([/Classic/, /Modern/]);
+    await expect(page.getByRole("menuitem")).toHaveText(EXPECTED_TEMPLATES);
   });
 
   test("switches the preview to the Modern layout", async ({ page }) => {
