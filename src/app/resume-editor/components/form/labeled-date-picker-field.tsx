@@ -49,9 +49,11 @@ const LabeledDatePickerField = ({
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between">
-        <div>{label}</div>
-        <div className="flex gap-1 items-center">
+      <div className="flex items-center justify-between">
+        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          {label}
+        </div>
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           <Switch checked={checked} onCheckedChange={handleCheckedChange} />
           {switchText}
         </div>

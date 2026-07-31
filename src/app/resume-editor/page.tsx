@@ -57,13 +57,24 @@ const ResumeEditorPage = () => {
 
   return (
     <>
-      <nav className="border-b sticky top-0 bg-white dark:bg-inherit z-10">
-        <div className="flex h-12 items-center md:px-12 px-4">
-          <Link href="/">
-            <h1 className="text-xl font-bold">Simple Resume</h1>
-          </Link>
+      {/* Same bar as the landing page's, with the tools added: wordmark in the
+          display face, a hairline underneath, nothing with a fill of its own.
 
-          <div className="ml-auto flex gap-4 items-center">
+          Solid paper, and no `backdrop-blur`: a backdrop-filter would make this a
+          containing block for fixed positioning, and the colour picker's
+          full-screen click-catcher is a `fixed inset-0` inside this nav. Blurring
+          here shrinks that overlay to the height of the bar, and the picker stops
+          closing when you click the page. */}
+      <nav className="sticky top-0 z-10 border-b bg-background">
+        <div className="flex h-14 items-center gap-4 px-4 md:px-12">
+          <Link href="/" className="font-display text-xl font-semibold tracking-[-0.02em]">
+            <h1>Simple Resume</h1>
+          </Link>
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground lg:inline">
+            Saved in this browser
+          </span>
+
+          <div className="ml-auto flex items-center gap-3">
             {/* Only on desktop: at mobile widths the nav has no room, so these
                 ride in the preview dialog's header instead. */}
             {matches && (
@@ -75,12 +86,17 @@ const ResumeEditorPage = () => {
 
             <WebMcpStatusBadge status={mcpStatus} toolCount={mcpToolCount} />
             <ModeToggle />
-            <Link href="https://github.com/leochiu-a/simple-resume" target="_blank">
+            <Link
+              href="https://github.com/leochiu-a/simple-resume"
+              target="_blank"
+              aria-label="Source on GitHub"
+              className="flex size-9 items-center justify-center border transition-colors hover:border-foreground/40"
+            >
               <Image
                 src={resolvedTheme === "dark" ? "/github-mark-white.png" : "/github-mark.png"}
                 alt="github-mark"
-                width={36}
-                height={36}
+                width={16}
+                height={16}
               />
             </Link>
           </div>
@@ -88,10 +104,26 @@ const ResumeEditorPage = () => {
       </nav>
       <main>
         <FormProvider {...formMethods}>
-          {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
-          <form id="resume-form">
+          {/*
+            Nothing here is ever submitted: the form element groups the fields and
+            gives react-hook-form something to own, and every change is saved to
+            local storage as you type. There is no action, no method and no handler,
+            so the guard costs nothing and closes off the one thing this form could
+            otherwise do — navigate.
+
+            It is worth closing off. A button inside a form with no `type` is a
+            submit button, and eleven of the icon buttons in here had none. A real
+            click does not reach the default action (react-hook-form has already
+            re-rendered the button out from under it), but a programmatic one does,
+            and it serialises every field into the query string — name, phone,
+            profile — where it reaches the server in the request line and stays in
+            history. For an app whose promise is that the resume stays in the
+            browser, that is the one navigation that must not be possible. The
+            buttons carry `type="button"` now as well; this is the backstop.
+          */}
+          <form id="resume-form" onSubmit={(event) => event.preventDefault()}>
             <div className="lg:flex">
-              <div className="lg:w-1/2 lg:mx-12 mx-4 my-8">
+              <div className="mx-4 my-10 lg:mx-12 lg:w-1/2">
                 <ResumeForm />
               </div>
 

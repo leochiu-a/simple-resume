@@ -29,7 +29,7 @@ const WebMcpStatusBadge: FC<WebMcpStatusBadgeProps> = ({ status, toolCount }) =>
     <Tooltip title={`${label} — ${hint}`}>
       <span
         className={cn(
-          "flex size-8 items-center justify-center rounded-full border",
+          "flex size-9 items-center justify-center rounded-sm border",
           status === "ready"
             ? "border-emerald-600/30 text-emerald-700 dark:text-emerald-400"
             : "border-muted-foreground/30 text-muted-foreground",

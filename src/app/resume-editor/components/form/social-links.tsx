@@ -9,7 +9,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import VisibleSwitch from "./visible-switch";
-import { SectionBody, SectionCard, SectionTitle } from "./section-card";
+import { Section, SectionBody, SectionTitle } from "./section";
 
 const SocialLinksSection: FC = () => {
   const { control, watch } = useFormContext<Resume>();
@@ -24,8 +24,8 @@ const SocialLinksSection: FC = () => {
   };
 
   return (
-    <SectionCard className={cn(!visible && "opacity-50")}>
-      <SectionTitle>
+    <Section className={cn(!visible && "opacity-50")}>
+      <SectionTitle index="03">
         <span>Website & Social links</span>
         <Controller
           control={control}
@@ -48,7 +48,11 @@ const SocialLinksSection: FC = () => {
                 render={({ field }) => <Input placeholder="https://medium.com" {...field} />}
               />
               <Tooltip title="Delete">
-                <button onClick={() => remove(index)}>
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="text-muted-foreground transition-colors hover:text-destructive"
+                >
                   <FaTrash />
                 </button>
               </Tooltip>
@@ -61,7 +65,7 @@ const SocialLinksSection: FC = () => {
           Add
         </Button>
       </SectionBody>
-    </SectionCard>
+    </Section>
   );
 };
 

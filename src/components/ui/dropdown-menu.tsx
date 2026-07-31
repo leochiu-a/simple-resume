@@ -144,7 +144,13 @@ const DropdownMenuLabel = React.forwardRef<
 >(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Label
     ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className)}
+    className={cn(
+      // A label in a menu is a heading for a group, which is the same job the mono
+      // eyebrows do everywhere else in the app.
+      "px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground",
+      inset && "pl-8",
+      className,
+    )}
     {...props}
   />
 ));

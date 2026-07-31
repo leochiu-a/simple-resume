@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { LabeledDatePickerField } from "./labeled-date-picker-field";
 import { LabeledInputField } from "./labeled-input-field";
 import VisibleSwitch from "./visible-switch";
-import { SectionBody, SectionCard, SectionTitle } from "./section-card";
+import { Section, SectionBody, SectionTitle } from "./section";
 
 const Educations: FC = () => {
   const { control, watch } = useFormContext<Resume>();
@@ -33,8 +33,8 @@ const Educations: FC = () => {
   };
 
   return (
-    <SectionCard className={cn(!visible && "opacity-50")}>
-      <SectionTitle>
+    <Section className={cn(!visible && "opacity-50")}>
+      <SectionTitle index="06">
         <span>Educations</span>
         <Controller
           control={control}
@@ -82,7 +82,12 @@ const Educations: FC = () => {
             </div>
 
             <Tooltip title="Delete">
-              <Button variant="outline" onClick={() => remove(index)} className="mt-4">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => remove(index)}
+                className="mt-4"
+              >
                 <FaTrash className="mr-2 size-4" /> Delete
               </Button>
             </Tooltip>
@@ -94,7 +99,7 @@ const Educations: FC = () => {
           Add
         </Button>
       </SectionBody>
-    </SectionCard>
+    </Section>
   );
 };
 

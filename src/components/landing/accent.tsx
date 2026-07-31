@@ -60,6 +60,7 @@ const AccentProvider = ({ children }: PropsWithChildren) => {
     <AccentContext.Provider value={value}>
       <div
         data-landing
+        data-ink
         style={{ "--ink": color } as React.CSSProperties}
         className="min-h-screen bg-[var(--paper)] font-body text-[var(--graphite)] transition-colors duration-500"
       >

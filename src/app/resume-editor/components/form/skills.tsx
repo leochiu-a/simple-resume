@@ -8,7 +8,7 @@ import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import VisibleSwitch from "./visible-switch";
-import { SectionBody, SectionCard, SectionTitle } from "./section-card";
+import { Section, SectionBody, SectionTitle } from "./section";
 
 const Skills: FC = () => {
   const { control, watch } = useFormContext<Resume>();
@@ -23,8 +23,8 @@ const Skills: FC = () => {
   };
 
   return (
-    <SectionCard className={cn(!visible && "opacity-50")}>
-      <SectionTitle>
+    <Section className={cn(!visible && "opacity-50")}>
+      <SectionTitle index="04">
         <span>Skills</span>
         <Controller
           control={control}
@@ -42,7 +42,11 @@ const Skills: FC = () => {
                 render={({ field }) => <Input {...field} />}
               />
               <Tooltip title="Delete">
-                <button onClick={() => remove(index)}>
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="text-muted-foreground transition-colors hover:text-destructive"
+                >
                   <FaTrash />
                 </button>
               </Tooltip>
@@ -55,7 +59,7 @@ const Skills: FC = () => {
           Add
         </Button>
       </SectionBody>
-    </SectionCard>
+    </Section>
   );
 };
 

@@ -54,7 +54,7 @@ const SiteNav = () => (
         <Link
           href="https://github.com/leochiu-a/simple-resume"
           target="_blank"
-          aria-label="Simple Resume on GitHub"
+          aria-label="Source on GitHub"
           className="flex size-9 items-center justify-center border border-[var(--rule)] transition-colors duration-200 hover:border-[var(--ink-display)]"
         >
           <SiGithub className="size-4" />
