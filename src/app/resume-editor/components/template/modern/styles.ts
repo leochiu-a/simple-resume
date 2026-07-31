@@ -23,7 +23,14 @@ export const SECTION_SPACING = pt(32);
 export const ICON_SIZE = 20;
 
 export const styles = StyleSheet.create({
+  /*
+   * `boxSizing` is load-bearing, not decoration: yoga treats `minHeight` as
+   * border-box while the browser defaults to content-box, so without it the
+   * preview's sheet grows by the page padding and reports a page that the PDF
+   * does not have.
+   */
   page: {
+    boxSizing: "border-box",
     display: "flex",
     flexDirection: "row",
     minHeight: PAGE_MIN_HEIGHT,
