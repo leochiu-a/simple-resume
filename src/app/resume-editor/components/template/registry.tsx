@@ -8,6 +8,10 @@ import buildClassicResumeHtml from "./classic/build-classic-resume-html";
 import ModernTemplate from "./modern/modern-template";
 import buildModernResumeHtml from "./modern/build-modern-resume-html";
 import { DEFAULT_PANEL_COLOR } from "./modern/panel-color";
+import FormalTemplate from "./formal/formal-template";
+import buildFormalResumeHtml from "./formal/build-formal-resume-html";
+import TimelineTemplate from "./timeline/timeline-template";
+import buildTimelineResumeHtml from "./timeline/build-timeline-resume-html";
 
 /**
  * Every template the editor can render. A template owns both of its outputs — the
@@ -46,6 +50,22 @@ export const TEMPLATES: TemplateDefinition[] = [
     defaultColor: DEFAULT_PANEL_COLOR,
     render: (props) => <ModernTemplate {...props} />,
     buildHtml: buildModernResumeHtml,
+  },
+  {
+    id: "formal",
+    label: "Formal",
+    description: "Single column, centered serif header.",
+    defaultColor: "#02061b",
+    render: (props) => <FormalTemplate {...props} />,
+    buildHtml: buildFormalResumeHtml,
+  },
+  {
+    id: "timeline",
+    label: "Timeline",
+    description: "Timeline entries, details in a right-hand rail.",
+    defaultColor: "#02061b",
+    render: (props) => <TimelineTemplate {...props} />,
+    buildHtml: buildTimelineResumeHtml,
   },
 ];
 
