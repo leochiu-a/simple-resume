@@ -9,12 +9,15 @@ import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import debounce from "lodash/debounce";
 
 import { Resume } from "@/types/resume";
+import { Separator } from "@/components/ui/separator";
 import ResumeForm from "./components/form/resume-form";
 import ResumePreviewDialog from "./components/resume-preview-dialog";
 import ResumePreview from "./components/resume-preview";
+import PreviewControls from "./components/preview-controls";
 import { ModeToggle } from "./components/mode-toggle";
 import WebMcpStatusBadge from "./components/webmcp-status";
 import { useResumeMcp } from "./hooks/useResumeMcp";
+import useTemplateOptions from "./hooks/useTemplateOptions";
 import { DEFAULT_RESUME } from "./constants";
 
 const ResumeEditorPage = () => {
@@ -29,6 +32,9 @@ const ResumeEditorPage = () => {
   const matches = useMediaQuery("(min-width: 1024px)");
   const { resolvedTheme } = useTheme();
   const { status: mcpStatus, toolCount: mcpToolCount } = useResumeMcp(formMethods);
+  // Held here rather than in the preview: on desktop the controls that drive it
+  // sit in the nav, which is outside the preview entirely.
+  const templateOptions = useTemplateOptions();
 
   const saveResume = useMemo(
     () =>
@@ -56,7 +62,17 @@ const ResumeEditorPage = () => {
           <Link href="/">
             <h1 className="text-xl font-bold">Simple Resume</h1>
           </Link>
+
           <div className="ml-auto flex gap-4 items-center">
+            {/* Only on desktop: at mobile widths the nav has no room, so these
+                ride in the preview dialog's header instead. */}
+            {matches && (
+              <>
+                <PreviewControls resume={resume} options={templateOptions} />
+                <Separator orientation="vertical" className="h-6" />
+              </>
+            )}
+
             <WebMcpStatusBadge status={mcpStatus} toolCount={mcpToolCount} />
             <ModeToggle />
             <Link href="https://github.com/leochiu-a/simple-resume" target="_blank">
@@ -80,9 +96,9 @@ const ResumeEditorPage = () => {
               </div>
 
               {matches ? (
-                <ResumePreview resume={resume} />
+                <ResumePreview resume={resume} options={templateOptions} />
               ) : (
-                <ResumePreviewDialog resume={resume} />
+                <ResumePreviewDialog resume={resume} options={templateOptions} />
               )}
             </div>
           </form>

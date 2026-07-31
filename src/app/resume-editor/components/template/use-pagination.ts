@@ -175,7 +175,20 @@ const usePagination = (pageHeight: number) => {
 
     measure();
 
-    return () => observer.disconnect();
+    // The sheet's webfonts arrive after first paint, and different metrics mean
+    // different line wrapping — so the first measurement is taken against fallback
+    // fonts and can be wrong. A resize usually catches it, but not reliably: a
+    // reflow that shuffles line breaks without changing the total height leaves a
+    // stale answer behind.
+    let cancelled = false;
+    content.ownerDocument.fonts?.ready.then(() => {
+      if (!cancelled && content.isConnected) measure();
+    });
+
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
   }, [content, pageHeight]);
 
   return { pageCount, contentRef: setContent };

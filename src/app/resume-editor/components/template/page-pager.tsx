@@ -1,6 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationButton,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination";
 
 /**
  * Pages through the preview one sheet at a time.
@@ -22,22 +27,21 @@ const PagePager = ({
   if (pageCount < 2) return null;
 
   return (
-    <nav aria-label="Resume pages" className="flex items-center gap-1">
-      {Array.from({ length: pageCount }, (_, index) => (
-        <Button
-          key={index}
-          variant={index === page ? "default" : "outline"}
-          size="icon"
-          type="button"
-          aria-label={`Page ${index + 1}`}
-          aria-current={index === page ? "page" : undefined}
-          onClick={() => onSelect(index)}
-          className="tabular-nums"
-        >
-          {index + 1}
-        </Button>
-      ))}
-    </nav>
+    <Pagination aria-label="Resume pages">
+      <PaginationContent>
+        {Array.from({ length: pageCount }, (_, index) => (
+          <PaginationItem key={index}>
+            <PaginationButton
+              isActive={index === page}
+              aria-label={`Page ${index + 1}`}
+              onClick={() => onSelect(index)}
+            >
+              {index + 1}
+            </PaginationButton>
+          </PaginationItem>
+        ))}
+      </PaginationContent>
+    </Pagination>
   );
 };
 

@@ -42,12 +42,11 @@ const useResumeScale = () => {
       if (matches) {
         const screenHeightPx = window.innerHeight;
         const navHeight = 48;
-        const dockHeight = 48;
         // Reserved whether or not the pager is showing, so the sheet does not
         // resize out from under you the moment a resume spills onto a second page.
         const pagerHeight = 40 + 16;
         const resumePaddingY = 32 * 2;
-        const resumeHeight = screenHeightPx - navHeight - dockHeight - pagerHeight - resumePaddingY;
+        const resumeHeight = screenHeightPx - navHeight - pagerHeight - resumePaddingY;
 
         scale = resumeHeight / A4_HEIGHT_PX;
       } else {

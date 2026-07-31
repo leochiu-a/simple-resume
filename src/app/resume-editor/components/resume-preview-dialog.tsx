@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Sketch as SketchPicker } from "@uiw/react-color";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,23 +10,23 @@ import {
 } from "@/components/ui/dialog";
 import { Resume } from "@/types/resume";
 
-import useTemplateOptions from "../hooks/useTemplateOptions";
+import type useTemplateOptions from "../hooks/useTemplateOptions";
 import ResumeIframeCSR from "./template/resume-iframe";
-import TemplatePicker from "./template/template-picker";
-import DownloadPDFButton from "./template/download-pdf-button";
-import DownloadHTMLButton from "./template/download-html-button";
-import { FaPalette } from "react-icons/fa6";
+import PreviewControls from "./preview-controls";
 
-const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
+/**
+ * The mobile preview. The nav has no room for the controls at this width, so they
+ * ride in the dialog's own header instead.
+ */
+const ResumePreviewDialog = ({
+  resume,
+  options,
+}: {
+  resume: Resume;
+  options: ReturnType<typeof useTemplateOptions>;
+}) => {
   const [open, setOpen] = useState(false);
-  const {
-    template,
-    selectTemplate,
-    displayColorPicker,
-    backgroundColor,
-    toggleColorPicker,
-    changeBackgroundColor,
-  } = useTemplateOptions();
+  const { template, backgroundColor } = options;
 
   const handleChangeOpen = (open: boolean) => {
     setOpen(open);
@@ -39,30 +38,7 @@ const ResumePreviewDialog = ({ resume }: { resume: Resume }) => {
         <DialogContent className="max-h-[calc(100dvh)] max-w-screen h-screen p-0 border-0">
           <DialogHeader>
             <DialogTitle className="flex justify-center items-center gap-3 sticky top-0 h-16 border-b z-10">
-              <TemplatePicker template={template} onSelect={selectTemplate} />
-
-              <div className="relative">
-                <Button variant="outline" type="button" onClick={toggleColorPicker}>
-                  <FaPalette />
-                </Button>
-                {displayColorPicker && (
-                  <div className="absolute top-12">
-                    <div className="fixed inset-0" onClick={toggleColorPicker} />
-                    <SketchPicker color={backgroundColor} onChange={changeBackgroundColor} />
-                  </div>
-                )}
-              </div>
-
-              <DownloadHTMLButton
-                resume={resume}
-                backgroundColor={backgroundColor}
-                template={template}
-              />
-              <DownloadPDFButton
-                resume={resume}
-                backgroundColor={backgroundColor}
-                template={template}
-              />
+              <PreviewControls resume={resume} options={options} />
             </DialogTitle>
             <DialogDescription className="overflow-auto h-[calc(100dvh-64px)]">
               <div className="m-4 flex justify-center">
