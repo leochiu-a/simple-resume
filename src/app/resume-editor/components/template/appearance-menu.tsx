@@ -13,8 +13,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { Resume } from "@/types/resume";
 
 import { TEMPLATES, TemplateDefinition } from "./registry";
+import TemplateThumbnail from "./template-thumbnail";
 
 /**
  * The one place the preview's appearance is chosen: which template, and what
@@ -23,6 +25,10 @@ import { TEMPLATES, TemplateDefinition } from "./registry";
  * These used to be two buttons in the nav. Folding them together is what keeps the
  * bar quiet — and they belong together anyway, since each template tints a
  * different part of the page.
+ *
+ * The templates are shown as pages rather than named in a list. A layout is a
+ * visual thing, and "Timeline: timeline entries, details in a right-hand rail" asks
+ * you to picture it; a thumbnail of your own resume in that layout does not.
  */
 
 /** Enough range to suit any of the templates without opening the full picker. */
@@ -36,12 +42,15 @@ const SWATCHES = [
 ];
 
 const AppearanceMenu = ({
+  resume,
   template,
   color,
   onSelectTemplate,
   onSelectColor,
   onOpenColorPicker,
 }: {
+  /** Shown in the thumbnails, so the preview is of your resume and not a sample. */
+  resume: Resume;
   template: TemplateDefinition;
   color: string;
   onSelectTemplate: (id: string) => void;
@@ -67,21 +76,48 @@ const AppearanceMenu = ({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="max-w-72">
+      {/* Tall enough to need a ceiling on a short laptop, hence the scroll. */}
+      <DropdownMenuContent align="end" className="max-h-[80vh] w-80 overflow-y-auto">
         <DropdownMenuLabel>Template</DropdownMenuLabel>
-        {TEMPLATES.map(({ id, label, description }) => (
-          <DropdownMenuItem
-            key={id}
-            onClick={() => onSelectTemplate(id)}
-            className="items-start gap-2"
-          >
-            <Check className={cn("mt-1 h-4 w-4 shrink-0", id !== template.id && "opacity-0")} />
-            <span className="flex flex-col">
-              <span className="font-medium">{label}</span>
-              <span className="text-xs text-muted-foreground">{description}</span>
-            </span>
-          </DropdownMenuItem>
-        ))}
+        <div className="grid grid-cols-2 gap-1">
+          {TEMPLATES.map((entry) => {
+            const isCurrent = entry.id === template.id;
+
+            return (
+              <DropdownMenuItem
+                key={entry.id}
+                onClick={() => onSelectTemplate(entry.id)}
+                // The description is the tooltip now that the page itself says more
+                // about the layout than a sentence can. The label alone is what
+                // shows, so the name has to carry both — a thumbnail is no use to a
+                // screen reader.
+                title={entry.description}
+                aria-label={`${entry.label} — ${entry.description}`}
+                className="flex-col items-stretch gap-1.5 p-1.5"
+              >
+                <div
+                  className={cn(
+                    "overflow-hidden rounded-sm border",
+                    isCurrent ? "border-foreground ring-2 ring-foreground/20" : "border-border",
+                  )}
+                >
+                  {/* The one on show keeps the colour you picked; the rest preview
+                      the colour they would switch to, since picking a template
+                      resets it to that template's own default. */}
+                  <TemplateThumbnail
+                    template={entry}
+                    resume={resume}
+                    backgroundColor={isCurrent ? color : entry.defaultColor}
+                  />
+                </div>
+                <span className="flex items-center gap-1 text-xs font-medium">
+                  <Check className={cn("size-3 shrink-0", !isCurrent && "opacity-0")} />
+                  {entry.label}
+                </span>
+              </DropdownMenuItem>
+            );
+          })}
+        </div>
 
         <DropdownMenuSeparator />
 
