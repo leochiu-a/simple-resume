@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 
-import { downloadHtmlButton, downloadPdfButton, preview, readPdfFacts } from "./helpers";
+import { downloadHtml, downloadMenu, downloadPdf, preview, readPdfFacts } from "./helpers";
 
 /**
  * The Timeline template: a banded header, dated timeline entries in a wide left
@@ -108,7 +108,7 @@ test.describe("timeline template", () => {
 
   test("exports the Timeline template as a standalone document", async ({ page }) => {
     const downloadPromise = page.waitForEvent("download", { timeout: 15_000 });
-    await downloadHtmlButton(page).click();
+    await downloadHtml(page);
     const download = await downloadPromise;
 
     const path = test.info().outputPath("resume.html");
@@ -150,11 +150,10 @@ test.describe("timeline template", () => {
   });
 
   test("downloads a valid PDF of the Timeline template", async ({ page }) => {
-    const button = downloadPdfButton(page);
-    await expect(button).toBeEnabled();
+    await expect(downloadMenu(page)).toBeEnabled();
 
     const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-    await button.click();
+    await downloadPdf(page);
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toBe("resume.pdf");

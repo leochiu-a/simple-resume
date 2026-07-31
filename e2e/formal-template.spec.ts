@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 
-import { downloadHtmlButton, downloadPdfButton, preview, readPdfFacts } from "./helpers";
+import { downloadHtml, downloadMenu, downloadPdf, preview, readPdfFacts } from "./helpers";
 
 /**
  * The Formal template is a single column under a centred serif header. These
@@ -54,7 +54,7 @@ test.describe("Formal template", () => {
     await selectFormal(page);
 
     const downloadPromise = page.waitForEvent("download", { timeout: 15_000 });
-    await downloadHtmlButton(page).click();
+    await downloadHtml(page);
     const download = await downloadPromise;
 
     const path = test.info().outputPath("resume.html");
@@ -112,11 +112,10 @@ test.describe("Formal template", () => {
   test("downloads a valid single-page PDF", async ({ page }) => {
     await selectFormal(page);
 
-    const button = downloadPdfButton(page);
-    await expect(button).toBeEnabled();
+    await expect(downloadMenu(page)).toBeEnabled();
 
     const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-    await button.click();
+    await downloadPdf(page);
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toBe("resume.pdf");

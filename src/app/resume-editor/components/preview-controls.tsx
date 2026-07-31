@@ -1,17 +1,14 @@
-import { FaPalette } from "react-icons/fa6";
 import { Sketch as SketchPicker } from "@uiw/react-color";
 
 import { Resume } from "@/types/resume";
-import { Button } from "@/components/ui/button";
 
 import type useTemplateOptions from "../hooks/useTemplateOptions";
-import TemplatePicker from "./template/template-picker";
-import DownloadPDFButton from "./template/download-pdf-button";
-import DownloadHTMLButton from "./template/download-html-button";
+import AppearanceMenu from "./template/appearance-menu";
+import DownloadButton from "./template/download-button";
 
 /**
- * Everything you can do to the preview without editing the resume: pick a
- * template, tint it, take it away as a file.
+ * Everything you can do to the preview without editing the resume, in two
+ * controls: how it looks, and taking it away as a file.
  *
  * It lives in the nav on desktop and in the dialog header on mobile, which is why
  * it takes its state rather than owning it — both places have to drive the same
@@ -29,29 +26,31 @@ const PreviewControls = ({
     selectTemplate,
     displayColorPicker,
     backgroundColor,
+    selectColor,
     toggleColorPicker,
     changeBackgroundColor,
   } = options;
 
   return (
-    <div className="flex items-center gap-3">
-      <TemplatePicker template={template} onSelect={selectTemplate} />
+    <div className="relative flex items-center gap-3">
+      <AppearanceMenu
+        template={template}
+        color={backgroundColor}
+        onSelectTemplate={selectTemplate}
+        onSelectColor={selectColor}
+        onOpenColorPicker={toggleColorPicker}
+      />
 
-      <div className="relative">
-        <Button variant="outline" type="button" onClick={toggleColorPicker}>
-          <FaPalette />
-        </Button>
-        {displayColorPicker && (
-          // Opens downwards: the button sits at the top of the page, not the bottom.
-          <div className="absolute top-12 z-20">
-            <div className="fixed inset-0" onClick={toggleColorPicker} />
-            <SketchPicker color={backgroundColor} onChange={changeBackgroundColor} />
-          </div>
-        )}
-      </div>
+      <DownloadButton resume={resume} backgroundColor={backgroundColor} template={template} />
 
-      <DownloadHTMLButton resume={resume} backgroundColor={backgroundColor} template={template} />
-      <DownloadPDFButton resume={resume} backgroundColor={backgroundColor} template={template} />
+      {displayColorPicker && (
+        // The presets in the menu cover most cases; this is the escape hatch for
+        // an exact colour, reached from "Custom colour…" rather than its own button.
+        <div className="absolute right-0 top-12 z-20">
+          <div className="fixed inset-0" onClick={toggleColorPicker} />
+          <SketchPicker color={backgroundColor} onChange={changeBackgroundColor} />
+        </div>
+      )}
     </div>
   );
 };

@@ -23,17 +23,23 @@ const WebMcpStatusBadge: FC<WebMcpStatusBadgeProps> = ({ status, toolCount }) =>
   }[status];
 
   return (
-    <Tooltip title={hint}>
+    // Status, not an action — so it earns an icon in the nav rather than a strip
+    // of text. The wording it used to spell out moves into the tooltip, which was
+    // already here for the hint.
+    <Tooltip title={`${label} — ${hint}`}>
       <span
         className={cn(
-          "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs",
+          "flex size-8 items-center justify-center rounded-full border",
           status === "ready"
             ? "border-emerald-600/30 text-emerald-700 dark:text-emerald-400"
             : "border-muted-foreground/30 text-muted-foreground",
         )}
       >
-        <FaRobot className="size-3" />
-        {label}
+        <FaRobot className="size-3.5" />
+        {/* Kept in the DOM rather than swapped for an aria-label: a plain span
+            with aria-label is announced inconsistently, and the status is the
+            whole point of the badge. */}
+        <span className="sr-only">{label}</span>
       </span>
     </Tooltip>
   );

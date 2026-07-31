@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { downloadPdfButton, readPdfFacts } from "./helpers";
+import { downloadMenu, downloadPdf, readPdfFacts } from "./helpers";
 
 /**
  * @react-pdf/renderer generates the PDF entirely in the browser via usePDF, so
@@ -10,11 +10,10 @@ test.describe("PDF download", () => {
   test("produces a valid single-page PDF with fonts and links embedded", async ({ page }) => {
     await page.goto("/resume-editor");
 
-    const button = downloadPdfButton(page);
-    await expect(button).toBeEnabled();
+    await expect(downloadMenu(page)).toBeEnabled();
 
     const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-    await button.click();
+    await downloadPdf(page);
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toBe("resume.pdf");
@@ -46,7 +45,7 @@ test.describe("PDF download", () => {
     await jobTitle.fill("Staff Engineer");
 
     const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-    await downloadPdfButton(page).click();
+    await downloadPdf(page);
     const download = await downloadPromise;
 
     const pdf = readPdfFacts((await download.path())!);

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectBodyUnlocked, paletteButton, preview, themeToggle } from "./helpers";
+import { expectBodyUnlocked, openColorPicker, preview, themeToggle } from "./helpers";
 
 /**
  * The Radix UI packages were updated as part of the React 19 upgrade, so each
@@ -56,7 +56,7 @@ test.describe("background colour picker", () => {
     const sidebar = preview(page).locator('[style*="background-color"]').nth(1);
     await expect(sidebar).toBeVisible();
 
-    await paletteButton(page).click();
+    await openColorPicker(page);
 
     const sketch = page.locator(".w-color-sketch");
     await expect(sketch).toBeVisible();
@@ -73,7 +73,7 @@ test.describe("background colour picker", () => {
   test("picker closes again and leaves the page interactive", async ({ page }) => {
     await page.goto("/resume-editor");
 
-    await paletteButton(page).click();
+    await openColorPicker(page);
     await expect(page.locator(".w-color-sketch")).toBeVisible();
 
     // The picker is dismissed by its own full-screen click-catcher overlay.
@@ -86,7 +86,7 @@ test.describe("background colour picker", () => {
 
     // The overlay must be gone too, otherwise the page stays unclickable.
     await expect(page.locator("div.fixed.inset-0")).toHaveCount(0);
-    await paletteButton(page).click();
+    await openColorPicker(page);
     await expect(page.locator(".w-color-sketch")).toBeVisible();
   });
 });
