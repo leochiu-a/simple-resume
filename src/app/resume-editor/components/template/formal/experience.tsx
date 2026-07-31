@@ -6,6 +6,7 @@ import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
 import Section from "./section";
 import { styles } from "./styles";
+import AvoidBreak from "../avoid-break";
 
 /**
  * Each role headlines with its uppercased job title and, at a regular weight
@@ -20,7 +21,7 @@ const Experience = ({ employmentHistory }: { employmentHistory: EmploymentHistor
           const bullets = description.split(SPLIT_TEXT).filter((item) => item.trim() !== "");
 
           return (
-            <View style={styles.entry} key={index} wrap={false}>
+            <AvoidBreak style={styles.entry} key={index}>
               <Text style={{ ...styles.entryHeadline, ...styles.entryHeadlineUpper }}>
                 {jobTitle}
                 <Text style={styles.entryHeadlineDate}>
@@ -40,7 +41,7 @@ const Experience = ({ employmentHistory }: { employmentHistory: EmploymentHistor
                   ))}
                 </View>
               )}
-            </View>
+            </AvoidBreak>
           );
         })}
       </View>

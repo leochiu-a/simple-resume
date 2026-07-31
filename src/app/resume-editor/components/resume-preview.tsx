@@ -22,36 +22,38 @@ const ResumePreview = ({ resume }: { resume: Resume }) => {
 
   return (
     <div className="sticky top-[calc(48px+32px)] h-[calc(100vh-48px-32px)] w-1/2">
-      <div className="m-8 mt-0">
-        <div className="flex origin-top justify-center flex-col	items-center gap-4">
+      <div className="m-8 mt-0 flex h-full flex-col items-center gap-4">
+        {/* The sheet stack scrolls on its own so the controls below stay put once
+            a resume runs onto a second page. */}
+        <div className="flex min-h-0 w-full flex-1 justify-center overflow-y-auto">
           <ResumeIframeCSR>{template.render({ resume, backgroundColor })}</ResumeIframeCSR>
+        </div>
 
-          <div className="flex gap-3">
-            <TemplatePicker template={template} onSelect={selectTemplate} />
+        <div className="flex flex-none gap-3">
+          <TemplatePicker template={template} onSelect={selectTemplate} />
 
-            <div className="relative">
-              <Button variant="outline" type="button" onClick={toggleColorPicker}>
-                <FaPalette />
-              </Button>
-              {displayColorPicker && (
-                <div className="absolute bottom-12">
-                  <div className="fixed inset-0" onClick={toggleColorPicker} />
-                  <SketchPicker color={backgroundColor} onChange={changeBackgroundColor} />
-                </div>
-              )}
-            </div>
-
-            <DownloadHTMLButton
-              resume={resume}
-              backgroundColor={backgroundColor}
-              template={template}
-            />
-            <DownloadPDFButton
-              resume={resume}
-              backgroundColor={backgroundColor}
-              template={template}
-            />
+          <div className="relative">
+            <Button variant="outline" type="button" onClick={toggleColorPicker}>
+              <FaPalette />
+            </Button>
+            {displayColorPicker && (
+              <div className="absolute bottom-12">
+                <div className="fixed inset-0" onClick={toggleColorPicker} />
+                <SketchPicker color={backgroundColor} onChange={changeBackgroundColor} />
+              </div>
+            )}
           </div>
+
+          <DownloadHTMLButton
+            resume={resume}
+            backgroundColor={backgroundColor}
+            template={template}
+          />
+          <DownloadPDFButton
+            resume={resume}
+            backgroundColor={backgroundColor}
+            template={template}
+          />
         </div>
       </div>
     </div>

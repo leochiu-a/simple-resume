@@ -7,6 +7,7 @@ import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import Section from "./section";
 import Marker from "./marker";
 import { styles } from "./styles";
+import AvoidBreak from "../avoid-break";
 
 /**
  * Each role is two halves of equal width: the dated marker on the left, the role
@@ -27,7 +28,7 @@ const Experience = ({
           const bullets = description.split(SPLIT_TEXT).filter((item) => item.trim() !== "");
 
           return (
-            <View style={styles.entry} key={index} wrap={false}>
+            <AvoidBreak style={styles.entry} key={index}>
               <View style={styles.entryLeft}>
                 <Marker connected={index < employmentHistory.length - 1} />
                 <View style={styles.entryDateColumn}>
@@ -50,7 +51,7 @@ const Experience = ({
                   </View>
                 )}
               </View>
-            </View>
+            </AvoidBreak>
           );
         })}
       </View>
