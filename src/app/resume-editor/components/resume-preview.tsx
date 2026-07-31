@@ -4,24 +4,31 @@ import { Sketch as SketchPicker } from "@uiw/react-color";
 import { Resume } from "@/types/resume";
 import { Button } from "@/components/ui/button";
 
-import useColorPicker from "../hooks/useColorPicker";
+import useTemplateOptions from "../hooks/useTemplateOptions";
 import ResumeIframeCSR from "./template/resume-iframe";
-import ResumeTemplate from "./template/resume-template";
+import TemplatePicker from "./template/template-picker";
 import DownloadPDFButton from "./template/download-pdf-button";
+import DownloadHTMLButton from "./template/download-html-button";
 
 const ResumePreview = ({ resume }: { resume: Resume }) => {
-  const { displayColorPicker, backgroundColor, toggleColorPicker, changeBackgroundColor } =
-    useColorPicker();
+  const {
+    template,
+    selectTemplate,
+    displayColorPicker,
+    backgroundColor,
+    toggleColorPicker,
+    changeBackgroundColor,
+  } = useTemplateOptions();
 
   return (
     <div className="sticky top-[calc(48px+32px)] h-[calc(100vh-48px-32px)] w-1/2">
       <div className="m-8 mt-0">
         <div className="flex origin-top justify-center flex-col	items-center gap-4">
-          <ResumeIframeCSR>
-            <ResumeTemplate resume={resume} backgroundColor={backgroundColor} />
-          </ResumeIframeCSR>
+          <ResumeIframeCSR>{template.render({ resume, backgroundColor })}</ResumeIframeCSR>
 
           <div className="flex gap-3">
+            <TemplatePicker template={template} onSelect={selectTemplate} />
+
             <div className="relative">
               <Button variant="outline" type="button" onClick={toggleColorPicker}>
                 <FaPalette />
@@ -34,7 +41,16 @@ const ResumePreview = ({ resume }: { resume: Resume }) => {
               )}
             </div>
 
-            <DownloadPDFButton resume={resume} backgroundColor={backgroundColor} />
+            <DownloadHTMLButton
+              resume={resume}
+              backgroundColor={backgroundColor}
+              template={template}
+            />
+            <DownloadPDFButton
+              resume={resume}
+              backgroundColor={backgroundColor}
+              template={template}
+            />
           </div>
         </div>
       </div>

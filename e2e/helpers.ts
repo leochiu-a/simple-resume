@@ -8,8 +8,11 @@ import { expect, type Locator, type Page } from "@playwright/test";
  */
 export const paletteButton = (page: Page): Locator => page.locator("div.relative > button");
 
-export const downloadButton = (page: Page): Locator =>
-  page.getByRole("button", { name: "Download", exact: true });
+export const downloadPdfButton = (page: Page): Locator =>
+  page.getByRole("button", { name: "Download PDF", exact: true });
+
+export const downloadHtmlButton = (page: Page): Locator =>
+  page.getByRole("button", { name: "Download HTML", exact: true });
 
 export const themeToggle = (page: Page): Locator =>
   page.getByRole("button", { name: "Toggle theme" });
