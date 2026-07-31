@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
-import { downloadHtmlButton } from "./helpers";
+import { downloadHtml } from "./helpers";
 
 /**
  * The HTML export is built from the resume object in the browser and handed to
@@ -11,7 +11,7 @@ import { downloadHtmlButton } from "./helpers";
  */
 const exportHtml = async (page: Page) => {
   const downloadPromise = page.waitForEvent("download", { timeout: 15_000 });
-  await downloadHtmlButton(page).click();
+  await downloadHtml(page);
   const download = await downloadPromise;
 
   expect(download.suggestedFilename()).toBe("resume.html");

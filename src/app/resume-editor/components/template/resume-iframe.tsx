@@ -6,6 +6,8 @@ import Frame from "react-frame-component";
 import { useMediaQuery } from "usehooks-ts";
 
 import { A4_HEIGHT_PX, A4_WIDTH_PX } from "./constants";
+import usePagination from "./use-pagination";
+import PagePager from "./page-pager";
 
 const INITIAL_CONTENT = `
 <!DOCTYPE html>
@@ -14,6 +16,14 @@ const INITIAL_CONTENT = `
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+      /* @react-pdf's primitives land here as unknown elements, so they carry no
+         layout of their own. Letting the sheet stretch is what allows a template's
+         full-height sidebar to reach the bottom of the last page instead of
+         stopping where the text happens to end. */
+      document { display: flex; flex-direction: column; flex: 1 0 auto; }
+      page { flex: 1 0 auto; }
+    </style>
   </head>
   <body style="margin: 0;">
     <div></div>
@@ -32,9 +42,11 @@ const useResumeScale = () => {
       if (matches) {
         const screenHeightPx = window.innerHeight;
         const navHeight = 48;
-        const dockHeight = 48;
+        // Reserved whether or not the pager is showing, so the sheet does not
+        // resize out from under you the moment a resume spills onto a second page.
+        const pagerHeight = 40 + 16;
         const resumePaddingY = 32 * 2;
-        const resumeHeight = screenHeightPx - navHeight - dockHeight - resumePaddingY;
+        const resumeHeight = screenHeightPx - navHeight - pagerHeight - resumePaddingY;
 
         scale = resumeHeight / A4_HEIGHT_PX;
       } else {
@@ -66,31 +78,64 @@ const useResumeScale = () => {
 
 const ResumeIframe = ({ children }: PropsWithChildren) => {
   const scale = useResumeScale();
+  const { pageCount, contentRef } = usePagination(A4_HEIGHT_PX);
+  const [page, setPage] = useState(0);
+
+  // Deleting a job can drop the page you were looking at out of existence.
+  const currentPage = Math.min(page, pageCount - 1);
 
   return (
-    <div
-      style={{
-        maxWidth: `${A4_WIDTH_PX * scale}px`,
-        maxHeight: `${A4_HEIGHT_PX * scale}px`,
-      }}
-    >
-      {/* There is an outer div and an inner div here. The inner div sets the iframe width and uses transform scale to zoom in/out the resume iframe.
-          While zooming out or scaling down via transform, the element appears smaller but still occupies the same width/height. Therefore, we use the 
-          outer div to restrict the max width & height proportionally */}
+    <div className="flex flex-col items-center gap-4">
       <div
         style={{
-          width: `${A4_WIDTH_PX}px`,
-          height: `${A4_HEIGHT_PX}px`,
-          transform: `scale(${scale})`,
-          borderRadius: "8px",
-          overflow: "hidden",
+          maxWidth: `${A4_WIDTH_PX * scale}px`,
+          maxHeight: `${A4_HEIGHT_PX * scale}px`,
         }}
-        className={`origin-top-left bg-white shadow-xl`}
       >
-        <Frame style={{ width: "100%", height: "100%" }} initialContent={INITIAL_CONTENT}>
-          <div style={{ position: "relative" }}>{children}</div>
-        </Frame>
+        {/* There is an outer div and an inner div here. The inner div sets the iframe width and uses transform scale to zoom in/out the resume iframe.
+            While zooming out or scaling down via transform, the element appears smaller but still occupies the same width/height. Therefore, we use the
+            outer div to restrict the max width & height proportionally */}
+        <div
+          style={{
+            width: `${A4_WIDTH_PX}px`,
+            height: `${A4_HEIGHT_PX}px`,
+            transform: `scale(${scale})`,
+            borderRadius: "8px",
+            overflow: "hidden",
+          }}
+          className="origin-top-left bg-white shadow-xl"
+        >
+          <Frame
+            style={{ width: "100%", height: "100%", border: 0 }}
+            initialContent={INITIAL_CONTENT}
+          >
+            {/* One A4 window onto a single copy of the resume: paging slides that
+                copy up by whole pages behind it. `use-pagination` has already
+                pushed any unbreakable block clear of the boundaries, so a page
+                never opens or closes mid-entry. */}
+            <div
+              data-resume-page={currentPage + 1}
+              style={{ position: "relative", height: `${A4_HEIGHT_PX}px`, overflow: "hidden" }}
+            >
+              <div
+                ref={contentRef}
+                style={{
+                  position: "absolute",
+                  top: `${-currentPage * A4_HEIGHT_PX}px`,
+                  left: 0,
+                  right: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {children}
+              </div>
+            </div>
+          </Frame>
+        </div>
       </div>
+
+      <PagePager pageCount={pageCount} page={currentPage} onSelect={setPage} />
     </div>
   );
 };

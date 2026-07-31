@@ -3,9 +3,10 @@ import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 
 import {
-  downloadHtmlButton,
-  downloadPdfButton,
-  paletteButton,
+  downloadHtml,
+  downloadMenu,
+  downloadPdf,
+  openColorPicker,
   preview,
   readPdfFacts,
 } from "./helpers";
@@ -39,7 +40,12 @@ test.describe("template picker", () => {
     await expect(templatePicker(page)).toContainText("Classic");
 
     await templatePicker(page).click();
-    await expect(page.getByRole("menuitem")).toHaveText(EXPECTED_TEMPLATES);
+    // The same menu carries the colour controls, so the template entries are the
+    // ones that are not the custom-colour escape hatch. Still an exact match, so a
+    // new template cannot slip in unnoticed.
+    await expect(page.getByRole("menuitem").filter({ hasNotText: "Custom colour" })).toHaveText(
+      EXPECTED_TEMPLATES,
+    );
   });
 
   test("switches the preview to the Modern layout", async ({ page }) => {
@@ -77,7 +83,7 @@ test.describe("template picker", () => {
     await selectTemplate(page, "Modern");
 
     const downloadPromise = page.waitForEvent("download", { timeout: 15_000 });
-    await downloadHtmlButton(page).click();
+    await downloadHtml(page);
     const download = await downloadPromise;
 
     const path = test.info().outputPath("resume.html");
@@ -109,11 +115,10 @@ test.describe("template picker", () => {
   test("downloads a valid PDF of the Modern template", async ({ page }) => {
     await selectTemplate(page, "Modern");
 
-    const button = downloadPdfButton(page);
-    await expect(button).toBeEnabled();
+    await expect(downloadMenu(page)).toBeEnabled();
 
     const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-    await button.click();
+    await downloadPdf(page);
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toBe("resume.pdf");
@@ -135,7 +140,7 @@ test.describe("template picker", () => {
   test("leaves the colour picker working after a template change", async ({ page }) => {
     await selectTemplate(page, "Modern");
 
-    await paletteButton(page).click();
+    await openColorPicker(page);
     await expect(page.locator(".w-color-sketch")).toBeVisible();
   });
 });

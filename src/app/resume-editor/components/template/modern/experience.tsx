@@ -6,6 +6,7 @@ import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
 import Section from "./section";
 import { styles, CONTENT_COLOR } from "./styles";
+import AvoidBreak from "../avoid-break";
 
 const Experience = ({ employmentHistory }: { employmentHistory: EmploymentHistory[] }) => {
   return (
@@ -15,7 +16,7 @@ const Experience = ({ employmentHistory }: { employmentHistory: EmploymentHistor
           const bullets = description.split(SPLIT_TEXT).filter((item) => item.trim() !== "");
 
           return (
-            <View style={styles.entry} key={index} wrap={false}>
+            <AvoidBreak style={styles.entry} key={index}>
               <View style={styles.entryHeader}>
                 <Text style={styles.entryDate}>{formatDateRange(timeline, "Present")}</Text>
                 <Text style={styles.entryTitle}>{jobTitle}</Text>
@@ -32,7 +33,7 @@ const Experience = ({ employmentHistory }: { employmentHistory: EmploymentHistor
                   ))}
                 </View>
               )}
-            </View>
+            </AvoidBreak>
           );
         })}
       </View>

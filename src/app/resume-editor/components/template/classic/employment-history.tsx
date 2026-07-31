@@ -5,6 +5,8 @@ import { EmploymentHistory as EmploymentHistoryType } from "@/types/resume";
 import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
+import AvoidBreak from "../avoid-break";
+
 const EmploymentHistory = ({
   employmentHistory,
 }: {
@@ -16,7 +18,7 @@ const EmploymentHistory = ({
 
       <View style={{ ...styles.flexCol, gap: "12pt" }}>
         {employmentHistory.map(({ company, timeline, jobTitle, description }, index) => (
-          <View key={index} wrap={false}>
+          <AvoidBreak key={index}>
             <View style={{ ...styles.flexCol, marginBottom: 8 }}>
               <Text bold>
                 {jobTitle}, {company}
@@ -25,16 +27,15 @@ const EmploymentHistory = ({
             </View>
 
             {description.split(SPLIT_TEXT).map((item, index) => (
-              <View
+              <AvoidBreak
                 key={item + index}
                 style={{ ...styles.flexRow, gap: "4pt", paddingLeft: "12px" }}
-                wrap={false}
               >
                 <Text bold>•</Text>
                 <Text>{item}</Text>
-              </View>
+              </AvoidBreak>
             ))}
-          </View>
+          </AvoidBreak>
         ))}
       </View>
     </View>

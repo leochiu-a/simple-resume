@@ -74,7 +74,9 @@ test.describe("mobile preview dialog", () => {
     await expect(dialog).toBeVisible();
 
     const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-    await dialog.getByRole("button", { name: "Download PDF", exact: true }).click();
+    // The dialog header carries the same Download dropdown the nav does.
+    await dialog.getByRole("button", { name: "Download", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Download PDF" }).click();
     const download = await downloadPromise;
 
     const pdf = readPdfFacts((await download.path())!);

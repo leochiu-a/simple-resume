@@ -38,7 +38,14 @@ export const MARKER_OFFSET_PX = 6;
 const ENTRY_GAP_PX = 16;
 
 export const styles = StyleSheet.create({
+  /*
+   * `boxSizing` is load-bearing, not decoration: yoga treats `minHeight` as
+   * border-box while the browser defaults to content-box, so without it the
+   * preview's sheet grows by the page padding and reports a page that the PDF
+   * does not have.
+   */
   page: {
+    boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
     minHeight: PAGE_MIN_HEIGHT,

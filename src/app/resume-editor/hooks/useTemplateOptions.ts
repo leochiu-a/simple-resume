@@ -29,6 +29,8 @@ const useTemplateOptions = () => {
     template: getTemplate(templateId),
     selectTemplate,
     backgroundColor,
+    /** For the preset swatches, which already know their own hex. */
+    selectColor: setBackgroundColor,
     displayColorPicker,
     toggleColorPicker: () => setDisplayColorPicker((shown) => !shown),
     changeBackgroundColor: (color: ColorResult) => setBackgroundColor(color.hex),

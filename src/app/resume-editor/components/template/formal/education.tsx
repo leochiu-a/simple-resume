@@ -5,6 +5,7 @@ import formatDateRange from "@/lib/formatDateRange";
 
 import Section from "./section";
 import { styles } from "./styles";
+import AvoidBreak from "../avoid-break";
 
 /**
  * School and degree headline each entry; the major and the dates sit beneath at
@@ -16,14 +17,14 @@ const Education = ({ educations }: { educations: EducationType[] }) => {
     <Section title="Education">
       <View style={styles.entryList}>
         {educations.map(({ school, degree, major, timeline }, index) => (
-          <View style={styles.entry} key={index} wrap={false}>
+          <AvoidBreak style={styles.entry} key={index}>
             <Text style={styles.entryHeadline}>{`${school} | ${degree}`}</Text>
 
             <Text style={styles.entrySubline}>
               {major && `${major} | `}
               {formatDateRange(timeline, "In school")}
             </Text>
-          </View>
+          </AvoidBreak>
         ))}
       </View>
     </Section>

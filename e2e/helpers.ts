@@ -2,17 +2,40 @@ import { readFileSync } from "node:fs";
 import { expect, type Locator, type Page } from "@playwright/test";
 
 /**
- * The palette button that toggles the background-colour picker has no
- * accessible name (it renders only an icon), so it is located structurally: it
- * is the only `div.relative > button` on the page, sitting next to Download.
+ * The nav carries two controls: appearance (template and colour) and download
+ * (PDF and HTML). Both are dropdowns, so reaching what is inside them is an
+ * action rather than a locator.
  */
-export const paletteButton = (page: Page): Locator => page.locator("div.relative > button");
+export const appearanceMenu = (page: Page): Locator =>
+  page.getByRole("button", { name: "Change template" });
 
-export const downloadPdfButton = (page: Page): Locator =>
-  page.getByRole("button", { name: "Download PDF", exact: true });
+export const downloadMenu = (page: Page): Locator =>
+  page.getByRole("button", { name: "Download", exact: true });
 
-export const downloadHtmlButton = (page: Page): Locator =>
-  page.getByRole("button", { name: "Download HTML", exact: true });
+export const openAppearanceMenu = (page: Page) => appearanceMenu(page).click();
+
+/** Selects a template by its label in the appearance menu. */
+export const selectTemplate = async (page: Page, label: string) => {
+  await openAppearanceMenu(page);
+  await page.getByRole("menuitem").filter({ hasText: label }).click();
+  await expect(appearanceMenu(page)).toContainText(label);
+};
+
+/** The presets live in the menu; this opens the full picker behind them. */
+export const openColorPicker = async (page: Page) => {
+  await openAppearanceMenu(page);
+  await page.getByRole("menuitem", { name: "Custom colour…" }).click();
+};
+
+export const downloadPdf = async (page: Page) => {
+  await downloadMenu(page).click();
+  await page.getByRole("menuitem", { name: "Download PDF" }).click();
+};
+
+export const downloadHtml = async (page: Page) => {
+  await downloadMenu(page).click();
+  await page.getByRole("menuitem", { name: "Download HTML" }).click();
+};
 
 export const themeToggle = (page: Page): Locator =>
   page.getByRole("button", { name: "Toggle theme" });

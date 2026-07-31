@@ -6,6 +6,7 @@ import formatDateRange from "@/lib/formatDateRange";
 import Section from "./section";
 import Marker from "./marker";
 import { styles } from "./styles";
+import AvoidBreak from "../avoid-break";
 
 /** Schooling gets the same dated-marker treatment as the roles above it. */
 const Education = ({ educations }: { educations: EducationType[] }) => {
@@ -13,7 +14,7 @@ const Education = ({ educations }: { educations: EducationType[] }) => {
     <Section title="Education">
       <View style={styles.entryList}>
         {educations.map(({ school, degree, major, timeline }, index) => (
-          <View style={styles.entry} key={index} wrap={false}>
+          <AvoidBreak style={styles.entry} key={index}>
             <View style={styles.entryLeft}>
               <Marker connected={index < educations.length - 1} />
               <View style={styles.entryDateColumn}>
@@ -28,7 +29,7 @@ const Education = ({ educations }: { educations: EducationType[] }) => {
                 {major && `, ${major}`}
               </Text>
             </View>
-          </View>
+          </AvoidBreak>
         ))}
       </View>
     </Section>
