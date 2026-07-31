@@ -8,6 +8,8 @@ import { A4_HEIGHT_PX, A4_WIDTH_PX } from "@/app/resume-editor/components/templa
 import { SHEET_DOCUMENT } from "@/app/resume-editor/components/template/sheet-document";
 import { getTemplate } from "@/app/resume-editor/components/template/registry";
 
+import CropMarks from "@/components/crop-marks";
+
 import { SHOWCASE_RESUME } from "./showcase-resume";
 
 /**
@@ -44,29 +46,13 @@ const useFitScale = () => {
   return { ref, scale };
 };
 
-const CROP_MARK_POSITIONS = [
-  "left-0 top-0 border-l border-t",
-  "right-0 top-0 border-r border-t",
-  "left-0 bottom-0 border-l border-b",
-  "right-0 bottom-0 border-r border-b",
-];
-
 const TemplateSheet = ({ templateId, color }: { templateId: string; color: string }) => {
   const { ref, scale } = useFitScale();
   const template = getTemplate(templateId);
 
   return (
     <div className="relative">
-      {/* Crop marks, the way a page comes off a proofing printer. They sit outside
-          the trim, which is what the negative insets buy. */}
-      {CROP_MARK_POSITIONS.map((position) => (
-        <span
-          key={position}
-          aria-hidden
-          className={`pointer-events-none absolute z-10 h-5 w-5 border-[var(--ink-display)] opacity-50 ${position}`}
-          style={{ margin: "-14px" }}
-        />
-      ))}
+      <CropMarks className="border-[var(--ink-display)] opacity-50" />
 
       <div ref={ref} className="w-full" style={{ height: `${A4_HEIGHT_PX * scale}px` }}>
         {/* Scaling leaves the element occupying its unscaled box, so the wrapper

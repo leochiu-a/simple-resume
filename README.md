@@ -31,14 +31,26 @@ Online site: https://simple-resume-nu.vercel.app
 5. Open your browser and visit http://localhost:3000 — the editor itself is at
    [/resume-editor](http://localhost:3000/resume-editor)
 
-## Landing page
+## Look and feel
 
-The front page at `/` is set as a printed page rather than an app surface: its own paper palette in
-[`globals.css`](src/app/globals.css) under `[data-landing]`, Fraunces for display, Archivo for body
-copy and IBM Plex Mono for labels. The editor is untouched by all of it and keeps the system stack.
+Both surfaces are the same printed page — the landing page with the argument, the editor with the
+tools out. That is enforced rather than agreed: [`globals.css`](src/app/globals.css) holds one set of
+`--c-*` values and everything else aliases them. shadcn's tokens (`--background`, `--border`,
+`--primary`…) point at them for the editor, and the landing page points at them again under paper
+names (`--paper`, `--rule`, `--graphite`). Retuning a colour moves both, and neither can drift.
 
-Two things about it are worth knowing before editing
-[`src/components/landing/`](src/components/landing):
+Three faces, registered in [`layout.tsx`](src/app/layout.tsx) and used the same way on both surfaces:
+**Fraunces** for anything display, **Archivo** for body copy, **IBM Plex Mono** for labels, eyebrows
+and section numbers.
+
+The sheet is exempt from all of it. It renders inside an iframe carrying its own document, so neither
+the palette nor dark mode reaches it: it is paper-white in both themes, as the PDF will be. Do not
+give it a print grain or a tint it did not ask for — the preview's whole value is that it is not lying
+about the output.
+
+### The landing page
+
+Two things are worth knowing before editing [`src/components/landing/`](src/components/landing):
 
 - **The hero's sheet is a real template, not a screenshot.** It renders the registry's own
   `template.render()` into an iframe carrying `SHEET_DOCUMENT`, exactly as the editor's preview and
@@ -48,15 +60,37 @@ Two things about it are worth knowing before editing
   [`registry.tsx`](src/app/resume-editor/components/template/registry.tsx) adds it to the hero's
   picker too, with no other edit.
 - **The colour picked for the sheet is the whole page's accent.** `AccentProvider` publishes it as
-  the CSS variable `--ink`, which is why every section below the hero can tint itself while staying a
-  server component. Read `--ink-display` rather than `--ink` for anything that is not the sheet: two
-  of the four templates default to near-black, and dark paper lifts that towards white so it does
-  not disappear.
+  the CSS variable `--ink` on a `[data-ink]` wrapper, which is why every section below the hero can
+  tint itself while staying a server component. Read `--ink-display` rather than `--ink` for anything
+  that is not the sheet: two of the four templates default to near-black, and dark paper lifts that
+  towards white so it does not disappear.
 
 The hero's entrance is a CSS animation (`.landing-rise`) rather than a JS one. The resting state is
 visible and the keyframe only supplies the `from`, so a reveal that never runs is a hero that is
 simply already there — driving it from JS meant an interrupted animation could strand the whole pitch
 at `opacity: 0`.
+
+### The editor
+
+The form is set as a document in parts rather than a stack of cards: each section is a hairline rule,
+a number in mono and a name in Fraunces — see [`section.tsx`](src/app/resume-editor/components/form/section.tsx).
+Fields are hairline boxes filled with `--card`, and focus draws the border rather than a glow. The
+chrome deliberately takes no colour from the resume: the sheet is the only coloured thing on screen,
+which is also why the editor sets no `--ink` of its own.
+
+[`CropMarks`](src/components/crop-marks.tsx) is shared with the landing page's hero and is the one
+piece of decoration the two surfaces have in common. Because they sit _outside_ the sheet and the
+preview column scrolls, `CROP_MARK_GUTTER` is held back on each side when the scale is computed —
+otherwise the marks land outside the scroll box and are clipped. They are desktop-only for the same
+reason: at mobile widths the gutter costs more than the marks add.
+
+Two things not to do to the editor's nav:
+
+- **No `backdrop-filter`.** A backdrop-filter makes the nav a containing block for fixed positioning,
+  and the colour picker's dismiss overlay is a `fixed inset-0` rendered inside the nav. Blur the bar
+  and that overlay shrinks to the height of the bar, so clicking the page stops closing the picker.
+- **Nothing whose accessible name contains "Simple Resume"** other than the wordmark itself. Two
+  links in one bar whose names overlap are ambiguous to read out and to select.
 
 ## Templates
 

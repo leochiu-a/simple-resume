@@ -2,54 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
+/**
+ * One palette, two vocabularies.
+ *
+ * `--c-*` below are the only colour values in the app. They are HSL triples so
+ * shadcn's tokens can keep wrapping them in `hsl()`, and everything else — the
+ * editor's primitives and the landing page's paper — is an alias of them. Retuning
+ * a colour here moves both surfaces at once, which is the point: the editor is the
+ * same printed page as the landing, just with the tools out.
+ *
+ * The sheet itself is inside an iframe carrying its own document, so none of this
+ * reaches it. It stays paper-white in either theme, as the PDF will be.
+ */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --primary: 220.47 98.26% 36.08%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 92.99% 56.11%;
-    --destructive-foreground: 210 40% 98%;
-    --ring: 220.67 97.83% 36.08%;
-    --radius: 0.5rem;
+    --c-paper: 40 37% 95%;
+    --c-paper-raised: 40 60% 99%;
+    /* Hover fills and quiet backgrounds: one step off the paper. */
+    --c-wash: 40 24% 90%;
+    --c-graphite: 45 21% 8%;
+    --c-graphite-soft: 39 10% 39%;
+    --c-rule: 40 27% 82%;
+    --c-danger: 4 45% 44%;
   }
 
   .dark {
-    --background: 240 13.73% 10%;
-    --foreground: 15 28% 97%;
-    --muted: 232.5 15.44% 18.32%;
-    --muted-foreground: 233.79 11.37% 50%;
-    --popover: 234.55 17.46% 12.35%;
-    --popover-foreground: 15 28% 97%;
-    --card: 234.55 17.46% 12.35%;
-    --card-foreground: 15 28% 97%;
-    --border: 232.5 15.38% 30.59%;
-    --input: 232.5 15.38% 30.59%;
-    --primary: 0 0% 82.75%;
-    --primary-foreground: 0 0% 20%;
-    --secondary: 225.45 71.22% 72.75%;
-    --secondary-foreground: 234.55 17.46% 12.35%;
-    --accent: 234.55 17.83% 9.47%;
-    --accent-foreground: 0 0% 82.75%;
-    --destructive: 1.58 47.5% 52.94%;
-    --destructive-foreground: 210 40% 98.04%;
-    --ring: 225.45 71.22% 72.75%;
+    --c-paper: 40 11% 6%;
+    --c-paper-raised: 36 11% 9%;
+    --c-wash: 38 9% 14%;
+    --c-graphite: 40 38% 94%;
+    --c-graphite-soft: 38 9% 57%;
+    --c-rule: 39 13% 16%;
+    --c-danger: 4 42% 56%;
+  }
+
+  /**
+   * shadcn's names, pointed at the palette. Defined once rather than per theme:
+   * `var(--c-paper)` is resolved where it is used, so these follow `.dark`
+   * without a second copy that can fall out of step.
+   */
+  :root {
+    --background: var(--c-paper);
+    --foreground: var(--c-graphite);
+    --card: var(--c-paper-raised);
+    --card-foreground: var(--c-graphite);
+    --popover: var(--c-paper-raised);
+    --popover-foreground: var(--c-graphite);
+    --muted: var(--c-wash);
+    --muted-foreground: var(--c-graphite-soft);
+    --border: var(--c-rule);
+    --input: var(--c-rule);
+    /* Ink-black buttons rather than a brand colour: in this app the only thing
+       allowed to be colourful is the resume. */
+    --primary: var(--c-graphite);
+    --primary-foreground: var(--c-paper);
+    --secondary: var(--c-wash);
+    --secondary-foreground: var(--c-graphite);
+    --accent: var(--c-wash);
+    --accent-foreground: var(--c-graphite);
+    --destructive: var(--c-danger);
+    --destructive-foreground: var(--c-paper);
+    --ring: var(--c-graphite-soft);
+    /* Nearly square. Printed matter has corners. */
+    --radius: 0.25rem;
   }
 }
 
@@ -57,8 +72,10 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body), "Helvetica Neue", Helvetica, sans-serif;
   }
 }
 
@@ -69,31 +86,33 @@ body {
 }
 
 /**
- * The landing page runs on its own palette rather than the editor's shadcn tokens:
- * it is a printed page, not an application surface. `--ink` is the colour the
- * visitor picked for the sheet and is set inline by the accent provider; every
- * other token here is fixed.
+ * The landing page names the palette in paper terms rather than in shadcn's, since
+ * it is a printed page and not an application surface. These are aliases of the
+ * same `--c-*` values the editor's tokens use — the words differ, the colours
+ * cannot.
  */
 @layer components {
   [data-landing] {
-    --paper: #f7f4ee;
-    --paper-raised: #fffdf8;
-    --graphite: #17150f;
-    --graphite-soft: #6d6659;
-    --rule: #ded6c6;
-    /* Light paper takes the picked colour as-is. */
+    --paper: hsl(var(--c-paper));
+    --paper-raised: hsl(var(--c-paper-raised));
+    --graphite: hsl(var(--c-graphite));
+    --graphite-soft: hsl(var(--c-graphite-soft));
+    --rule: hsl(var(--c-rule));
+  }
+
+  /**
+   * `--ink` is a colour someone picked for a sheet, set inline by whatever owns
+   * that choice — the landing's accent provider, or the editor's colour picker.
+   * Read `--ink-display` for anything that is not the sheet: on light paper the
+   * picked colour is used as-is, but two of the four templates default to
+   * near-black, so dark paper lifts it towards white before it is drawn on
+   * anything.
+   */
+  [data-ink] {
     --ink-display: var(--ink);
   }
 
-  .dark [data-landing] {
-    --paper: #100f0d;
-    --paper-raised: #1a1815;
-    --graphite: #f5f1e9;
-    --graphite-soft: #9b9488;
-    --rule: #2f2b24;
-    /* Two of the four templates default to near-black, which would disappear
-       here — so on dark paper the picked colour is lifted towards white before
-       it is used for anything but the sheet itself. */
+  .dark [data-ink] {
     --ink-display: color-mix(in oklab, var(--ink) 42%, #fffaf0);
   }
 

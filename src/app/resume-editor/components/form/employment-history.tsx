@@ -11,7 +11,7 @@ import { LabeledDatePickerField } from "./labeled-date-picker-field";
 import { LabeledInputField } from "./labeled-input-field";
 import { LabeledBulletTextAreaField } from "./labeled-bullet-textarea-field";
 import VisibleSwitch from "./visible-switch";
-import { SectionBody, SectionCard, SectionTitle } from "./section-card";
+import { Section, SectionBody, SectionTitle } from "./section";
 
 const EmploymentHistory: FC = () => {
   const { control, watch } = useFormContext<Resume>();
@@ -34,8 +34,8 @@ const EmploymentHistory: FC = () => {
   };
 
   return (
-    <SectionCard className={cn(!visible && "opacity-50")}>
-      <SectionTitle>
+    <Section className={cn(!visible && "opacity-50")}>
+      <SectionTitle index="05">
         <span>Employment History</span>
         <Controller
           control={control}
@@ -87,7 +87,12 @@ const EmploymentHistory: FC = () => {
               />
             </div>
             <Tooltip title="Delete">
-              <Button variant="outline" onClick={() => remove(index)} className="mt-4">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => remove(index)}
+                className="mt-4"
+              >
                 <FaTrash className="mr-2 size-4" /> Delete
               </Button>
             </Tooltip>
@@ -99,7 +104,7 @@ const EmploymentHistory: FC = () => {
           Add
         </Button>
       </SectionBody>
-    </SectionCard>
+    </Section>
   );
 };
 
