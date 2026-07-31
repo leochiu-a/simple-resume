@@ -64,7 +64,13 @@ test.describe("background colour picker", () => {
     const hexInput = sketch.locator("input").first();
     await expect(hexInput).toHaveValue(/^[0-9A-Fa-f]{6}$/);
 
-    await hexInput.fill("CC3366");
+    // Not `fill()`: the picker's input moves the caret to the end whenever it
+    // takes focus, which lands after the select-all that `fill()` relies on and
+    // makes it append instead of replace. Selecting and typing is what a person
+    // does anyway.
+    await hexInput.click();
+    await hexInput.press("ControlOrMeta+a");
+    await hexInput.pressSequentially("CC3366");
     await hexInput.press("Enter");
 
     await expect(sidebar).toHaveAttribute("style", /rgb\(204,\s*51,\s*102\)/);
