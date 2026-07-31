@@ -7,6 +7,7 @@ import { useMediaQuery } from "usehooks-ts";
 
 import { A4_HEIGHT_PX, A4_WIDTH_PX } from "./constants";
 import usePagination from "./use-pagination";
+import PagePager from "./page-pager";
 
 const INITIAL_CONTENT = `
 <!DOCTYPE html>
@@ -42,8 +43,11 @@ const useResumeScale = () => {
         const screenHeightPx = window.innerHeight;
         const navHeight = 48;
         const dockHeight = 48;
+        // Reserved whether or not the pager is showing, so the sheet does not
+        // resize out from under you the moment a resume spills onto a second page.
+        const pagerHeight = 40 + 16;
         const resumePaddingY = 32 * 2;
-        const resumeHeight = screenHeightPx - navHeight - dockHeight - resumePaddingY;
+        const resumeHeight = screenHeightPx - navHeight - dockHeight - pagerHeight - resumePaddingY;
 
         scale = resumeHeight / A4_HEIGHT_PX;
       } else {
@@ -73,75 +77,66 @@ const useResumeScale = () => {
   return scale;
 };
 
-/** Whitespace between sheets, in unscaled preview pixels. */
-const PAGE_GAP_PX = 24;
-
 const ResumeIframe = ({ children }: PropsWithChildren) => {
   const scale = useResumeScale();
-  const { pageCount, registerContent } = usePagination(A4_HEIGHT_PX);
+  const { pageCount, contentRef } = usePagination(A4_HEIGHT_PX);
+  const [page, setPage] = useState(0);
 
-  const totalHeight = pageCount * A4_HEIGHT_PX + (pageCount - 1) * PAGE_GAP_PX;
+  // Deleting a job can drop the page you were looking at out of existence.
+  const currentPage = Math.min(page, pageCount - 1);
 
   return (
-    <div
-      style={{
-        maxWidth: `${A4_WIDTH_PX * scale}px`,
-        maxHeight: `${totalHeight * scale}px`,
-      }}
-    >
-      {/* There is an outer div and an inner div here. The inner div sets the iframe width and uses transform scale to zoom in/out the resume iframe.
-          While zooming out or scaling down via transform, the element appears smaller but still occupies the same width/height. Therefore, we use the
-          outer div to restrict the max width & height proportionally */}
+    <div className="flex flex-col items-center gap-4">
       <div
         style={{
-          width: `${A4_WIDTH_PX}px`,
-          height: `${totalHeight}px`,
-          transform: `scale(${scale})`,
+          maxWidth: `${A4_WIDTH_PX * scale}px`,
+          maxHeight: `${A4_HEIGHT_PX * scale}px`,
         }}
-        className="origin-top-left"
       >
-        <Frame
-          style={{ width: "100%", height: "100%", border: 0 }}
-          initialContent={INITIAL_CONTENT}
+        {/* There is an outer div and an inner div here. The inner div sets the iframe width and uses transform scale to zoom in/out the resume iframe.
+            While zooming out or scaling down via transform, the element appears smaller but still occupies the same width/height. Therefore, we use the
+            outer div to restrict the max width & height proportionally */}
+        <div
+          style={{
+            width: `${A4_WIDTH_PX}px`,
+            height: `${A4_HEIGHT_PX}px`,
+            transform: `scale(${scale})`,
+            borderRadius: "8px",
+            overflow: "hidden",
+          }}
+          className="origin-top-left bg-white shadow-xl"
         >
-          {/* One sheet per page. Each renders the whole resume and clips it to its
-              own window, so page N shows the run of content starting N pages down.
-              `use-pagination` has already pushed any unbreakable block clear of
-              the boundaries, so nothing is ever sliced through. */}
-          <div style={{ display: "flex", flexDirection: "column", gap: `${PAGE_GAP_PX}px` }}>
-            {Array.from({ length: pageCount }, (_, page) => (
+          <Frame
+            style={{ width: "100%", height: "100%", border: 0 }}
+            initialContent={INITIAL_CONTENT}
+          >
+            {/* One A4 window onto a single copy of the resume: paging slides that
+                copy up by whole pages behind it. `use-pagination` has already
+                pushed any unbreakable block clear of the boundaries, so a page
+                never opens or closes mid-entry. */}
+            <div
+              data-resume-page={currentPage + 1}
+              style={{ position: "relative", height: `${A4_HEIGHT_PX}px`, overflow: "hidden" }}
+            >
               <div
-                key={page}
-                data-resume-page={page + 1}
+                ref={contentRef}
                 style={{
-                  position: "relative",
-                  width: "100%",
-                  height: `${A4_HEIGHT_PX}px`,
-                  overflow: "hidden",
-                  borderRadius: "8px",
-                  background: "#fff",
-                  boxShadow: "0 4px 16px rgba(0, 0, 0, 0.18)",
-                  flex: "none",
+                  position: "absolute",
+                  top: `${-currentPage * A4_HEIGHT_PX}px`,
+                  left: 0,
+                  right: 0,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                <div
-                  ref={registerContent}
-                  style={{
-                    position: "absolute",
-                    top: `${-page * A4_HEIGHT_PX}px`,
-                    left: 0,
-                    right: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  {children}
-                </div>
+                {children}
               </div>
-            ))}
-          </div>
-        </Frame>
+            </div>
+          </Frame>
+        </div>
       </div>
+
+      <PagePager pageCount={pageCount} page={currentPage} onSelect={setPage} />
     </div>
   );
 };
