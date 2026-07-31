@@ -6,30 +6,12 @@ import Frame from "react-frame-component";
 import { useMediaQuery } from "usehooks-ts";
 
 import { A4_HEIGHT_PX, A4_WIDTH_PX } from "./constants";
+import { SHEET_DOCUMENT } from "./sheet-document";
 import usePagination from "./use-pagination";
 import PagePager from "./page-pager";
 
-const INITIAL_CONTENT = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <style>
-      /* @react-pdf's primitives land here as unknown elements, so they carry no
-         layout of their own. Letting the sheet stretch is what allows a template's
-         full-height sidebar to reach the bottom of the last page instead of
-         stopping where the text happens to end. */
-      document { display: flex; flex-direction: column; flex: 1 0 auto; }
-      page { flex: 1 0 auto; }
-    </style>
-  </head>
-  <body style="margin: 0;">
-    <div></div>
-  </body>
-</html>
-`;
+/** The full-size sheet, as opposed to a thumbnail of one. */
+export const PREVIEW_FRAME_TITLE = "Resume preview";
 
 const useResumeScale = () => {
   const [scale, setScale] = useState(0.5);
@@ -106,8 +88,11 @@ const ResumeIframe = ({ children }: PropsWithChildren) => {
           className="origin-top-left bg-white shadow-xl"
         >
           <Frame
+            // Names the sheet apart from the picker's thumbnail frames, which are
+            // also sheets in iframes.
+            title={PREVIEW_FRAME_TITLE}
             style={{ width: "100%", height: "100%", border: 0 }}
-            initialContent={INITIAL_CONTENT}
+            initialContent={SHEET_DOCUMENT}
           >
             {/* One A4 window onto a single copy of the resume: paging slides that
                 copy up by whole pages behind it. `use-pagination` has already

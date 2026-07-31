@@ -34,6 +34,7 @@ const PreviewControls = ({
   return (
     <div className="relative flex items-center gap-3">
       <AppearanceMenu
+        resume={resume}
         template={template}
         color={backgroundColor}
         onSelectTemplate={selectTemplate}

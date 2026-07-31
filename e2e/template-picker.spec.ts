@@ -48,6 +48,22 @@ test.describe("template picker", () => {
     );
   });
 
+  test("shows each template as a thumbnail of your own resume", async ({ page }) => {
+    await templatePicker(page).click();
+
+    for (const label of ["Classic", "Modern", "Formal", "Timeline"]) {
+      // Each card renders the real template in its own sheet frame, so the picker
+      // cannot show a layout the editor does not produce.
+      const thumbnail = page
+        .getByRole("menuitem")
+        .filter({ hasText: label })
+        .frameLocator("iframe");
+
+      await expect(thumbnail.locator("page")).toBeVisible();
+      await expect(thumbnail.getByText("Senior Engineer")).toBeVisible();
+    }
+  });
+
   test("switches the preview to the Modern layout", async ({ page }) => {
     // The Classic sidebar heading is "Details"; Modern adds a summary heading and
     // renames employment history, so the section names identify the template.

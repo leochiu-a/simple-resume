@@ -40,8 +40,12 @@ export const downloadHtml = async (page: Page) => {
 export const themeToggle = (page: Page): Locator =>
   page.getByRole("button", { name: "Toggle theme" });
 
-/** The resume preview is rendered inside an iframe via react-frame-component. */
-export const preview = (page: Page) => page.frameLocator("iframe");
+/**
+ * The resume preview is rendered inside an iframe via react-frame-component. The
+ * template picker's thumbnails are iframes too, so the sheet is addressed by its
+ * title — `frameLocator` is strict, and an open picker would otherwise match five.
+ */
+export const preview = (page: Page) => page.frameLocator('iframe[title="Resume preview"]');
 
 /** Sparkle SVGs injected by SparklesText, siblings of the <strong> heading. */
 export const sparkles = (page: Page): Locator =>
