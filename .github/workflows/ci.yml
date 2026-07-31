@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A later push to the same branch makes the running job's answer worthless.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Types, lint, format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # No `version` input: it is read from the `packageManager` field, so the
+      # lockfile and CI can never disagree about which pnpm produced it.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24 # mirrors `engines.node`
+          cache: pnpm
+
+      # `--frozen-lockfile` is the reason this runs before anything else: it is
+      # the only check that fails when package.json and pnpm-lock.yaml have
+      # drifted apart, which is exactly what a hand-edited dependency bump does.
+      - run: pnpm install --frozen-lockfile
+
+      # `next build` type-checks too, but it lives in the slow job. Failing here
+      # gives the answer in under a minute.
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check formatting
+        run: pnpm format:check
+
+  e2e:
+    name: Build and e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Both Playwright projects use the Desktop Chrome device, so Chromium is
+      # the only browser worth downloading.
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Playwright's webServer builds as well, but building here first means a
+      # broken build reads as a failed build rather than a webServer timeout.
+      - name: Build
+        run: pnpm build
+
+      - name: Run e2e tests
+        run: pnpm test:e2e
+
+      # `trace: "on-first-retry"` only writes a trace when a test is retried, so
+      # this is what makes a CI-only failure reproducible locally.
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  commits:
+    name: Commit messages
+    # Nothing enforced conventional commits on a PR before this — the commitlint
+    # hook is local, so anything committed with `--no-verify` or through the web
+    # UI bypassed it entirely.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # commitlint needs both ends of the range
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint commit messages
+        run: >
+          pnpm exec commitlint
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+          --verbose

@@ -14,7 +14,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? "list" : [["list"], ["html", { open: "never" }]],
+  // CI keeps the HTML report too — it is the artifact a failed run is debugged
+  // from, and `github` puts the failure on the diff itself rather than leaving it
+  // buried in the log.
+  reporter: process.env.CI
+    ? [["github"], ["list"], ["html", { open: "never" }]]
+    : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,
     trace: "on-first-retry",
