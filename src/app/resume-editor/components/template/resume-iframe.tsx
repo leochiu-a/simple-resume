@@ -7,6 +7,10 @@ import { useMediaQuery } from "usehooks-ts";
 
 import CropMarks from "@/components/crop-marks";
 
+// Side-effect import: quiets the ~50 dev warnings per mount that @react-pdf's
+// uppercase primitives draw from React. See the module for why it cannot live in
+// the sheet's iframe.
+import "./silence-pdf-tag-warnings";
 import { A4_HEIGHT_PX, A4_WIDTH_PX } from "./constants";
 import { SHEET_DOCUMENT } from "./sheet-document";
 import usePagination from "./use-pagination";

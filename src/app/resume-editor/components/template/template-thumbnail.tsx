@@ -5,6 +5,9 @@ import Frame from "react-frame-component";
 
 import { Resume } from "@/types/resume";
 
+// Side-effect import, same reason as the full-size preview: the picker mounts a
+// template per card, and each one warns for every primitive in it.
+import "./silence-pdf-tag-warnings";
 import { A4_HEIGHT_PX, A4_WIDTH_PX } from "./constants";
 import { SHEET_DOCUMENT } from "./sheet-document";
 import { TemplateDefinition } from "./registry";
