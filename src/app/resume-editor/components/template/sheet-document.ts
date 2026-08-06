@@ -23,6 +23,13 @@ export const SHEET_DOCUMENT = `
          stopping where the text happens to end. */
       document { display: flex; flex-direction: column; flex: 1 0 auto; }
       page { flex: 1 0 auto; }
+
+      /* @react-pdf breaks a Text on a literal newline; the browser would
+         collapse one to a space, so the preview needs telling. pre-line rather
+         than pre-wrap: only the newlines are significant, and the templates
+         indent their JSX, so the leading whitespace that comes with it must
+         still collapse. */
+      text { white-space: pre-line; }
     </style>
   </head>
   <body style="margin: 0;">

@@ -9,6 +9,7 @@ import Section from "./section";
 import Experience from "./experience";
 import Education from "./education";
 import Rail from "./rail";
+import Summary from "../summary";
 
 /**
  * The Timeline template: a banded header across the full width, then a wide main
@@ -37,7 +38,7 @@ const TimelineTemplate = ({
           <View style={styles.main}>
             {resume.visibility.profile && (
               <Section title="Summary">
-                <Text style={styles.summary}>{resume.profile}</Text>
+                <Summary profile={resume.profile} style={styles.summary} />
               </Section>
             )}
 

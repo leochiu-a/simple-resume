@@ -2,7 +2,7 @@ import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { Resume } from "@/types/resume";
 
-import { escapeHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
+import { escapeHtml, paragraphsHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
 
 /**
  * Builds a standalone HTML document for the Formal template — the same
@@ -253,7 +253,7 @@ const header = (resume: Resume) => {
 const summarySection = (profile: string) => `
         <section>
           <h2>Summary</h2>
-          <p class="summary">${escapeHtml(profile)}</p>
+          ${paragraphsHtml(profile, "summary")}
         </section>`;
 
 const experienceSection = (resume: Resume) => {

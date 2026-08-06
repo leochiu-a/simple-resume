@@ -2,7 +2,7 @@ import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { Resume } from "@/types/resume";
 
-import { escapeHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
+import { escapeHtml, paragraphsHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
 
 /**
  * Builds a standalone HTML document for the Timeline template — the same banded
@@ -323,7 +323,7 @@ const heading = (title: string) => `
 const summarySection = (profile: string) => `
         <section>
 ${heading("Summary")}
-          <p>${escapeHtml(profile)}</p>
+          ${paragraphsHtml(profile)}
         </section>`;
 
 const experienceSection = (resume: Resume) => {

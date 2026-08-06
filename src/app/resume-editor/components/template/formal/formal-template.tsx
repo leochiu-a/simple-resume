@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, View, Text, Document } from "@react-pdf/renderer";
+import { Page, View, Document } from "@react-pdf/renderer";
 
 import { Resume } from "@/types/resume";
 
@@ -11,6 +11,7 @@ import Experience from "./experience";
 import Education from "./education";
 import Skills from "./skills";
 import Links from "./links";
+import Summary from "../summary";
 
 /**
  * The Formal template: one column under a centred serif header, with the wanted
@@ -36,7 +37,7 @@ const FormalTemplate = ({
         <View style={styles.body}>
           {visibility.profile && (
             <Section title="Summary">
-              <Text style={styles.summary}>{resume.profile}</Text>
+              <Summary profile={resume.profile} style={styles.summary} />
             </Section>
           )}
 

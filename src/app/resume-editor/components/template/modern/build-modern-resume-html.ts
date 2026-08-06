@@ -2,7 +2,7 @@ import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { Resume } from "@/types/resume";
 
-import { escapeHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
+import { escapeHtml, paragraphsHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
 import panelColors from "./panel-color";
 
 /**
@@ -283,7 +283,7 @@ const summarySection = (profile: string) => `
         <section>
           <h2>Summary</h2>
           <hr class="rule" />
-          <p>${escapeHtml(profile)}</p>
+          ${paragraphsHtml(profile)}
         </section>`;
 
 const experienceSection = (resume: Resume) => {
