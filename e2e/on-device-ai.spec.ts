@@ -3,8 +3,8 @@ import {
   collectConsoleErrors,
   DOC_STORAGE_KEY,
   languageButton,
+  onDeviceAiPanel,
   openOnDeviceAiPanel,
-  openOverflowMenu,
   preview,
 } from "./helpers";
 
@@ -121,6 +121,9 @@ test.describe("On-device AI panel", () => {
    * Playwright's own Chromium is this case: `window.Translator` exists but
    * `availability()` never settles. Left unguarded the row reads "Checking" for
    * the life of the page and never offers the by-hand fallback.
+   *
+   * The trigger is reachable throughout: it hides only while *both* capabilities
+   * are still probing, and the WebMCP probe settles on its own here.
    */
   test("gives up on a translator that never answers", async ({ page }) => {
     await installTranslatorStub(page, { hangAvailability: true });
@@ -145,10 +148,11 @@ test.describe("On-device AI panel", () => {
     await expect(page.getByText("the model downloads once")).toBeVisible();
 
     // This click is the user activation the real API requires. It must not close
-    // the menu it was pressed in — the rows are plain children of the dropdown
-    // rather than menu items precisely so that this click survives.
+    // the panel it was pressed in — the rows are deliberately not menu items, and
+    // the panel is a Popover rather than a DropdownMenu, precisely so that this
+    // click survives.
     await page.getByRole("button", { name: "Enable" }).click();
-    await expect(page.getByRole("menu")).toBeVisible();
+    await expect(onDeviceAiPanel(page)).toBeVisible();
     await expect(page.getByRole("progressbar")).toBeVisible();
     // Busy while the panel is still up — the deterministic half of the check.
     // Whether it is still downloading *after* closing is a race (see below), so
@@ -157,13 +161,9 @@ test.describe("On-device AI panel", () => {
 
     // Closing the panel must not cancel anything: the download lives in a module
     // store, not in the component that started it.
-    //
-    // One Escape now, where this used to need two. The rows are inline in the
-    // overflow menu rather than behind a popover of their own, so there is only
-    // the one layer to dismiss.
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("menu")).toBeHidden();
-    // The progress bar lives in the menu, so it goes with it.
+    await expect(onDeviceAiPanel(page)).toBeHidden();
+    // The progress bar lives in the panel, so it goes with it.
     await expect(page.getByRole("progressbar")).toBeHidden();
 
     /*
@@ -171,14 +171,13 @@ test.describe("On-device AI panel", () => {
       screen to hold it.
 
       Deliberately not asserting a mid-flight state on the way past. The rows are
-      only in the DOM while the overflow menu is open, so catching one means
-      reopening the menu fast enough to beat a stubbed download that takes six
-      ticks — a race the test would lose intermittently, and the thing being
-      guarded is not "is it busy right now" but "did closing the panel cancel
-      it". Arriving at `ready` having never touched the download again proves
-      that.
+      only in the DOM while the panel is open, so catching one means reopening it
+      fast enough to beat a stubbed download that takes six ticks — a race the
+      test would lose intermittently, and the thing being guarded is not "is it
+      busy right now" but "did closing the panel cancel it". Arriving at `ready`
+      having never touched the download again proves that.
     */
-    await openOverflowMenu(page);
+    await openOnDeviceAiPanel(page);
     await expect(page.getByText("ready to translate")).toBeVisible();
   });
 

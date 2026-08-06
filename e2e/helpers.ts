@@ -104,13 +104,34 @@ export const setTheme = async (page: Page, mode: "Light" | "Dark" | "System") =>
 
 /**
  * Both browser-built-in capabilities — the WebMCP agent and the on-device
- * translator — report from inside the overflow menu, so anything that reads one
- * of their statuses only has to open that.
+ * translator — report from a popover behind their own icon button, which sits
+ * right of Download in the header and in the mobile preview dialog's toolbar.
  *
- * There used to be a second click here, onto a row that opened a nested popover.
- * The rows are rendered inline now, so opening the menu is the whole gesture.
+ * The rows spent a release inline in the overflow menu, so this was once just
+ * `openOverflowMenu`. They have their own trigger again: a status nobody can find
+ * behind a `…` is not advertising the capability. The panel is a Popover and not
+ * a menu — it holds a progress bar and a real button, and the click that starts
+ * the download must not close it — so it answers to `role="dialog"`, not
+ * `role="menu"`.
+ *
+ * Matched on the button role rather than the text: the panel's own heading reads
+ * "On-device AI" too, so a bare text locator matches the trigger and the label it
+ * opens.
  */
-export const openOnDeviceAiPanel = (page: Page) => openOverflowMenu(page);
+export const onDeviceAiTrigger = (page: Page): Locator =>
+  page.getByRole("button", { name: "On-device AI" });
+
+/**
+ * The trigger stays out of the DOM until at least one capability has stopped
+ * probing, so this waits for it rather than clicking cold.
+ */
+export const openOnDeviceAiPanel = async (page: Page) => {
+  await onDeviceAiTrigger(page).click();
+  await expect(onDeviceAiPanel(page)).toBeVisible();
+};
+
+/** The popover the trigger opens — Radix gives its content `role="dialog"`. */
+export const onDeviceAiPanel = (page: Page): Locator => page.getByRole("dialog");
 
 /** The editor stores every language of the resume under one key. */
 export const DOC_STORAGE_KEY = "resume-doc";
