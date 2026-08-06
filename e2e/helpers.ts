@@ -37,6 +37,12 @@ export const downloadHtml = async (page: Page) => {
   await page.getByRole("menuitem", { name: "Download HTML" }).click();
 };
 
+/** Unlike the two downloads, this item keeps the menu open to confirm the copy. */
+export const copyMarkdown = async (page: Page) => {
+  await downloadMenu(page).click();
+  await page.getByRole("menuitem", { name: "Copy as Markdown" }).click();
+};
+
 export const themeToggle = (page: Page): Locator =>
   page.getByRole("button", { name: "Toggle theme" });
 

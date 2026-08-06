@@ -10,7 +10,8 @@ Online site: https://simple-resume-nu.vercel.app
 
 - Create a resume easily.
 - Pick between [four templates](#templates) and tint any of them with the colour picker.
-- Export the resume as a PDF, or as a [standalone HTML file](#html-export).
+- Export the resume as a PDF, as a [standalone HTML file](#html-export), or
+  [copy it as Markdown](#markdown-for-agents) to paste into an AI agent.
 - The resume data is stored in local storage — there is no account and no server to send it to.
 - Build the resume by talking to a browser AI agent, via [WebMCP](#webmcp-experimental).
 
@@ -168,6 +169,23 @@ exported file gives back a PDF.
 Each template owns its builder — for example
 [`build-classic-resume-html.ts`](src/app/resume-editor/components/template/classic/build-classic-resume-html.ts)
 — with coverage in [`e2e/html-export.spec.ts`](e2e/html-export.spec.ts).
+
+## Markdown for agents
+
+**Download → Copy as Markdown** puts the resume on the clipboard as Markdown. The PDF and the HTML export
+are layouts — a model reading either has to recover the structure from position and type size —
+whereas Markdown carries the same content as headings, lists and links, which is what an AI agent (or
+any chat box you paste into) reads without a parser. It is the export for "here is my resume, tailor
+it to this job".
+
+It follows the preview rather than the storage shape: hidden sections are left out, empty fields
+never become empty headings, dates render as `Jan 2018 — Jan 2020` (`Present` for an ongoing entry),
+and job bullets become a list. Nothing lands on disk — the Markdown only ever exists on the
+clipboard, which is why
+[`e2e/copy-markdown.spec.ts`](e2e/copy-markdown.spec.ts) reads it back from there.
+
+The builder is [`src/lib/resume-markdown.ts`](src/lib/resume-markdown.ts), independent of the
+templates: there is one Markdown rendering, not one per template.
 
 ## WebMCP (experimental)
 

@@ -8,7 +8,8 @@ import DownloadButton from "./template/download-button";
 
 /**
  * Everything you can do to the preview without editing the resume, in two
- * controls: how it looks, and taking it away as a file.
+ * controls: how it looks, and taking it away — as a file, or as Markdown on the
+ * clipboard.
  *
  * It lives in the nav on desktop and in the dialog header on mobile, which is why
  * it takes its state rather than owning it — both places have to drive the same
