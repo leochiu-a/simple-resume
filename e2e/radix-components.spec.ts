@@ -32,7 +32,13 @@ test.describe("Radix overlays", () => {
   test("month picker popover opens and closes on Escape", async ({ page }) => {
     // Scoped to the form: the appearance panel over the preview is a dialog
     // trigger too, and so is the on-device AI row inside the overflow menu.
-    const trigger = page.locator('#resume-form button[aria-haspopup="dialog"]').first();
+    // Scoped past the rewrite triggers as well — those are popovers inside the
+    // form and one of them now precedes every date field in the DOM, so
+    // `.first()` on its own would open the wrong panel.
+    const trigger = page
+      .locator('#resume-form button[aria-haspopup="dialog"]')
+      .filter({ hasNotText: "Improve" })
+      .first();
     await trigger.click();
 
     const popover = page.locator("[data-radix-popper-content-wrapper]");

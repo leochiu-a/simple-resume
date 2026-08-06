@@ -20,10 +20,17 @@ export const SectionTitle = ({
   index: string;
 }>) => {
   return (
-    // The visibility toggle arrives as part of `children` and is pushed to the far
-    // end from here. It stays inside the heading deliberately: it acts on the
-    // section the heading names, and that is how it is reached.
-    <h2 className="flex items-center gap-3 border-t border-border pt-5 font-display text-[1.4rem] font-semibold leading-none tracking-[-0.02em] [&>button]:ml-auto [&>button]:text-muted-foreground [&>button]:transition-colors [&>button:hover]:text-foreground">
+    /*
+      The visibility toggle arrives as part of `children` and is pushed to the far
+      end from here. It stays inside the heading deliberately: it acts on the
+      section the heading names, and that is how it is reached.
+
+      `ml-auto` is on the direct child, because only the outermost thing in the
+      row should be pushed over — but the colour is on every descendant button.
+      Profile wraps its toggle alongside a rewrite trigger, and with a `>` on the
+      colour too that one eye came out darker than every other section's.
+    */
+    <h2 className="flex items-center gap-3 border-t border-border pt-5 font-display text-[1.4rem] font-semibold leading-none tracking-[-0.02em] [&>button]:ml-auto [&_button]:text-muted-foreground [&_button]:transition-colors [&_button:hover]:text-foreground">
       <span aria-hidden className="font-mono text-[11px] tracking-[0.22em] text-muted-foreground">
         {index}
       </span>

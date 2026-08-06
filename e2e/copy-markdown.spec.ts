@@ -43,8 +43,12 @@ test.describe("Copy as Markdown", () => {
   test("picks up edits and leaves hidden sections out", async ({ page }) => {
     await page.locator('input[name="name"]').fill("Ada Lovelace");
     // The eye next to a section heading is what hides it from the preview and
-    // every export.
-    await page.getByRole("heading", { name: "Profile" }).getByRole("button").click();
+    // every export. Named rather than positional: the heading also carries the
+    // rewrite trigger, so "the button in this heading" is now ambiguous.
+    await page
+      .getByRole("heading", { name: "Profile" })
+      .getByRole("button", { name: "Hide section" })
+      .click();
 
     const markdown = await exportMarkdown(page);
 

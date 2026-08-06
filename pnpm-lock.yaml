@@ -106,6 +106,9 @@ importers:
       '@react-pdf/types':
         specifier: ^2.11.1
         version: 2.11.1
+      '@types/dom-chromium-ai':
+        specifier: ^0.0.17
+        version: 0.0.17
       '@types/lodash':
         specifier: ^4.17.24
         version: 4.17.24
@@ -1183,6 +1186,9 @@ packages:
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
+
+  '@types/dom-chromium-ai@0.0.17':
+    resolution: {integrity: sha512-UnSAIVKONaY2vTAM4TkPpwdKeGgg3tPCwNP3KxR+U8bLYC2rQU7UrgW9LIVx0B02dKZxuPA6a0Q5wvyW5Rk6nw==}
 
   '@types/lodash@4.17.24':
     resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
@@ -3291,6 +3297,8 @@ snapshots:
   '@swc/helpers@0.5.15':
     dependencies:
       tslib: 2.8.1
+
+  '@types/dom-chromium-ai@0.0.17': {}
 
   '@types/lodash@4.17.24': {}
 

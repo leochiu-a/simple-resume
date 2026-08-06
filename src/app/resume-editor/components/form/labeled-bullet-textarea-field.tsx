@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 
 import { InputProps } from "@/components/ui/input";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
@@ -7,11 +7,14 @@ import { cn } from "@/lib/utils";
 interface LabeledBulletTextAreaFieldProps extends Omit<InputProps, "onChange"> {
   label: string;
   onChange: (value: string) => void;
+  /** Sits on the label's row, at the far end — the rewrite trigger goes here. */
+  action?: ReactNode;
 }
 
 const LabeledBulletTextAreaField = ({
   label,
   className,
+  action,
   ...props
 }: LabeledBulletTextAreaFieldProps) => {
   const [items] = useState(() => (props.value as string)?.split(SPLIT_TEXT) ?? []);
@@ -27,8 +30,11 @@ const LabeledBulletTextAreaField = ({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-        {label}
+      <div className="flex items-center gap-3">
+        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          {label}
+        </div>
+        {action && <div className="ml-auto">{action}</div>}
       </div>
       <div
         className={cn(
