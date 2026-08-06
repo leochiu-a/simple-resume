@@ -33,7 +33,7 @@ const LabeledBulletTextAreaField = ({
       <div
         className={cn(
           "[&>div]:list-item",
-          "min-h-[60px] w-full rounded-sm border border-input bg-card px-6 py-2 text-base leading-relaxed transition-colors focus-visible:border-foreground/60 focus-visible:outline-none focus-visible:ring-0 md:text-sm",
+          "min-h-[60px] w-full rounded-sm border border-input bg-card px-6 py-2 text-base leading-relaxed transition-colors focus-visible:border-foreground/60 focus-visible:outline-none focus-visible:ring-0",
         )}
         contentEditable
         suppressContentEditableWarning
