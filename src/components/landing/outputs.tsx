@@ -27,7 +27,7 @@ const Outputs = () => (
         title={
           <>
             One resume, <br />
-            three ways out<span className="text-[var(--ink-display)]">.</span>
+            three ways out<span className="text-[var(--accent)]">.</span>
           </>
         }
       />
@@ -38,7 +38,7 @@ const Outputs = () => (
         <div className="grid grid-cols-1 gap-x-14 gap-y-12 md:grid-cols-3 lg:col-span-9 lg:col-start-4">
           {OUTPUTS.map(({ index, title, body }) => (
             <article key={title} className="border-t border-[var(--graphite)] pt-5">
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--ink-display)]">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--accent)]">
                 {index}
               </p>
               <h3 className="mt-4 font-display text-2xl font-semibold tracking-[-0.02em]">

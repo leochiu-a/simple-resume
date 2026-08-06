@@ -98,22 +98,25 @@
     --graphite: hsl(var(--c-graphite));
     --graphite-soft: hsl(var(--c-graphite-soft));
     --rule: hsl(var(--c-rule));
+
+    /**
+     * The page's own accent — the buttons, the section numbers, the full stops,
+     * the crop marks.
+     *
+     * Fixed, and deliberately *not* the colour the visitor picks for the sheet.
+     * That swatch tints the paper and nothing else: choosing Oxblood should not
+     * repaint the site around it, and a page whose identity changes every time
+     * someone tries a template has no identity. Pine, which is also the sheet's
+     * default — see SWATCHES in components/landing/accent.tsx.
+     */
+    --accent-base: #094c42;
+    --accent: var(--accent-base);
   }
 
-  /**
-   * `--ink` is a colour someone picked for a sheet, set inline by whatever owns
-   * that choice — the landing's accent provider, or the editor's colour picker.
-   * Read `--ink-display` for anything that is not the sheet: on light paper the
-   * picked colour is used as-is, but two of the four templates default to
-   * near-black, so dark paper lifts it towards white before it is drawn on
-   * anything.
-   */
-  [data-ink] {
-    --ink-display: var(--ink);
-  }
-
-  .dark [data-ink] {
-    --ink-display: color-mix(in oklab, var(--ink) 42%, #fffaf0);
+  /* Pine is dark enough to disappear on dark paper, so it is lifted towards the
+     paper before anything is drawn with it. */
+  .dark [data-landing] {
+    --accent: color-mix(in oklab, var(--accent-base) 42%, #fffaf0);
   }
 
   /**

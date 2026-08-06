@@ -5,14 +5,14 @@ import { createContext, useContext, useMemo, useState, type PropsWithChildren } 
 import { DEFAULT_TEMPLATE_ID } from "@/app/resume-editor/components/template/registry";
 
 /**
- * The colour the visitor picks for the sheet is the page's accent too — the rules,
- * the buttons and the section numbers all follow it. It is published as the CSS
- * variable `--ink` on the page wrapper, so the sections below the hero pick it up
- * without any of them having to be client components.
+ * The template and the tint the visitor is trying out. Both reach the sheet as
+ * props — see `template-sheet.tsx` — and neither leaves it.
  *
- * Read `--ink-display` rather than `--ink` for anything that is not the sheet:
- * globals.css lifts it towards white on dark paper, where the darker inks would
- * otherwise vanish.
+ * The tint used to be published as `--ink` on the page wrapper and drive the
+ * whole page's accent as well. It no longer does: the swatch is a preview of a
+ * printed page, not a theme picker, and a site that repainted itself every time
+ * someone clicked through six colours read as unstable rather than responsive.
+ * The page's accent is fixed in globals.css as `--accent`.
  */
 
 export interface Swatch {
@@ -20,9 +20,10 @@ export interface Swatch {
   value: string;
 }
 
-/** Deliberately all mid-to-dark: every one has to read as a page accent, not just
- *  as a block of colour on white paper. Pine and Ink are two of the templates'
- *  own defaults. */
+/** Deliberately all mid-to-dark: every one has to hold a sidebar of white type on
+ *  white paper. Pine and Ink are two of the templates' own defaults, and Pine is
+ *  also the page's fixed accent — if it changes here, change `--accent-base` in
+ *  globals.css with it. */
 export const SWATCHES: Swatch[] = [
   { name: "Pine", value: "#094C42" },
   { name: "Ink", value: "#02061b" },
@@ -60,8 +61,6 @@ const AccentProvider = ({ children }: PropsWithChildren) => {
     <AccentContext.Provider value={value}>
       <div
         data-landing
-        data-ink
-        style={{ "--ink": color } as React.CSSProperties}
         className="min-h-screen bg-[var(--paper)] font-body text-[var(--graphite)] transition-colors duration-500"
       >
         {children}

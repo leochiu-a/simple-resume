@@ -29,7 +29,7 @@ const ThemeToggle = () => {
       type="button"
       aria-label="Toggle theme"
       onClick={(event: MouseEvent<HTMLButtonElement>) => applyTheme(event, () => setTheme(next))}
-      className="flex size-9 items-center justify-center border border-[var(--rule)] transition-colors duration-200 hover:border-[var(--ink-display)]"
+      className="flex size-9 items-center justify-center border border-[var(--rule)] transition-colors duration-200 hover:border-[var(--accent)]"
     >
       {mounted && resolvedTheme === "dark" ? (
         <Moon className="size-4" />
@@ -55,14 +55,14 @@ const SiteNav = () => (
           href="https://github.com/leochiu-a/simple-resume"
           target="_blank"
           aria-label="Source on GitHub"
-          className="flex size-9 items-center justify-center border border-[var(--rule)] transition-colors duration-200 hover:border-[var(--ink-display)]"
+          className="flex size-9 items-center justify-center border border-[var(--rule)] transition-colors duration-200 hover:border-[var(--accent)]"
         >
           <SiGithub className="size-4" />
         </Link>
         <ThemeToggle />
         <Link
           href="/resume-editor"
-          className="hidden bg-[var(--ink-display)] px-5 py-2.5 text-sm font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5 sm:block"
+          className="hidden bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5 sm:block"
         >
           Create resume
         </Link>

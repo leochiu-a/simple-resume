@@ -52,7 +52,7 @@ const TemplateSheet = ({ templateId, color }: { templateId: string; color: strin
 
   return (
     <div className="relative">
-      <CropMarks className="border-[var(--ink-display)] opacity-50" />
+      <CropMarks className="border-[var(--accent)] opacity-50" />
 
       <div ref={ref} className="w-full" style={{ height: `${A4_HEIGHT_PX * scale}px` }}>
         {/* Scaling leaves the element occupying its unscaled box, so the wrapper
