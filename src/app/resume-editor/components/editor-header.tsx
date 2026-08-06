@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FC } from "react";
 import { useTheme } from "next-themes";
-import { MoreHorizontal } from "lucide-react";
+import { Monitor, MoreHorizontal, Moon, Sun } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -24,7 +24,7 @@ import { Resume } from "@/types/resume";
 import type useTemplateOptions from "../hooks/useTemplateOptions";
 import DownloadButton from "./template/download-button";
 import LanguageSwitcher from "./language-switcher";
-import OnDeviceAiRows from "./on-device-ai/on-device-ai-rows";
+import OnDeviceAiButton from "./on-device-ai/on-device-ai-button";
 
 interface EditorHeaderProps {
   resume: Resume;
@@ -109,6 +109,25 @@ const EditorHeader: FC<EditorHeaderProps> = ({
             <DownloadButton resume={resume} backgroundColor={backgroundColor} template={template} />
           )}
 
+          {/* On-device AI is the thing that makes this editor unusual, and it
+              spent a release inside the overflow menu — undiscoverable behind a
+              `…`, and long enough (two titles, two status words, two sentences
+              and a privacy note) that it dwarfed the five plain items under it.
+              Its own trigger fixes both: the capability is visible in the bar,
+              and the menu is back to being a short list of settings.
+
+              Right of Download, not left: the icon buttons on this side of the
+              bar are the secondary controls, and putting one before the primary
+              action pushes Download off the bar's right edge. */}
+          {showTools && (
+            <OnDeviceAiButton
+              mcpStatus={mcpStatus}
+              mcpToolCount={mcpToolCount}
+              pair={pair}
+              pairLabel={pairLabel}
+            />
+          )}
+
           {/* Everything that is neither identity, document, nor the primary
               action. These are settings and links: consulted rarely, and each one
               left in the bar was a permanent tax on a bar we are trying to
@@ -120,52 +139,39 @@ const EditorHeader: FC<EditorHeaderProps> = ({
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-72">
-              <DropdownMenuLabel>On-device AI</DropdownMenuLabel>
-              {/* Plain children of the menu, not `DropdownMenuItem`s. These rows
-                  hold a progress bar and the button that starts the model
-                  download, and a menu item would close the menu on the very
-                  click that starts it — see the note on OnDeviceAiRows. They
-                  used to hide behind a nested popover for that reason; the
-                  popover was a second click to read a status, so the rows moved
-                  out here and only the constraint stayed. */}
-              <OnDeviceAiRows
-                mcpStatus={mcpStatus}
-                mcpToolCount={mcpToolCount}
-                pair={pair}
-                pairLabel={pairLabel}
-                // Boxed here: without an edge of its own the group's dividers are
-                // the same line the menu draws between its sections, so the two
-                // rows read as loose siblings of Light/Dark/System.
-                framed
-              />
-
-              <DropdownMenuSeparator />
-
+            {/* `w-52`, not the `w-72` this needed while the AI rows lived here:
+                every remaining item is two words. */}
+            <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+              {/* Every item in this menu carries a leading icon, including the
+                  three theme choices that did not need one. It is alignment, not
+                  decoration: `DropdownMenuItem` is `gap-2 px-2` around a 16px
+                  glyph, so an item with an icon starts its text 32px in and one
+                  without starts at 8px. Mixed, the menu reads as two lists. */}
               <DropdownMenuItem onClick={(e) => applyTheme(e, () => setTheme("light"))}>
+                <Sun />
                 Light
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => applyTheme(e, () => setTheme("dark"))}>
+                <Moon />
                 Dark
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => applyTheme(e, () => setTheme("system"))}>
+                <Monitor />
                 System
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
 
               <DropdownMenuItem asChild>
-                <Link
-                  href="https://github.com/leochiu-a/simple-resume"
-                  target="_blank"
-                  className="flex items-center gap-2"
-                >
+                <Link href="https://github.com/leochiu-a/simple-resume" target="_blank">
+                  {/* 16px to match the lucide glyphs above it, which is what the
+                      shared axis is measured from. */}
                   <Image
                     src={resolvedTheme === "dark" ? "/github-mark-white.png" : "/github-mark.png"}
                     alt=""
-                    width={14}
-                    height={14}
+                    width={16}
+                    height={16}
                   />
                   Source on GitHub
                 </Link>

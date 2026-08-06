@@ -29,11 +29,15 @@ interface OnDeviceAiButtonProps {
 }
 
 /**
- * The standalone on-device AI control, now only used by the mobile preview
- * dialog's toolbar. On desktop the same rows render inline in the editor
- * header's overflow menu, where a button that opens a second surface was a click
- * nobody needed; here there is no menu to render into, so the panel keeps a
- * trigger.
+ * The standalone on-device AI control, used by the editor header on desktop and
+ * by the mobile preview dialog's toolbar.
+ *
+ * The rows spent a release rendered inline in the header's overflow menu instead,
+ * on the reasoning that a trigger was a click nobody needed to read a status. The
+ * click was real but it bought less than it cost: inline, the capability was
+ * invisible until you opened a `…` menu, and its two titles, status words,
+ * sentences and privacy note buried the five one-line settings beneath it. A
+ * trigger in the bar is the thing that advertises the capability.
  *
  * A Popover and not a DropdownMenu, deliberately — see the note on
  * `OnDeviceAiRows` for the progress-bar, close-on-select and roving-tabindex

@@ -22,6 +22,20 @@ const STATE_LABEL: Record<CapabilityState, string> = {
   error: "Error",
 };
 
+/**
+ * The state word's colour. The word carries the meaning; this only makes
+ * "working" and "broken" separable without reading, and everything in between
+ * stays in the ink greys.
+ */
+const STATE_TONE: Record<CapabilityState, string> = {
+  ready: "text-brand",
+  error: "text-destructive",
+  checking: "text-muted-foreground",
+  off: "text-muted-foreground",
+  downloading: "text-muted-foreground",
+  unavailable: "text-muted-foreground",
+};
+
 interface CapabilityRowProps {
   icon: ReactNode;
   title: string;
@@ -44,7 +58,7 @@ const CapabilityRow: FC<CapabilityRowProps> = ({
   progress = null,
   action,
 }) => (
-  <div className="flex gap-2.5 px-3 py-3">
+  <div className="flex gap-2.5 px-3 py-2.5">
     <span
       className={cn(
         "mt-0.5 shrink-0",
@@ -59,7 +73,12 @@ const CapabilityRow: FC<CapabilityRowProps> = ({
         <span className="text-sm font-medium">{title}</span>
         {/* The same mono micro-label the form fields and dropdown headings use,
             which is where this app puts anything that is a status and not prose. */}
-        <span className="ml-auto shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        <span
+          className={cn(
+            "ml-auto shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]",
+            STATE_TONE[state],
+          )}
+        >
           {STATE_LABEL[state]}
         </span>
       </div>
