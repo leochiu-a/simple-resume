@@ -25,7 +25,7 @@ export const ProgressBar = ({ value, label, className }: ProgressBarProps) => {
     >
       <div
         className={cn(
-          "h-full bg-primary transition-[width] duration-200 ease-out",
+          "h-full bg-brand transition-[width] duration-200 ease-out",
           // Indeterminate: another tab owns this download, so there is no
           // monitor to read a percentage from and a fixed bar would be a lie.
           percent === null && "w-1/3 animate-pulse",
