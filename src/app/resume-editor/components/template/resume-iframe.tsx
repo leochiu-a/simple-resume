@@ -23,10 +23,15 @@ export const CROP_MARK_GUTTER = 24;
  *
  * The preview is driven by the width it is given, which on a 27" monitor is a lot
  * of width — and a sheet grown past its natural size is just a magnified one,
- * with type to match. A4 is 794px at 96dpi, so this holds the preview a little
- * under 1:1 and never above it.
+ * with type to match. So the ceiling is exactly 1:1: A4 is 794px at 96dpi, and at
+ * this width the preview is the size the thing actually prints at.
+ *
+ * It was a flat 720 before, which undershot that by 10% for no stated reason — on
+ * a wide monitor the pane had ~950px to give and the sheet stopped at 720, so the
+ * preview was smaller than the paper while surrounded by empty desk. Scaling
+ * beyond 1:1 is still refused; there is just no longer a gap below it.
  */
-export const MAX_SHEET_WIDTH_PX = 720;
+export const MAX_SHEET_WIDTH_PX = A4_WIDTH_PX;
 
 /**
  * How large the sheet can be drawn, measured from the box it is actually in.
