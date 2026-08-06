@@ -41,6 +41,22 @@ export const themeToggle = (page: Page): Locator =>
   page.getByRole("button", { name: "Toggle theme" });
 
 /**
+ * The nav's chip button. Both browser-built-in capabilities — the WebMCP agent
+ * and the on-device translator — report from the panel behind it, so anything
+ * that used to read a status off the nav has to open this first.
+ */
+export const onDeviceAiButton = (page: Page): Locator =>
+  page.getByRole("button", { name: "On-device AI" });
+
+export const openOnDeviceAiPanel = (page: Page) => onDeviceAiButton(page).click();
+
+/** The editor stores every language of the resume under one key. */
+export const DOC_STORAGE_KEY = "resume-doc";
+
+export const languageButton = (page: Page, label: string): Locator =>
+  page.getByRole("button", { name: new RegExp(`^${label}`) });
+
+/**
  * The resume preview is rendered inside an iframe via react-frame-component. The
  * template picker's thumbnails are iframes too, so the sheet is addressed by its
  * title — `frameLocator` is strict, and an open picker would otherwise match five.

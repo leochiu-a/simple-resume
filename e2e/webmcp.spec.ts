@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { collectConsoleErrors, preview } from "./helpers";
+import { collectConsoleErrors, openOnDeviceAiPanel, preview } from "./helpers";
 
 /**
  * WebMCP only exists in Edge 147+ and behind chrome://flags/#enable-webmcp-testing
@@ -74,7 +74,14 @@ const textOf = (result: ToolResult) => result.content.map((block) => block.text)
  * and there is nothing to patch.
  */
 const waitForStoredResume = (page: Page) =>
-  expect.poll(() => page.evaluate(() => window.localStorage.getItem("resume"))).not.toBeNull();
+  expect.poll(() => page.evaluate(() => window.localStorage.getItem("resume-doc"))).not.toBeNull();
+
+/**
+ * Registration used to be readable straight off the nav; it now lives in the
+ * on-device AI panel, so the gate every test needs is the stub's own view of
+ * what got registered rather than a click into the panel each time.
+ */
+const waitForRegistration = (page: Page) => expect.poll(() => listTools(page)).toHaveLength(12);
 
 test.describe("WebMCP resume tools", () => {
   let errors: string[] = [];
@@ -83,7 +90,7 @@ test.describe("WebMCP resume tools", () => {
     await installModelContextStub(page);
     errors = collectConsoleErrors(page);
     await page.goto("/resume-editor");
-    await expect(page.getByText(/Agent ready/)).toBeVisible();
+    await waitForRegistration(page);
   });
 
   test("registers the full tool set and reports it in the nav", async ({ page }) => {
@@ -104,7 +111,8 @@ test.describe("WebMCP resume tools", () => {
       "set-section-visibility",
     ]);
 
-    await expect(page.getByText(`Agent ready · ${names.length} tools`)).toBeVisible();
+    await openOnDeviceAiPanel(page);
+    await expect(page.getByText(`${names.length} tools registered`)).toBeVisible();
     expect(errors).toEqual([]);
   });
 
@@ -129,14 +137,15 @@ test.describe("WebMCP resume tools", () => {
   test("get-resume survives an ongoing entry stored as null", async ({ page }) => {
     await waitForStoredResume(page);
     await page.addInitScript(() => {
-      const stored = JSON.parse(window.localStorage.getItem("resume") as string);
+      const stored = JSON.parse(window.localStorage.getItem("resume-doc") as string);
+      const resume = stored.locales[stored.primaryLang];
 
-      stored.employmentHistory[0].timeline.to = null;
-      stored.educations[0].timeline = { from: null, to: null };
-      window.localStorage.setItem("resume", JSON.stringify(stored));
+      resume.employmentHistory[0].timeline.to = null;
+      resume.educations[0].timeline = { from: null, to: null };
+      window.localStorage.setItem("resume-doc", JSON.stringify(stored));
     });
     await page.goto("/resume-editor");
-    await expect(page.getByText(/Agent ready/)).toBeVisible();
+    await waitForRegistration(page);
 
     const result = await callTool(page, "get-resume");
 
@@ -152,13 +161,13 @@ test.describe("WebMCP resume tools", () => {
   test("update-employment leaves an ongoing job ongoing when `to` is omitted", async ({ page }) => {
     await waitForStoredResume(page);
     await page.addInitScript(() => {
-      const stored = JSON.parse(window.localStorage.getItem("resume") as string);
+      const stored = JSON.parse(window.localStorage.getItem("resume-doc") as string);
 
-      stored.employmentHistory[0].timeline.to = null;
-      window.localStorage.setItem("resume", JSON.stringify(stored));
+      stored.locales[stored.primaryLang].employmentHistory[0].timeline.to = null;
+      window.localStorage.setItem("resume-doc", JSON.stringify(stored));
     });
     await page.goto("/resume-editor");
-    await expect(page.getByText(/Agent ready/)).toBeVisible();
+    await waitForRegistration(page);
 
     const result = await callTool(page, "update-employment", {
       index: 0,
@@ -281,9 +290,11 @@ test.describe("WebMCP resume tools", () => {
     await installModelContextStub(legacyPage, "navigator");
     await legacyPage.goto("/resume-editor");
 
-    await expect(legacyPage.getByText("Agent ready · 12 tools")).toBeVisible();
+    await expect.poll(() => listTools(legacyPage)).toHaveLength(12);
     expect(await legacyPage.evaluate(() => "modelContext" in document)).toBe(false);
-    expect(await listTools(legacyPage)).toHaveLength(12);
+
+    await openOnDeviceAiPanel(legacyPage);
+    await expect(legacyPage.getByText("12 tools registered")).toBeVisible();
 
     await callTool(legacyPage, "update-basic-info", { name: "Grace Hopper" });
     await expect(preview(legacyPage).getByText("Grace Hopper")).toBeVisible();

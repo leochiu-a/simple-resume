@@ -25,10 +25,15 @@ can still change under us. Two changes have already landed that older tutorials 
 | Chrome 149 | Origin trial; locally, enable `chrome://flags/#enable-webmcp-testing` and relaunch |
 | Others     | No support — the editor falls back to being a normal form                          |
 
-The nav bar reports which case you are in:
+The nav bar's on-device AI button (the sparkles icon) reports which case you are in, on its **Browser
+agent** row:
 
-- **Agent ready · 12 tools** — registration succeeded
-- **Agent unavailable** — the browser has no `document.modelContext`, or registration failed
+- **Ready** — registration succeeded, and the row says how many tools are registered
+- **Unavailable** — the browser has no `document.modelContext`
+- **Error** — the surface is there but `registerTool` rejected
+
+The same panel is where on-device translation is turned on, since both are browser-built-in models
+and neither sends the resume anywhere.
 
 To call tools by hand, use the Chrome DevTools WebMCP panel or the Model Context Tool Inspector
 extension.
@@ -58,13 +63,13 @@ the flag themselves (or who are on a browser with native support).
 
 ## How it is wired
 
-| File                                                                                                          | Role                                            |
-| ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| [`src/types/webmcp.d.ts`](../src/types/webmcp.d.ts)                                                           | Ambient types for `document.modelContext`       |
-| [`src/lib/webmcp.ts`](../src/lib/webmcp.ts)                                                                   | Feature detection, `defineTool`, result helpers |
-| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)             | The 12 tool definitions                         |
-| [`src/app/resume-editor/hooks/useResumeMcp.ts`](../src/app/resume-editor/hooks/useResumeMcp.ts)               | Registers on mount, aborts on unmount           |
-| [`src/app/resume-editor/components/webmcp-status.tsx`](../src/app/resume-editor/components/webmcp-status.tsx) | The nav badge                                   |
+| File                                                                                                                                                | Role                                             |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| [`src/types/webmcp.d.ts`](../src/types/webmcp.d.ts)                                                                                                 | Ambient types for `document.modelContext`        |
+| [`src/lib/webmcp.ts`](../src/lib/webmcp.ts)                                                                                                         | Feature detection, `defineTool`, result helpers  |
+| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 12 tool definitions                          |
+| [`src/app/resume-editor/hooks/useResumeMcp.ts`](../src/app/resume-editor/hooks/useResumeMcp.ts)                                                     | Registers on mount, aborts on unmount            |
+| [`src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx`](../src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx) | The nav panel, shared with on-device translation |
 
 Lifecycle: tools are registered once when the editor mounts and torn down by aborting the controller
 when it unmounts, so navigating away from `/resume-editor` removes all 12 tools and coming back
