@@ -24,9 +24,7 @@ const SiteFooter = () => (
 
         <div className="lg:col-span-5">
           <p className="text-[0.95rem] leading-[1.72] text-[var(--graphite-soft)]">
-            The source is public and short enough to read in an evening. Adding a template is one
-            folder and one line in the registry — the README walks through what the preview does and
-            does not share with the PDF.
+            The source is public and short enough to read in an evening.
           </p>
 
           <ul className="mt-8 flex flex-wrap gap-x-7 gap-y-3 border-t border-[var(--rule)] pt-6 font-mono text-[11px] uppercase tracking-[0.18em]">
@@ -41,15 +39,6 @@ const SiteFooter = () => (
             </li>
             <li>
               <Link
-                href="https://github.com/leochiu-a/simple-resume#adding-a-template"
-                target="_blank"
-                className="transition-colors duration-200 hover:text-[var(--accent)]"
-              >
-                Add a template
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="https://github.com/leochiu-a/simple-resume/blob/main/docs/webmcp.md"
                 target="_blank"
                 className="transition-colors duration-200 hover:text-[var(--accent)]"
@@ -57,7 +46,6 @@ const SiteFooter = () => (
                 WebMCP tools
               </Link>
             </li>
-            <li className="text-[var(--graphite-soft)]">Next.js · react-pdf</li>
           </ul>
         </div>
       </div>
