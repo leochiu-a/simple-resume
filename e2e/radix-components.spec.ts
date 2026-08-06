@@ -26,7 +26,9 @@ test.describe("Radix overlays", () => {
   });
 
   test("month picker popover opens and closes on Escape", async ({ page }) => {
-    const trigger = page.locator('button[aria-haspopup="dialog"]').first();
+    // Scoped to the form: the nav's on-device AI popover is a dialog trigger too,
+    // and it comes first in the document.
+    const trigger = page.locator('#resume-form button[aria-haspopup="dialog"]').first();
     await trigger.click();
 
     const popover = page.locator("[data-radix-popper-content-wrapper]");

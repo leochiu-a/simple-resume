@@ -5,9 +5,9 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
-import { useLocalStorage, useMediaQuery } from "usehooks-ts";
-import debounce from "lodash/debounce";
+import { useMediaQuery } from "usehooks-ts";
 
+import { LANG_NAME_EN } from "@/lib/resume-doc";
 import { Resume } from "@/types/resume";
 import { Separator } from "@/components/ui/separator";
 import ResumeForm from "./components/form/resume-form";
@@ -15,19 +15,26 @@ import ResumePreviewDialog from "./components/resume-preview-dialog";
 import ResumePreview from "./components/resume-preview";
 import PreviewControls from "./components/preview-controls";
 import { ModeToggle } from "./components/mode-toggle";
-import WebMcpStatusBadge from "./components/webmcp-status";
+import LanguageSwitcher from "./components/language-switcher";
+import TranslationPanel from "./components/translation-panel";
+import OnDeviceAiButton from "./components/on-device-ai/on-device-ai-button";
 import { useResumeMcp } from "./hooks/useResumeMcp";
+import { useResumeDoc } from "./hooks/useResumeDoc";
+import { useResumeTranslation } from "./hooks/useResumeTranslation";
 import useTemplateOptions from "./hooks/useTemplateOptions";
 import { DEFAULT_RESUME } from "./constants";
 
 const ResumeEditorPage = () => {
   const [mounted, setMounted] = useState(false);
-  const [value, setValue] = useLocalStorage("resume", DEFAULT_RESUME);
   const formMethods = useForm<Resume>({
-    defaultValues: value,
+    defaultValues: DEFAULT_RESUME,
   });
   const { control } = formMethods;
   const resume = useWatch({ control }) as Resume;
+
+  const doc = useResumeDoc(formMethods);
+  const translation = useResumeTranslation(doc);
+  const viewingTranslation = doc.activeLang !== doc.primaryLang;
 
   const matches = useMediaQuery("(min-width: 1024px)");
   const { resolvedTheme } = useTheme();
@@ -36,17 +43,15 @@ const ResumeEditorPage = () => {
   // sit in the nav, which is outside the preview entirely.
   const templateOptions = useTemplateOptions();
 
-  const saveResume = useMemo(
-    () =>
-      debounce((resume: Resume) => {
-        setValue(resume);
-      }, 300),
-    [setValue],
+  const pairLabel = useMemo(
+    () => `${LANG_NAME_EN[doc.primaryLang]} → ${LANG_NAME_EN[doc.secondaryLang]}`,
+    [doc.primaryLang, doc.secondaryLang],
   );
 
+  const { saveActiveLocale } = doc;
   useEffect(() => {
-    saveResume(resume);
-  }, [resume, saveResume]);
+    saveActiveLocale(resume);
+  }, [resume, saveActiveLocale]);
 
   // prevent hydration error caused by getting value from local storage on server side
   useEffect(() => {
@@ -84,7 +89,12 @@ const ResumeEditorPage = () => {
               </>
             )}
 
-            <WebMcpStatusBadge status={mcpStatus} toolCount={mcpToolCount} />
+            <OnDeviceAiButton
+              mcpStatus={mcpStatus}
+              mcpToolCount={mcpToolCount}
+              pair={translation.pair}
+              pairLabel={pairLabel}
+            />
             <ModeToggle />
             <Link
               href="https://github.com/leochiu-a/simple-resume"
@@ -123,8 +133,31 @@ const ResumeEditorPage = () => {
           */}
           <form id="resume-form" onSubmit={(event) => event.preventDefault()}>
             <div className="lg:flex">
-              <div className="mx-4 my-10 lg:mx-12 lg:w-1/2">
-                <ResumeForm />
+              {/* The tabs are the column's own, not the page's: the preview beside
+                  it is a sticky sibling, and anything spanning both would eat into
+                  its height. */}
+              <div className="lg:w-1/2">
+                <LanguageSwitcher
+                  activeLang={doc.activeLang}
+                  primaryLang={doc.primaryLang}
+                  onSwitch={doc.switchLang}
+                />
+
+                <div className="mx-4 my-10 lg:mx-12">
+                  {viewingTranslation && (
+                    <TranslationPanel
+                      primaryLang={doc.primaryLang}
+                      secondaryLang={doc.secondaryLang}
+                      hasLocale={doc.hasActiveLocale}
+                      translation={translation}
+                      onMakePrimary={() => doc.setPrimaryLang(doc.activeLang)}
+                    />
+                  )}
+
+                  {/* Until the translation exists there is nothing to edit, and
+                      the panel above is the whole screen. */}
+                  {doc.hasActiveLocale && <ResumeForm />}
+                </div>
               </div>
 
               {matches ? (
