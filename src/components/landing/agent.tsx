@@ -9,7 +9,7 @@ const Agent = () => (
   <section className="border-b border-[var(--rule)]">
     <div className="mx-auto w-full max-w-[1280px] px-6 py-20 lg:px-10 lg:py-28">
       <SectionHeading
-        index="02"
+        index="03"
         label="Agent · Experimental"
         title={
           <>
@@ -54,7 +54,7 @@ const Agent = () => (
 
             <blockquote className="mt-6 font-display text-[1.35rem] italic leading-[1.5] tracking-[-0.01em] lg:text-[1.5rem]">
               &ldquo;Read my resume, then rewrite the profile summary for a staff frontend role and
-              add my job at Vercel from March 2020 to now.&rdquo;
+              add my job at Northsail from March 2021 to now.&rdquo;
             </blockquote>
 
             <p className="mt-7 border-t border-[var(--rule)] pt-5 text-[0.9rem] leading-[1.65] text-[var(--graphite-soft)]">
