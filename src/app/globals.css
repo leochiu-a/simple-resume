@@ -26,13 +26,37 @@
     --c-danger: 4 45% 44%;
   }
 
+  /**
+   * Dark mode used to read as flat, and the fix turned out not to be lightness.
+   *
+   * The paper was `40 11% 6%`. Surveying the warm near-blacks people actually
+   * favour — the most-liked one on Color Hunt is #1a120b, `28 41% 7%`, and its
+   * neighbours cluster around L 5–14 — the lightness was already right. What was
+   * missing was chroma: at S 11 this was a faintly warm grey, which is a void,
+   * where the liked ones are unmistakably a material.
+   *
+   * The same conclusion falls out of this file. Light mode's paper is
+   * `40 37% 95%` — S 37, a properly saturated cream card. Dark mode dropped the
+   * same sheet of paper to S 11. That is the inconsistency: one theme had a
+   * stock and the other had an absence of light.
+   *
+   * So: the lightness is left where it was and the saturation is roughly
+   * trebled. Not all the way to the 41 of the most-liked swatch, which at this
+   * lightness goes frankly brown and starts competing with the sheet — in this
+   * app the only thing allowed to be colourful is the resume. S 28 is a
+   * material; S 41 is a colour.
+   *
+   * The rule moved for a separate, measured reason: at L16 on L6 paper the
+   * hairlines ran at 1.34:1, which is invisible, and hairlines are the whole
+   * letterpress idea — crop marks, section rules, field borders.
+   */
   .dark {
-    --c-paper: 40 11% 6%;
-    --c-paper-raised: 36 11% 9%;
-    --c-wash: 38 9% 14%;
+    --c-paper: 36 28% 7%;
+    --c-paper-raised: 34 26% 11%;
+    --c-wash: 36 22% 14%;
     --c-graphite: 40 38% 94%;
-    --c-graphite-soft: 38 9% 57%;
-    --c-rule: 39 13% 16%;
+    --c-graphite-soft: 38 14% 64%;
+    --c-rule: 36 22% 22%;
     --c-danger: 4 42% 56%;
   }
 
@@ -98,22 +122,25 @@
     --graphite: hsl(var(--c-graphite));
     --graphite-soft: hsl(var(--c-graphite-soft));
     --rule: hsl(var(--c-rule));
+
+    /**
+     * The page's own accent — the buttons, the section numbers, the full stops,
+     * the crop marks.
+     *
+     * Fixed, and deliberately *not* the colour the visitor picks for the sheet.
+     * That swatch tints the paper and nothing else: choosing Oxblood should not
+     * repaint the site around it, and a page whose identity changes every time
+     * someone tries a template has no identity. Pine, which is also the sheet's
+     * default — see SWATCHES in components/landing/accent.tsx.
+     */
+    --accent-base: #094c42;
+    --accent: var(--accent-base);
   }
 
-  /**
-   * `--ink` is a colour someone picked for a sheet, set inline by whatever owns
-   * that choice — the landing's accent provider, or the editor's colour picker.
-   * Read `--ink-display` for anything that is not the sheet: on light paper the
-   * picked colour is used as-is, but two of the four templates default to
-   * near-black, so dark paper lifts it towards white before it is drawn on
-   * anything.
-   */
-  [data-ink] {
-    --ink-display: var(--ink);
-  }
-
-  .dark [data-ink] {
-    --ink-display: color-mix(in oklab, var(--ink) 42%, #fffaf0);
+  /* Pine is dark enough to disappear on dark paper, so it is lifted towards the
+     paper before anything is drawn with it. */
+  .dark [data-landing] {
+    --accent: color-mix(in oklab, var(--accent-base) 42%, #fffaf0);
   }
 
   /**
@@ -152,6 +179,48 @@
     pointer-events: none;
     opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Dark stock has visible tooth, and 4% of noise on near-black was not it. */
+  .dark [data-landing]::before {
+    opacity: 0.06;
+  }
+
+  /**
+   * The light in the room.
+   *
+   * A flat field with one blazing white sheet on it is why dark mode read as a
+   * void: the eye adapts to the brightest thing on screen and everything else
+   * collapses behind it. Two very soft, very wide warm lights — a key over where
+   * the sheet sits and a fill in the opposite corner — supply the mid-tones that
+   * were missing and, more usefully, give the sheet a reason to be bright.
+   *
+   * `isolation` rather than `position: relative` alone: the layer sits at
+   * z-index -1 so it paints above this element's own background and below every
+   * piece of content, which needs a stacking context here to resolve against.
+   * Deliberately not `transform`, `filter` or `backdrop-filter` — all three would
+   * make this a containing block for fixed positioning and break the colour
+   * picker's full-screen click-catcher, the same trap the editor's nav documents.
+   */
+  [data-landing] {
+    isolation: isolate;
+  }
+
+  .dark [data-landing]::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(70rem 55rem at 76% 12%, hsl(41 34% 62% / 0.1), transparent 62%),
+      radial-gradient(48rem 42rem at 8% 92%, hsl(38 28% 55% / 0.05), transparent 65%);
+  }
+
+  @media print {
+    .dark [data-landing]::after {
+      display: none;
+    }
   }
 
   @media print {

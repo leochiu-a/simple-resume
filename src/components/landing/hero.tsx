@@ -34,7 +34,7 @@ const Hero = () => {
           >
             Your resume <br />
             <em className="font-normal italic">never leaves</em> <br />
-            your browser<span className="text-[var(--ink-display)]">.</span>
+            your browser<span className="text-[var(--accent)]">.</span>
           </h1>
 
           <p
@@ -49,7 +49,7 @@ const Hero = () => {
           <div style={rise(3)} className="landing-rise mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/resume-editor"
-              className="group inline-flex items-center gap-3 bg-[var(--ink-display)] px-7 py-3.5 text-[0.95rem] font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5"
+              className="group inline-flex items-center gap-3 bg-[var(--accent)] px-7 py-3.5 text-[0.95rem] font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5"
             >
               Create resume
               <span
@@ -62,7 +62,7 @@ const Hero = () => {
             <Link
               href="https://github.com/leochiu-a/simple-resume"
               target="_blank"
-              className="inline-flex items-center gap-2 border border-[var(--rule)] px-7 py-3.5 text-[0.95rem] font-medium transition-colors duration-200 hover:border-[var(--ink-display)]"
+              className="inline-flex items-center gap-2 border border-[var(--rule)] px-7 py-3.5 text-[0.95rem] font-medium transition-colors duration-200 hover:border-[var(--accent)]"
             >
               View source
             </Link>
@@ -81,7 +81,7 @@ const Hero = () => {
               ["Price", "Free, no tiers"],
             ].map(([term, value]) => (
               <div key={term} className="flex flex-col gap-1.5 py-2">
-                <dt className="text-[10px] tracking-[0.22em] text-[var(--ink-display)]">{term}</dt>
+                <dt className="text-[10px] tracking-[0.22em] text-[var(--accent)]">{term}</dt>
                 <dd className="text-[var(--graphite)]">{value}</dd>
               </div>
             ))}
@@ -101,7 +101,7 @@ const Hero = () => {
                     aria-pressed={active}
                     className={`py-2 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors duration-200 ${
                       active
-                        ? "text-[var(--ink-display)] underline decoration-[1.5px] underline-offset-[6px]"
+                        ? "text-[var(--accent)] underline decoration-[1.5px] underline-offset-[6px]"
                         : "text-[var(--graphite-soft)] hover:text-[var(--graphite)]"
                     }`}
                   >

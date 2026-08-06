@@ -10,7 +10,7 @@ const Privacy = () => (
           <>
             No account. No upload. <br />
             Nothing to leak
-            <span className="text-[var(--ink-display)]">.</span>
+            <span className="text-[var(--accent)]">.</span>
           </>
         }
       />
@@ -27,9 +27,7 @@ const Privacy = () => (
           {/* Said plainly, because a privacy claim with an asterisk hidden in it is
               worse than no claim. */}
           <p className="mt-8 max-w-[62ch] border-t border-[var(--rule)] pt-5 font-mono text-[0.78rem] leading-[1.85] text-[var(--graphite-soft)]">
-            <span className="uppercase tracking-[0.2em] text-[var(--ink-display)]">
-              Full disclosure
-            </span>{" "}
+            <span className="uppercase tracking-[0.2em] text-[var(--accent)]">Full disclosure</span>{" "}
             — page views are counted with Vercel Analytics, and the sheet loads Noto Sans and Noto
             Serif from Google Fonts. Neither of those ever sees what you typed.
           </p>

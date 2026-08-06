@@ -52,7 +52,7 @@ const TemplateSheet = ({ templateId, color }: { templateId: string; color: strin
 
   return (
     <div className="relative">
-      <CropMarks className="border-[var(--ink-display)] opacity-50" />
+      <CropMarks className="border-[var(--accent)] opacity-50" />
 
       <div ref={ref} className="w-full" style={{ height: `${A4_HEIGHT_PX * scale}px` }}>
         {/* Scaling leaves the element occupying its unscaled box, so the wrapper
@@ -63,7 +63,9 @@ const TemplateSheet = ({ templateId, color }: { templateId: string; color: strin
             height: `${A4_HEIGHT_PX}px`,
             transform: `scale(${scale})`,
           }}
-          className="origin-top-left bg-white shadow-[0_24px_60px_-24px_rgba(23,21,15,0.45)]"
+          // A cast shadow on light paper; on dark stock a black shadow does
+          // nothing, so it becomes the glow a lit sheet actually throws.
+          className="origin-top-left bg-white shadow-[0_24px_60px_-24px_rgba(23,21,15,0.45)] dark:shadow-[0_28px_90px_-30px_rgba(255,244,222,0.18)]"
         >
           <Frame
             title={SHEET_FRAME_TITLE}

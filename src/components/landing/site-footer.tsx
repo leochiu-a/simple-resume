@@ -6,11 +6,11 @@ const SiteFooter = () => (
       <div className="grid grid-cols-1 items-end gap-x-14 gap-y-12 lg:grid-cols-12">
         <div className="lg:col-span-7">
           <p className="font-display text-[clamp(2.1rem,4.2vw,3.4rem)] font-semibold leading-[1.03] tracking-[-0.025em]">
-            Start with a blank page<span className="text-[var(--ink-display)]">.</span>
+            Start with a blank page<span className="text-[var(--accent)]">.</span>
           </p>
           <Link
             href="/resume-editor"
-            className="group mt-9 inline-flex items-center gap-3 bg-[var(--ink-display)] px-7 py-3.5 text-[0.95rem] font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5"
+            className="group mt-9 inline-flex items-center gap-3 bg-[var(--accent)] px-7 py-3.5 text-[0.95rem] font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5"
           >
             Create resume
             <span
@@ -34,7 +34,7 @@ const SiteFooter = () => (
               <Link
                 href="https://github.com/leochiu-a/simple-resume"
                 target="_blank"
-                className="transition-colors duration-200 hover:text-[var(--ink-display)]"
+                className="transition-colors duration-200 hover:text-[var(--accent)]"
               >
                 GitHub
               </Link>
@@ -43,7 +43,7 @@ const SiteFooter = () => (
               <Link
                 href="https://github.com/leochiu-a/simple-resume#adding-a-template"
                 target="_blank"
-                className="transition-colors duration-200 hover:text-[var(--ink-display)]"
+                className="transition-colors duration-200 hover:text-[var(--accent)]"
               >
                 Add a template
               </Link>
@@ -52,7 +52,7 @@ const SiteFooter = () => (
               <Link
                 href="https://github.com/leochiu-a/simple-resume/blob/main/docs/webmcp.md"
                 target="_blank"
-                className="transition-colors duration-200 hover:text-[var(--ink-display)]"
+                className="transition-colors duration-200 hover:text-[var(--accent)]"
               >
                 WebMCP tools
               </Link>

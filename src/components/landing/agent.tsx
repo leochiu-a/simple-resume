@@ -14,7 +14,7 @@ const Agent = () => (
         title={
           <>
             Or don&rsquo;t type it <br />
-            at all<span className="text-[var(--ink-display)]">.</span>
+            at all<span className="text-[var(--accent)]">.</span>
           </>
         }
       />
@@ -35,7 +35,7 @@ const Agent = () => (
               ["Status", "W3C community draft, still moving"],
             ].map(([term, value]) => (
               <div key={term} className="flex flex-col gap-1.5 border-b border-[var(--rule)] py-4">
-                <dt className="text-[10px] tracking-[0.22em] text-[var(--ink-display)]">{term}</dt>
+                <dt className="text-[10px] tracking-[0.22em] text-[var(--accent)]">{term}</dt>
                 <dd className="text-[var(--graphite)]">{value}</dd>
               </div>
             ))}

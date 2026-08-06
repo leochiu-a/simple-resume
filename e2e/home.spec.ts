@@ -64,22 +64,27 @@ test.describe("home page", () => {
   });
 
   /**
-   * The colour picked for the sheet is also the page's accent, published as
-   * `--ink`. That link is the one thing about the hero that is easy to break
-   * without noticing, since the sheet keeps working either way.
+   * The swatch is a preview of a printed page, not a theme picker: it tints the
+   * sheet and stops there. The page's own accent is fixed, and it is easy to
+   * re-link the two by accident, because the sheet keeps working either way.
    */
-  test("picking a colour retints the page, not just the sheet", async ({ page }) => {
+  test("picking a colour tints the sheet and leaves the page alone", async ({ page }) => {
     await page.goto("/");
 
-    const ink = () =>
+    const accent = () =>
       page
         .locator("[data-landing]")
-        .evaluate((element) => getComputedStyle(element).getPropertyValue("--ink").trim());
+        .evaluate((element) => getComputedStyle(element).getPropertyValue("--accent").trim());
 
-    expect(await ink()).toBe("#094C42");
+    const before = await accent();
+    expect(before).toContain("094c42"); // Pine, raw on light paper and lifted on dark
 
     await page.getByRole("button", { name: "Tint Indigo" }).click();
-    expect(await ink()).toBe("#2A3A8F");
+
+    // The sheet took the colour…
+    await expect(landingSheet(page).locator('[style*="rgb(42, 58, 143)"]').first()).toBeVisible();
+    // …and the page did not.
+    expect(await accent()).toBe(before);
   });
 
   /**
