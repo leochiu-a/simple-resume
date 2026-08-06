@@ -2,7 +2,15 @@ import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 
-import { downloadHtml, downloadMenu, downloadPdf, preview, readPdfFacts } from "./helpers";
+import {
+  downloadHtml,
+  downloadMenu,
+  downloadPdf,
+  openAppearanceMenu,
+  preview,
+  readPdfFacts,
+  selectTemplate,
+} from "./helpers";
 
 /**
  * The Formal template is a single column under a centred serif header. These
@@ -11,13 +19,11 @@ import { downloadHtml, downloadMenu, downloadPdf, preview, readPdfFacts } from "
  * pass.
  */
 
-const templatePicker = (page: Page) => page.getByRole("button", { name: "Change template" });
-
-const selectFormal = async (page: Page) => {
-  await templatePicker(page).click();
-  await page.getByRole("menuitem").filter({ hasText: "Formal" }).click();
-  await expect(templatePicker(page)).toContainText("Formal");
-};
+/* The picker is the appearance panel over the preview now, and its contents are
+   buttons rather than menu items. Both facts live in `selectTemplate` in
+   ./helpers — this used to keep its own copy, which is why it broke when the
+   panel moved. */
+const selectFormal = (page: Page) => selectTemplate(page, "Formal");
 
 /** Every section the template renders, in the order it renders them. */
 const SECTIONS = ["Summary", "Experience", "Education", "Skills", "Links"];
@@ -28,8 +34,8 @@ test.describe("Formal template", () => {
   });
 
   test("is offered by the picker", async ({ page }) => {
-    await templatePicker(page).click();
-    await expect(page.getByRole("menuitem").filter({ hasText: "Formal" })).toBeVisible();
+    await openAppearanceMenu(page);
+    await expect(page.getByRole("button", { name: /^Formal — / })).toBeVisible();
   });
 
   test("switches the preview to the single-column layout", async ({ page }) => {

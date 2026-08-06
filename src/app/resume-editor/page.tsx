@@ -1,23 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useMediaQuery } from "usehooks-ts";
 
 import { LANG_NAME_EN } from "@/lib/resume-doc";
+import { cn } from "@/lib/utils";
 import { Resume } from "@/types/resume";
-import { Separator } from "@/components/ui/separator";
 import ResumeForm from "./components/form/resume-form";
 import ResumePreviewDialog from "./components/resume-preview-dialog";
 import ResumePreview from "./components/resume-preview";
-import PreviewControls from "./components/preview-controls";
-import { ModeToggle } from "./components/mode-toggle";
-import LanguageSwitcher from "./components/language-switcher";
+import EditorHeader from "./components/editor-header";
 import TranslationPanel from "./components/translation-panel";
-import OnDeviceAiButton from "./components/on-device-ai/on-device-ai-button";
+import AppearancePanel from "./components/template/appearance-panel";
 import { useResumeMcp } from "./hooks/useResumeMcp";
 import { useResumeDoc } from "./hooks/useResumeDoc";
 import { useResumeTranslation } from "./hooks/useResumeTranslation";
@@ -37,11 +32,15 @@ const ResumeEditorPage = () => {
   const viewingTranslation = doc.activeLang !== doc.primaryLang;
 
   const matches = useMediaQuery("(min-width: 1024px)");
-  const { resolvedTheme } = useTheme();
   const { status: mcpStatus, toolCount: mcpToolCount } = useResumeMcp(formMethods);
-  // Held here rather than in the preview: on desktop the controls that drive it
-  // sit in the nav, which is outside the preview entirely.
+  // Held here rather than in the preview because two places drive it: the
+  // appearance panel floating over the desktop preview, and the mobile dialog's
+  // header. Both have to move the same sheet.
   const templateOptions = useTemplateOptions();
+  /* Which of the two things the editing column is showing. A mode rather than a
+     route: the form is never unmounted, so nothing it holds is lost while the
+     appearance panel is up. */
+  const [showAppearance, setShowAppearance] = useState(false);
 
   const pairLabel = useMemo(
     () => `${LANG_NAME_EN[doc.primaryLang]} → ${LANG_NAME_EN[doc.secondaryLang]}`,
@@ -61,58 +60,33 @@ const ResumeEditorPage = () => {
   if (!mounted) return null;
 
   return (
-    <>
-      {/* Same bar as the landing page's, with the tools added: wordmark in the
-          display face, a hairline underneath, nothing with a fill of its own.
+    /*
+      The editor is a fixed-height column, not a scrolling page.
 
-          Solid paper, and no `backdrop-blur`: a backdrop-filter would make this a
-          containing block for fixed positioning, and the colour picker's
-          full-screen click-catcher is a `fixed inset-0` inside this nav. Blurring
-          here shrinks that overlay to the height of the bar, and the picker stops
-          closing when you click the page. */}
-      <nav className="sticky top-0 z-10 border-b bg-background">
-        <div className="flex h-14 items-center gap-4 px-4 md:px-12">
-          <Link href="/" className="font-display text-xl font-semibold tracking-[-0.02em]">
-            <h1>Simple Resume</h1>
-          </Link>
-          <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground lg:inline">
-            Saved in this browser
-          </span>
+      This is what separates the two scrollbars. Before, the page scrolled and the
+      preview was `sticky` — so dragging anywhere moved the form and the preview
+      just held its position, which is why they felt joined. Pinning the shell to
+      the viewport and letting each column own an `overflow-y-auto` region gives
+      them one scrollbar each, genuinely independent.
 
-          <div className="ml-auto flex items-center gap-3">
-            {/* Only on desktop: at mobile widths the nav has no room, so these
-                ride in the preview dialog's header instead. */}
-            {matches && (
-              <>
-                <PreviewControls resume={resume} options={templateOptions} />
-                <Separator orientation="vertical" className="h-6" />
-              </>
-            )}
-
-            <OnDeviceAiButton
-              mcpStatus={mcpStatus}
-              mcpToolCount={mcpToolCount}
-              pair={translation.pair}
-              pairLabel={pairLabel}
-            />
-            <ModeToggle />
-            <Link
-              href="https://github.com/leochiu-a/simple-resume"
-              target="_blank"
-              aria-label="Source on GitHub"
-              className="flex size-9 items-center justify-center border transition-colors hover:border-foreground/40"
-            >
-              <Image
-                src={resolvedTheme === "dark" ? "/github-mark-white.png" : "/github-mark.png"}
-                alt="github-mark"
-                width={16}
-                height={16}
-              />
-            </Link>
-          </div>
-        </div>
-      </nav>
-      <main>
+      `h-dvh` rather than `h-screen`: on mobile browsers `100vh` is the *largest*
+      viewport, so the bottom of the page sits behind the address bar until it
+      retracts. dvh tracks the visible height instead.
+    */
+    <div data-editor-shell className="flex h-dvh flex-col overflow-hidden">
+      <EditorHeader
+        resume={resume}
+        options={templateOptions}
+        activeLang={doc.activeLang}
+        primaryLang={doc.primaryLang}
+        onSwitchLang={doc.switchLang}
+        mcpStatus={mcpStatus}
+        mcpToolCount={mcpToolCount}
+        pair={translation.pair}
+        pairLabel={pairLabel}
+        showTools={matches}
+      />
+      <main className="min-h-0 flex-1">
         <FormProvider {...formMethods}>
           {/*
             Nothing here is ever submitted: the form element groups the fields and
@@ -131,19 +105,28 @@ const ResumeEditorPage = () => {
             browser, that is the one navigation that must not be possible. The
             buttons carry `type="button"` now as well; this is the backstop.
           */}
-          <form id="resume-form" onSubmit={(event) => event.preventDefault()}>
-            <div className="lg:flex">
-              {/* The tabs are the column's own, not the page's: the preview beside
-                  it is a sticky sibling, and anything spanning both would eat into
-                  its height. */}
-              <div className="lg:w-1/2">
-                <LanguageSwitcher
-                  activeLang={doc.activeLang}
-                  primaryLang={doc.primaryLang}
-                  onSwitch={doc.switchLang}
-                />
+          <form id="resume-form" onSubmit={(event) => event.preventDefault()} className="h-full">
+            <div className="flex h-full">
+              {/* The form column scrolls on its own. `min-w-0` because a flex item
+                  defaults to min-content width, and the form's long inputs would
+                  otherwise push this wider than half the shell. */}
+              <div
+                data-editor-column
+                className="scrollbar-overlay min-w-0 flex-1 overflow-y-auto lg:w-1/2 lg:flex-none"
+              >
+                {showAppearance && (
+                  <AppearancePanel
+                    resume={resume}
+                    options={templateOptions}
+                    onClose={() => setShowAppearance(false)}
+                  />
+                )}
 
-                <div className="mx-4 my-10 lg:mx-12">
+                {/* Hidden rather than unmounted while the appearance panel is up.
+                    These are live react-hook-form fields: unmounting them would
+                    drop focus, scroll position and any in-progress edit, and
+                    `hidden` costs nothing to keep around. */}
+                <div className={cn("mx-4 my-10 lg:mx-12", showAppearance && "hidden")}>
                   {viewingTranslation && (
                     <TranslationPanel
                       primaryLang={doc.primaryLang}
@@ -161,15 +144,26 @@ const ResumeEditorPage = () => {
               </div>
 
               {matches ? (
-                <ResumePreview resume={resume} options={templateOptions} />
+                <ResumePreview
+                  resume={resume}
+                  options={templateOptions}
+                  onOpenAppearance={() => setShowAppearance(true)}
+                />
               ) : (
-                <ResumePreviewDialog resume={resume} options={templateOptions} />
+                <ResumePreviewDialog
+                  resume={resume}
+                  options={templateOptions}
+                  mcpStatus={mcpStatus}
+                  mcpToolCount={mcpToolCount}
+                  pair={translation.pair}
+                  pairLabel={pairLabel}
+                />
               )}
             </div>
           </form>
         </FormProvider>
       </main>
-    </>
+    </div>
   );
 };
 

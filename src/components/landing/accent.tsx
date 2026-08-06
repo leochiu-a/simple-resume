@@ -22,8 +22,8 @@ export interface Swatch {
 
 /** Deliberately all mid-to-dark: every one has to hold a sidebar of white type on
  *  white paper. Pine and Ink are two of the templates' own defaults, and Pine is
- *  also the page's fixed accent — if it changes here, change `--accent-base` in
- *  globals.css with it. */
+ *  also the page's fixed accent — if it changes here, change `--c-accent` in
+ *  globals.css with it (it is an HSL triple there, not a hex). */
 export const SWATCHES: Swatch[] = [
   { name: "Pine", value: "#094C42" },
   { name: "Ink", value: "#02061b" },

@@ -15,15 +15,54 @@
  * reaches it. It stays paper-white in either theme, as the PDF will be.
  */
 @layer base {
+  /**
+   * Light mode is the working default, and it was retuned to be brighter without
+   * giving up the warmth.
+   *
+   * The paper was `40 37% 95%` — a properly saturated cream. Read on its own it is
+   * a lovely stock, but this app always shows it next to something else: the sheet
+   * in the preview is a separate document inside an iframe, and it is pure white.
+   * Cream at L95 against white at L100 is a five-point step the eye reads as the
+   * interface being slightly dirty rather than the sheet being bright.
+   *
+   * So the paper is lifted to L97 and the saturation cut to S24. Both moves point
+   * the same way: less of a colour, more of a light. The hue stays at 40 — the
+   * warmth is the identity here, and a resume builder that goes cold white is
+   * every other resume builder.
+   *
+   * The rule went the other way, and that is the part that matters most. Hairlines
+   * are the whole letterpress idea in this app — crop marks, section rules, field
+   * borders — and at `40 27% 82%` on L95 paper they ran at roughly 1.2:1. That is
+   * not a quiet line, it is an absent one, which is why the old build read as soft
+   * and undivided. Dropping the rule to L74 puts it near 1.6:1: still a hairline,
+   * now actually a line.
+   */
   :root {
-    --c-paper: 40 37% 95%;
-    --c-paper-raised: 40 60% 99%;
+    /*
+      The stock sits at L95, not the L97 the note above first reached for.
+
+      L97 made the page brighter and the *fields* invisible: inputs are
+      `bg-card`, card is pure white, and white on L97 paper is a six-value step —
+      no edge at all, so every field collapsed into the page and only its border
+      held it together. The fix is not to darken the fields (they should be the
+      brightest thing in the column, since they are where the writing happens) but
+      to give the paper somewhere to sit beneath them. L95 restores a step you can
+      actually see while staying well clear of the old cream.
+    */
+    --c-paper: 40 22% 95%;
+    --c-paper-raised: 40 40% 100%;
     /* Hover fills and quiet backgrounds: one step off the paper. */
-    --c-wash: 40 24% 90%;
-    --c-graphite: 45 21% 8%;
-    --c-graphite-soft: 39 10% 39%;
-    --c-rule: 40 27% 82%;
-    --c-danger: 4 45% 44%;
+    --c-wash: 40 20% 91%;
+    --c-graphite: 45 22% 11%;
+    --c-graphite-soft: 39 9% 44%;
+    --c-rule: 40 18% 74%;
+    --c-danger: 4 48% 46%;
+    /* The interface's own accent, shared with the landing page. Used for the one
+       thing on screen that is a live state rather than a surface: the active
+       language tab, focus rings, the appearance panel's current selection. The
+       sheet's tint is a separate axis and is never this. */
+    --c-accent: 172 79% 17%;
+    --c-accent-foreground: 40 40% 100%;
   }
 
   /**
@@ -51,13 +90,46 @@
    * letterpress idea — crop marks, section rules, field borders.
    */
   .dark {
-    --c-paper: 36 28% 7%;
-    --c-paper-raised: 34 26% 11%;
-    --c-wash: 36 22% 14%;
-    --c-graphite: 40 38% 94%;
-    --c-graphite-soft: 38 14% 64%;
-    --c-rule: 36 22% 22%;
-    --c-danger: 4 42% 56%;
+    /**
+     * Retuned alongside light mode, for a reason specific to this app rather than
+     * for symmetry.
+     *
+     * The note above is still right that the fix was chroma and not lightness —
+     * but it was reasoning about the paper in isolation. In the editor the paper
+     * is never alone: the sheet sits on it, inside an iframe, and it is pure white
+     * in both themes because it is going to be a PDF. L7 paper next to L100 paper
+     * is a 14:1 step. The eye adapts to the brightest thing on screen, so at that
+     * ratio the sheet is not bright, it is a hole cut in the screen, and the
+     * chrome around it goes to mud.
+     *
+     * Lifting the stock to L11 and the raised surface to L15 closes the step to
+     * something the eye can hold both ends of. The saturation stays where the
+     * previous retune put it — S26 is a material, and that finding does not change
+     * just because the room got lighter.
+     *
+     * The rule keeps climbing for the reason it climbed last time: at L22 on L7 it
+     * ran about 1.34:1, and on lighter stock it would be worse, not better. L28
+     * holds it near 1.5:1.
+     *
+     * Saturation comes down as lightness goes up, and the two are not independent.
+     * The earlier note settled on S28 at L7 by surveying warm near-blacks, and at
+     * that lightness it is right — S28 on near-black is a material. Carried
+     * unchanged to L11 the same S28 is chocolate: hue 36 stops reading as warm
+     * grey and starts reading as brown, which is a colour, and the one rule this
+     * palette has is that the only colourful thing on screen is the resume. S14 at
+     * L11 is the same *perceived* warmth the old S28 had at L7.
+     */
+    --c-paper: 36 14% 11%;
+    --c-paper-raised: 34 13% 15%;
+    --c-wash: 36 12% 19%;
+    --c-graphite: 40 24% 95%;
+    --c-graphite-soft: 38 10% 67%;
+    --c-rule: 36 11% 28%;
+    --c-danger: 4 46% 60%;
+    /* Pine at S79 L17 is nearly black on dark stock. Lifted and desaturated to
+       stay legible as a state colour rather than reading as another surface. */
+    --c-accent: 168 42% 58%;
+    --c-accent-foreground: 36 26% 11%;
   }
 
   /**
@@ -82,11 +154,17 @@
     --primary-foreground: var(--c-paper);
     --secondary: var(--c-wash);
     --secondary-foreground: var(--c-graphite);
+    /* shadcn's `accent` is its hover/active fill, not a brand colour — it stays
+       the wash. The brand accent is `--brand` below, applied deliberately. */
     --accent: var(--c-wash);
     --accent-foreground: var(--c-graphite);
+    --brand: var(--c-accent);
+    --brand-foreground: var(--c-accent-foreground);
     --destructive: var(--c-danger);
     --destructive-foreground: var(--c-paper);
-    --ring: var(--c-graphite-soft);
+    /* Focus rings in the accent rather than grey: the one place a live state
+       should be unmistakable. */
+    --ring: var(--c-accent);
     /* Nearly square. Printed matter has corners. */
     --radius: 0.25rem;
   }
@@ -107,6 +185,51 @@
   .field-sizing-content {
     field-sizing: content;
   }
+
+  /**
+   * Scrollbars that take no layout width.
+   *
+   * The editor is two columns side by side, and a classic scrollbar is a gutter:
+   * it is subtracted from the column's width, so the form reflows the moment its
+   * content grows past one screen, and the preview's sheet shifts left by 15px
+   * against a desk that did not move. Worse, the two columns get one each, which
+   * puts a pair of grey rails down the middle of a layout whose whole idea is
+   * hairlines and paper.
+   *
+   * `overlay` is the honest way to ask for this, but it was removed from Chrome
+   * and never shipped elsewhere, so it is a no-op today. What actually works is
+   * WebKit's pseudo-element: give it a width, paint the thumb, and leave the
+   * track transparent. The thumb then floats over the content instead of beside
+   * it. Firefox gets `scrollbar-width: thin` plus `scrollbar-color`, which is
+   * the closest it offers — it still reserves space there, which is why the
+   * colours are set too rather than left to the platform.
+   *
+   * Deliberately not `scrollbar-width: none`. A scrollable region with no visible
+   * scrollbar at all gives no clue it scrolls and no grab handle for a mouse
+   * user; this keeps the thumb, and only reclaims the gutter.
+   */
+  .scrollbar-overlay {
+    /* Firefox. `none` rather than `thin`: `thin` still reserves a gutter there,
+       which is the one thing this class exists to avoid. Firefox has no way to
+       float a scrollbar over content, so the choice is a gutter or no bar — and
+       a gutter down the middle of a two-column layout is the worse of the two. */
+    scrollbar-width: none;
+  }
+
+  /* WebKit/Blink. Taking the bar out of the box model needs `width: 0` — a bar
+     with any width is laid out beside the content, however it is painted. The
+     thumb is then drawn back in as an absolutely-positioned overlay below. */
+  .scrollbar-overlay::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .scrollbar-overlay {
+    /* Keeps wheel and touch scrolling smooth on the platforms that care. */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* (the editor's viewport lock lives outside @layer — see below) */
 }
 
 /**
@@ -132,15 +255,16 @@
      * repaint the site around it, and a page whose identity changes every time
      * someone tries a template has no identity. Pine, which is also the sheet's
      * default — see SWATCHES in components/landing/accent.tsx.
+     *
+     * This used to be a literal `#094c42` with a `color-mix` lightening it for
+     * dark mode. It is now the same `--c-accent` the editor's `--brand` points at,
+     * which is the whole premise of this file: the landing page and the editor are
+     * one printed object, and an accent that exists twice is an accent that will
+     * eventually be two different greens. The dark-mode lift is no longer computed
+     * here either — `.dark` sets `--c-accent` directly, so both surfaces get the
+     * lifted value from one place.
      */
-    --accent-base: #094c42;
-    --accent: var(--accent-base);
-  }
-
-  /* Pine is dark enough to disappear on dark paper, so it is lifted towards the
-     paper before anything is drawn with it. */
-  .dark [data-landing] {
-    --accent: color-mix(in oklab, var(--accent-base) 42%, #fffaf0);
+    --accent: hsl(var(--c-accent));
   }
 
   /**
@@ -228,4 +352,27 @@
       display: none;
     }
   }
+}
+
+/**
+ * The editor pins itself to the viewport; the landing page does not.
+ *
+ * Deliberately outside `@layer` — and that is the whole point of it being here
+ * rather than up with the other component rules. Anything inside a layer loses to
+ * unlayered CSS regardless of specificity, and Tailwind's preflight sets
+ * `height: auto` on these elements unlayered. Declared in a layer this rule was
+ * simply ignored: `overflow` computed to `hidden` in the inspector while the
+ * document went on scrolling.
+ *
+ * Scoped with `:has()` rather than set globally, because the landing page in the
+ * same root layout is a long scrolling document that must keep its own scrollbar.
+ * Without the lock the editor's `h-dvh` shell sits in a document still free to
+ * grow, so anything that momentarily overflows hands the page a second scrollbar
+ * down the right edge — outside either column, and belonging to neither.
+ */
+html:has(body > [data-editor-shell]),
+body:has(> [data-editor-shell]) {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }

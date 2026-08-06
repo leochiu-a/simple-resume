@@ -1,58 +1,63 @@
-import { Sketch as SketchPicker } from "@uiw/react-color";
-
 import { Resume } from "@/types/resume";
 
 import type useTemplateOptions from "../hooks/useTemplateOptions";
-import AppearanceMenu from "./template/appearance-menu";
+import AppearanceTrigger from "./template/appearance-trigger";
 import DownloadButton from "./template/download-button";
+import OnDeviceAiButton from "./on-device-ai/on-device-ai-button";
+import { LangPair } from "@/lib/translator";
+import { WebMcpStatus } from "@/lib/webmcp";
 
 /**
- * Everything you can do to the preview without editing the resume, in two
- * controls: how it looks, and taking it away — as a file, or as Markdown on the
- * clipboard.
+ * The mobile preview dialog's header.
  *
- * It lives in the nav on desktop and in the dialog header on mobile, which is why
- * it takes its state rather than owning it — both places have to drive the same
- * preview.
+ * On desktop these controls are split by where they belong — download in the
+ * header, appearance on the sheet. The dialog is the whole screen and the sheet
+ * fills it, so there is nowhere for a floating control to float that is not on
+ * top of the resume; here they sit in a row instead. The appearance panel keeps
+ * its own trigger and popover, just without the hover reveal, which a touch
+ * device would never fire anyway.
  */
 const PreviewControls = ({
   resume,
   options,
+  mcpStatus,
+  mcpToolCount,
+  pair,
+  pairLabel,
+  onOpenAppearance,
 }: {
   resume: Resume;
   options: ReturnType<typeof useTemplateOptions>;
+  mcpStatus: WebMcpStatus;
+  mcpToolCount: number;
+  pair: LangPair | null;
+  pairLabel: string | null;
+  onOpenAppearance: () => void;
 }) => {
-  const {
-    template,
-    selectTemplate,
-    displayColorPicker,
-    backgroundColor,
-    selectColor,
-    toggleColorPicker,
-    changeBackgroundColor,
-  } = options;
+  const { template, backgroundColor } = options;
 
   return (
-    <div className="relative flex items-center gap-3">
-      <AppearanceMenu
-        resume={resume}
-        template={template}
-        color={backgroundColor}
-        onSelectTemplate={selectTemplate}
-        onSelectColor={selectColor}
-        onOpenColorPicker={toggleColorPicker}
+    <div className="flex items-center gap-3">
+      <AppearanceTrigger
+        onOpen={onOpenAppearance}
+        // Always solid here: the fade is a desktop affordance keyed off hovering
+        // the preview pane, and this dialog only exists below that breakpoint.
+        // `size-9` to match the row it sits in.
+        className="size-9 opacity-100 shadow-none"
+        // A tooltip here would swallow the Escape that should close the dialog —
+        // see the note on the prop itself.
+        tooltip={false}
       />
 
       <DownloadButton resume={resume} backgroundColor={backgroundColor} template={template} />
 
-      {displayColorPicker && (
-        // The presets in the menu cover most cases; this is the escape hatch for
-        // an exact colour, reached from "Custom colour…" rather than its own button.
-        <div className="absolute right-0 top-12 z-20">
-          <div className="fixed inset-0" onClick={toggleColorPicker} />
-          <SketchPicker color={backgroundColor} onChange={changeBackgroundColor} />
-        </div>
-      )}
+      <OnDeviceAiButton
+        mcpStatus={mcpStatus}
+        mcpToolCount={mcpToolCount}
+        pair={pair}
+        pairLabel={pairLabel}
+        tooltip={false}
+      />
     </div>
   );
 };

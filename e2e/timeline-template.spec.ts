@@ -2,7 +2,14 @@ import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 
-import { downloadHtml, downloadMenu, downloadPdf, preview, readPdfFacts } from "./helpers";
+import {
+  downloadHtml,
+  downloadMenu,
+  downloadPdf,
+  preview,
+  readPdfFacts,
+  selectTemplate,
+} from "./helpers";
 
 /**
  * The Timeline template: a banded header, dated timeline entries in a wide left
@@ -13,13 +20,8 @@ import { downloadHtml, downloadMenu, downloadPdf, preview, readPdfFacts } from "
  * pass.
  */
 
-const templatePicker = (page: Page) => page.getByRole("button", { name: "Change template" });
-
-const selectTimeline = async (page: Page) => {
-  await templatePicker(page).click();
-  await page.getByRole("menuitem").filter({ hasText: "Timeline" }).click();
-  await expect(templatePicker(page)).toContainText("Timeline");
-};
+/* Shared rather than a local copy — see the note in formal-template.spec.ts. */
+const selectTimeline = (page: Page) => selectTemplate(page, "Timeline");
 
 /** The headings Timeline renders, across both of its columns. */
 const HEADINGS = ["Summary", "Experience", "Education", "Skills", "Links"];

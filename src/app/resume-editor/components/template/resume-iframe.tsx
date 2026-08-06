@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren, RefObject, useEffect, useRef, useState } from "react";
 import Frame from "react-frame-component";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -18,61 +18,68 @@ export const PREVIEW_FRAME_TITLE = "Resume preview";
 /** Room either side of the sheet for the crop marks to sit in. */
 export const CROP_MARK_GUTTER = 24;
 
-const useResumeScale = () => {
+/**
+ * How large the sheet can be drawn, measured from the box it is actually in.
+ *
+ * This used to be arithmetic on `window`: half the viewport wide, and the height
+ * minus a hardcoded `navHeight = 56` and two paddings. That worked only while
+ * those numbers happened to match the layout, and it silently stopped being true
+ * the moment the shell changed — the header is one bar now rather than two, the
+ * preview owns its own scroll region, and the padding around the sheet moved. The
+ * result was a sheet scaled for a container that no longer existed, sitting in a
+ * pane with dead space under it.
+ *
+ * A ResizeObserver on the real element cannot drift like that. It also picks up
+ * every reason the box can change size — the window resizing, yes, but equally
+ * the appearance panel opening beside it or a scrollbar appearing — none of
+ * which a `window.innerWidth` calculation can see.
+ */
+const useResumeScale = (containerRef: RefObject<HTMLElement | null>) => {
   const [scale, setScale] = useState(0.5);
   const matches = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
-    const getDefaultScale = () => {
-      let scale: number;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const { width, height } = el.getBoundingClientRect();
+      if (!width || !height) return;
 
       if (matches) {
-        const screenHeightPx = window.innerHeight;
-        const navHeight = 56;
         // Reserved whether or not the pager is showing, so the sheet does not
         // resize out from under you the moment a resume spills onto a second page.
         const pagerHeight = 40 + 16;
-        const resumePaddingY = 32 * 2;
-        const resumeHeight = screenHeightPx - navHeight - pagerHeight - resumePaddingY;
+        // The marks sit outside the trim on all four sides and this box clips, so
+        // the gutter is held back on both axes — vertically too, which the old
+        // `window`-based version forgot, clipping the top and bottom marks.
+        const available = width - CROP_MARK_GUTTER * 2;
+        const availableHeight = height - pagerHeight - CROP_MARK_GUTTER * 2;
 
-        // The preview owns half the window, so height alone is not the constraint:
-        // a tall, narrow window used to hand back a sheet wider than the column it
-        // sits in, and it was clipped down both edges. Whichever axis runs out
-        // first decides. CROP_MARK_GUTTER is held back on each side because the
-        // marks sit outside the trim, and the column scrolls — so anything outside
-        // the sheet is inside a box that clips.
-        const columnWidth = window.innerWidth / 2 - 32 * 2 - CROP_MARK_GUTTER * 2;
-
-        scale = Math.min(resumeHeight / A4_HEIGHT_PX, columnWidth / A4_WIDTH_PX);
+        // Whichever axis runs out first decides: a tall, narrow window would
+        // otherwise hand back a sheet wider than the column it sits in.
+        setScale(Math.min(availableHeight / A4_HEIGHT_PX, available / A4_WIDTH_PX));
       } else {
-        const screenWidthPx = window.innerWidth;
-        const resumePaddingX = 16 * 2;
-        const resumeWidth = screenWidthPx - resumePaddingX;
-
-        scale = resumeWidth / A4_WIDTH_PX;
+        setScale(width / A4_WIDTH_PX);
       }
-
-      return scale;
     };
 
-    const setDefaultScale = () => {
-      const defaultScale = getDefaultScale();
-      setScale(defaultScale);
-    };
+    measure();
 
-    setDefaultScale();
-    window.addEventListener("resize", setDefaultScale);
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
 
-    return () => {
-      window.removeEventListener("resize", setDefaultScale);
-    };
-  }, [matches]);
+    return () => observer.disconnect();
+  }, [matches, containerRef]);
 
   return scale;
 };
 
 const ResumeIframe = ({ children }: PropsWithChildren) => {
-  const scale = useResumeScale();
+  // The box the sheet has to fit inside. Measured rather than derived from the
+  // window — see `useResumeScale`.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scale = useResumeScale(containerRef);
   const { pageCount, contentRef } = usePagination(A4_HEIGHT_PX);
   const [page, setPage] = useState(0);
 
@@ -80,7 +87,10 @@ const ResumeIframe = ({ children }: PropsWithChildren) => {
   const currentPage = Math.min(page, pageCount - 1);
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div
+      ref={containerRef}
+      className="flex h-full w-full flex-col items-center justify-center gap-4"
+    >
       <div
         className="relative"
         style={{

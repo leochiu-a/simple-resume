@@ -3,8 +3,8 @@ import {
   collectConsoleErrors,
   DOC_STORAGE_KEY,
   languageButton,
-  onDeviceAiButton,
   openOnDeviceAiPanel,
+  openOverflowMenu,
   preview,
 } from "./helpers";
 
@@ -144,18 +144,42 @@ test.describe("On-device AI panel", () => {
     await openOnDeviceAiPanel(page);
     await expect(page.getByText("the model downloads once")).toBeVisible();
 
-    // This click is the user activation the real API requires.
+    // This click is the user activation the real API requires. It must not close
+    // the menu it was pressed in — the rows are plain children of the dropdown
+    // rather than menu items precisely so that this click survives.
     await page.getByRole("button", { name: "Enable" }).click();
+    await expect(page.getByRole("menu")).toBeVisible();
     await expect(page.getByRole("progressbar")).toBeVisible();
+    // Busy while the panel is still up — the deterministic half of the check.
+    // Whether it is still downloading *after* closing is a race (see below), so
+    // the guarantee is pinned here and at `ready`, not in between.
+    await expect(page.getByText("Downloading", { exact: true })).toBeVisible();
 
     // Closing the panel must not cancel anything: the download lives in a module
     // store, not in the component that started it.
+    //
+    // One Escape now, where this used to need two. The rows are inline in the
+    // overflow menu rather than behind a popover of their own, so there is only
+    // the one layer to dismiss.
     await page.keyboard.press("Escape");
-    await expect(onDeviceAiButton(page)).toHaveAttribute("aria-busy", "true");
+    await expect(page.getByRole("menu")).toBeHidden();
+    // The progress bar lives in the menu, so it goes with it.
+    await expect(page.getByRole("progressbar")).toBeHidden();
 
-    await openOnDeviceAiPanel(page);
+    /*
+      Reopen and confirm the download ran to completion while nothing was on
+      screen to hold it.
+
+      Deliberately not asserting a mid-flight state on the way past. The rows are
+      only in the DOM while the overflow menu is open, so catching one means
+      reopening the menu fast enough to beat a stubbed download that takes six
+      ticks — a race the test would lose intermittently, and the thing being
+      guarded is not "is it busy right now" but "did closing the panel cancel
+      it". Arriving at `ready` having never touched the download again proves
+      that.
+    */
+    await openOverflowMenu(page);
     await expect(page.getByText("ready to translate")).toBeVisible();
-    await expect(onDeviceAiButton(page)).toHaveAttribute("aria-busy", "false");
   });
 
   test("a failed download can be retried", async ({ page }) => {

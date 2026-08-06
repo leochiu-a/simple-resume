@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { expectBodyUnlocked, readPdfFacts } from "./helpers";
 
 /**
@@ -12,6 +12,17 @@ import { expectBodyUnlocked, readPdfFacts } from "./helpers";
  *
  * The narrow viewport matters: the dialog only exists in the mobile layout.
  */
+
+/**
+ * The preview dialog specifically, not "whatever has role=dialog".
+ *
+ * The appearance panel is a Radix popover, and a Radix popover is also
+ * `role="dialog"` — inside this dialog on mobile, so a bare `getByRole("dialog")`
+ * matches two things and `toBeHidden()` fails against whichever is still open.
+ * Anchored on the title text, which only the preview dialog has.
+ */
+const previewDialog = (page: Page) => page.getByRole("dialog", { name: "Resume preview" });
+
 test.describe("mobile preview dialog", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/resume-editor");
@@ -23,7 +34,7 @@ test.describe("mobile preview dialog", () => {
 
     await open.click();
 
-    const dialog = page.getByRole("dialog");
+    const dialog = previewDialog(page);
     await expect(dialog).toBeVisible();
     // While open, locking the body is the correct behaviour.
     await expect(page.locator("body")).toHaveAttribute("data-scroll-locked", "1");
@@ -36,29 +47,40 @@ test.describe("mobile preview dialog", () => {
 
   test("page still scrolls after the dialog has been closed", async ({ page }) => {
     await page.getByRole("button", { name: "Preview & Download" }).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(previewDialog(page)).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog")).toBeHidden();
+    await expect(previewDialog(page)).toBeHidden();
 
-    await page.evaluate(() => window.scrollTo(0, 0));
+    /*
+      The editing column is what scrolls now, not the window.
+
+      The editor shell is a fixed-height flex column so the form and the preview
+      can own their scrolling independently, which means `window.scrollY` stays 0
+      no matter how much you scroll — it is not the scroller any more. What this
+      test is actually guarding is unchanged though: that closing the dialog
+      releases react-remove-scroll's lock and scrolling works again. So it asks
+      the element that really scrolls.
+    */
+    const column = page.locator("[data-editor-column]");
+    await column.evaluate((el) => el.scrollTo(0, 0));
     await page.mouse.move(250, 400);
     await page.mouse.wheel(0, 600);
 
     await expect
-      .poll(() => page.evaluate(() => window.scrollY), {
+      .poll(() => column.evaluate((el) => el.scrollTop), {
         timeout: 5_000,
-        message: "page did not scroll after the dialog closed",
+        message: "the editing column did not scroll after the dialog closed",
       })
       .toBeGreaterThan(0);
   });
 
   test("page is still clickable after the dialog has been closed", async ({ page }) => {
     await page.getByRole("button", { name: "Preview & Download" }).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(previewDialog(page)).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog")).toBeHidden();
+    await expect(previewDialog(page)).toBeHidden();
 
     // A real click has to reach the form, not a pointer-events: none overlay.
     const city = page.getByRole("textbox").nth(4);

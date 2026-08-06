@@ -2,29 +2,73 @@ import { readFileSync } from "node:fs";
 import { expect, type Locator, type Page } from "@playwright/test";
 
 /**
- * The nav carries two controls: appearance (template and colour) and download
- * (PDF and HTML). Both are dropdowns, so reaching what is inside them is an
- * action rather than a locator.
+ * Appearance (template and colour) is no longer a dropdown in the header. A
+ * palette button floats over the preview, and clicking it swaps the editing
+ * column beside it for the appearance panel — a mode, not a popover. The panel's
+ * ✕ is the way back.
+ *
+ * Its contents are ordinary buttons rather than `menuitem`s: a grid of template
+ * thumbnails and a row of colour swatches, neither of which a menu's roving
+ * tabindex handles well.
  */
 export const appearanceMenu = (page: Page): Locator =>
-  page.getByRole("button", { name: "Change template" });
+  page.getByRole("button", { name: "Template and colour" });
+
+export const closeAppearance = (page: Page) =>
+  page.getByRole("button", { name: "Close appearance" }).click();
+
+/** The desk the sheet lies on — the hover target that reveals the palette button. */
+export const previewPane = (page: Page): Locator => page.locator("[data-preview-pane]");
 
 export const downloadMenu = (page: Page): Locator =>
   page.getByRole("button", { name: "Download", exact: true });
 
-export const openAppearanceMenu = (page: Page) => appearanceMenu(page).click();
+/**
+ * Hover the preview first, then click.
+ *
+ * The palette button is `opacity-0 pointer-events-none` until the pointer is over
+ * the preview pane, so clicking it cold never becomes actionable and Playwright
+ * waits out the full timeout. Hovering the pane is what a real user does on the
+ * way to the button, and it is what makes the button clickable.
+ *
+ * Below the desktop breakpoint there is no preview pane — the controls live in
+ * the mobile dialog's toolbar, where the button is always solid — so the hover is
+ * skipped rather than waited for.
+ */
+export const openAppearanceMenu = async (page: Page) => {
+  const pane = previewPane(page);
+  if (await pane.isVisible()) {
+    // Top-left of the pane rather than its middle: the middle is the sheet, and
+    // the sheet is an iframe. `group-hover` still fires either way, but aiming at
+    // the desk keeps this independent of how large the sheet happens to be.
+    await pane.hover({ position: { x: 4, y: 4 } });
+  }
 
-/** Selects a template by its label in the appearance menu. */
-export const selectTemplate = async (page: Page, label: string) => {
-  await openAppearanceMenu(page);
-  await page.getByRole("menuitem").filter({ hasText: label }).click();
-  await expect(appearanceMenu(page)).toContainText(label);
+  await appearanceMenu(page).click();
 };
 
-/** The presets live in the menu; this opens the full picker behind them. */
+/**
+ * Selects a template, then leaves the panel.
+ *
+ * Closing again matters: the panel replaces the form in the editing column, so a
+ * test that picks a template and then asserts on a field would find it hidden.
+ * Every caller wants the same thing — change the template, carry on — so the
+ * round trip belongs here rather than in each of them.
+ */
+export const selectTemplate = async (page: Page, label: string) => {
+  await openAppearanceMenu(page);
+  // The accessible name is "<label> — <description>", so match on the prefix.
+  const card = page.getByRole("button", { name: new RegExp(`^${label} —`) });
+  await card.click();
+  // The panel stays open on select; the chosen page is the one marked pressed.
+  await expect(card).toHaveAttribute("aria-pressed", "true");
+  await closeAppearance(page);
+};
+
+/** The presets live in the panel; this opens the full picker under them. */
 export const openColorPicker = async (page: Page) => {
   await openAppearanceMenu(page);
-  await page.getByRole("menuitem", { name: "Custom colour…" }).click();
+  await page.getByRole("button", { name: "Custom…" }).click();
 };
 
 export const downloadPdf = async (page: Page) => {
@@ -43,24 +87,37 @@ export const copyMarkdown = async (page: Page) => {
   await page.getByRole("menuitem", { name: "Copy as Markdown" }).click();
 };
 
-export const themeToggle = (page: Page): Locator =>
-  page.getByRole("button", { name: "Toggle theme" });
+/**
+ * The editor's overflow menu — everything that is neither the wordmark, the
+ * language tabs, nor the download button. Theme, the on-device AI row and the
+ * GitHub link all live behind it now, so reaching any of them starts here.
+ */
+export const overflowMenu = (page: Page): Locator => page.getByRole("button", { name: "More" });
+
+export const openOverflowMenu = (page: Page) => overflowMenu(page).click();
+
+/** Theme is three menu items behind the overflow menu rather than its own button. */
+export const setTheme = async (page: Page, mode: "Light" | "Dark" | "System") => {
+  await openOverflowMenu(page);
+  await page.getByRole("menuitem", { name: mode, exact: true }).click();
+};
 
 /**
- * The nav's chip button. Both browser-built-in capabilities — the WebMCP agent
- * and the on-device translator — report from the panel behind it, so anything
- * that used to read a status off the nav has to open this first.
+ * Both browser-built-in capabilities — the WebMCP agent and the on-device
+ * translator — report from inside the overflow menu, so anything that reads one
+ * of their statuses only has to open that.
+ *
+ * There used to be a second click here, onto a row that opened a nested popover.
+ * The rows are rendered inline now, so opening the menu is the whole gesture.
  */
-export const onDeviceAiButton = (page: Page): Locator =>
-  page.getByRole("button", { name: "On-device AI" });
-
-export const openOnDeviceAiPanel = (page: Page) => onDeviceAiButton(page).click();
+export const openOnDeviceAiPanel = (page: Page) => openOverflowMenu(page);
 
 /** The editor stores every language of the resume under one key. */
 export const DOC_STORAGE_KEY = "resume-doc";
 
+/** The language tabs are a segmented control in the header's centre slot. */
 export const languageButton = (page: Page, label: string): Locator =>
-  page.getByRole("button", { name: new RegExp(`^${label}`) });
+  page.getByRole("tab", { name: new RegExp(`^${label}`) });
 
 /**
  * The resume preview is rendered inside an iframe via react-frame-component. The
@@ -117,10 +174,31 @@ export async function expectBodyUnlocked(page: Page) {
 
   const computed = await page.evaluate(() => {
     const style = getComputedStyle(document.body);
-    return { overflow: style.overflow, pointerEvents: style.pointerEvents };
+    return {
+      pointerEvents: style.pointerEvents,
+      // react-remove-scroll compensates for the scrollbar it hides by padding the
+      // body. Left behind, that padding is as visible as the freeze itself — and
+      // unlike `overflow` it is never something this app sets deliberately.
+      paddingRight: style.paddingRight,
+    };
   });
-  expect(computed.overflow).not.toBe("hidden");
+
+  /*
+    Deliberately no longer asserting `overflow !== "hidden"`.
+
+    That was a proxy for "react-remove-scroll has cleaned up", and it stopped
+    being one: the editor now locks <html> and <body> to the viewport itself so
+    the two columns can own their scrolling, so `hidden` is the app's own correct
+    resting state there rather than a leftover. Asserting against it would have
+    forced the page to keep a scrollbar it is designed not to have.
+
+    What actually distinguishes "locked" from "not locked" is unchanged and still
+    checked: the `data-scroll-locked` attribute Radix stamps on, the
+    `pointer-events: none` that froze the page in the React 19 bug, and the
+    scrollbar-compensation padding.
+  */
   expect(computed.pointerEvents).toBe("auto");
+  expect(computed.paddingRight).toBe("0px");
 }
 
 /**

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectBodyUnlocked, openColorPicker, preview, themeToggle } from "./helpers";
+import { expectBodyUnlocked, openColorPicker, openOverflowMenu, preview } from "./helpers";
 
 /**
  * The Radix UI packages were updated as part of the React 19 upgrade, so each
@@ -11,14 +11,18 @@ test.describe("Radix overlays", () => {
     await page.goto("/resume-editor");
   });
 
-  test("theme dropdown opens and switches the theme", async ({ page }) => {
-    await themeToggle(page).click();
+  test("overflow menu opens and switches the theme", async ({ page }) => {
+    // Theme is no longer its own button in the bar — it is three items inside the
+    // overflow menu, alongside the on-device AI row and the GitHub link.
+    await openOverflowMenu(page);
 
     const menu = page.getByRole("menu");
     await expect(menu).toBeVisible();
-    await expect(menu.getByRole("menuitem")).toHaveText(["Light", "Dark", "System"]);
+    await expect(menu.getByRole("menuitem", { name: "Light", exact: true })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Dark", exact: true })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "System", exact: true })).toBeVisible();
 
-    await menu.getByRole("menuitem", { name: "Light" }).click();
+    await menu.getByRole("menuitem", { name: "Light", exact: true }).click();
 
     await expect(page.locator("html")).toHaveClass(/light/);
     await expect(menu).toBeHidden();
@@ -26,8 +30,8 @@ test.describe("Radix overlays", () => {
   });
 
   test("month picker popover opens and closes on Escape", async ({ page }) => {
-    // Scoped to the form: the nav's on-device AI popover is a dialog trigger too,
-    // and it comes first in the document.
+    // Scoped to the form: the appearance panel over the preview is a dialog
+    // trigger too, and so is the on-device AI row inside the overflow menu.
     const trigger = page.locator('#resume-form button[aria-haspopup="dialog"]').first();
     await trigger.click();
 
@@ -84,15 +88,16 @@ test.describe("background colour picker", () => {
     await openColorPicker(page);
     await expect(page.locator(".w-color-sketch")).toBeVisible();
 
-    // The picker is dismissed by its own full-screen click-catcher overlay.
-    // It carries no z-index, so the sticky nav (z-10) still sits on top of it —
-    // the click has to land below the nav for the overlay to receive it.
-    await page.locator("div.fixed.inset-0").click({ position: { x: 200, y: 500 } });
+    // There is no click-catcher overlay any more, and that is the point of this
+    // assertion. The picker used to float over the sheet and needed a
+    // `fixed inset-0` div to dismiss it — an overlay that, left behind, froze the
+    // whole page. It now renders inline inside the appearance panel, so "Custom…"
+    // simply toggles it off and there is no overlay to strand.
+    await page.getByRole("button", { name: "Custom…" }).click();
 
     await expect(page.locator(".w-color-sketch")).toBeHidden();
     await expectBodyUnlocked(page);
 
-    // The overlay must be gone too, otherwise the page stays unclickable.
     await expect(page.locator("div.fixed.inset-0")).toHaveCount(0);
     await openColorPicker(page);
     await expect(page.locator(".w-color-sketch")).toBeVisible();

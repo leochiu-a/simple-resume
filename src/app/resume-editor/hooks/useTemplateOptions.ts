@@ -33,6 +33,9 @@ const useTemplateOptions = () => {
     selectColor: setBackgroundColor,
     displayColorPicker,
     toggleColorPicker: () => setDisplayColorPicker((shown) => !shown),
+    /** For dismissing the whole appearance panel, which must not leave the picker
+     *  open behind it — it would have nothing left to close it. */
+    closeColorPicker: () => setDisplayColorPicker(false),
     changeBackgroundColor: (color: ColorResult) => setBackgroundColor(color.hex),
   };
 };

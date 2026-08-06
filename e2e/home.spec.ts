@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { collectConsoleErrors, landingSheet } from "./helpers";
+import { collectConsoleErrors, landingSheet, openOverflowMenu } from "./helpers";
 
 test.describe("home page", () => {
   test("renders the hero and links to the editor", async ({ page }) => {
@@ -77,7 +77,10 @@ test.describe("home page", () => {
         .evaluate((element) => getComputedStyle(element).getPropertyValue("--accent").trim());
 
     const before = await accent();
-    expect(before).toContain("094c42"); // Pine, raw on light paper and lifted on dark
+    // Pine. Resolved from the shared `--c-accent` HSL triple now rather than
+    // written as a hex literal here — the editor's `--brand` reads the same token,
+    // so the two surfaces cannot drift apart.
+    expect(before).toBe("hsl(172 79% 17%)");
 
     await page.getByRole("button", { name: "Tint Indigo" }).click();
 
@@ -94,6 +97,10 @@ test.describe("home page", () => {
    */
   test("next/image optimizes the GitHub logo", async ({ page }) => {
     await page.goto("/resume-editor");
+
+    // The link moved into the header's overflow menu, so it is not in the DOM
+    // until that opens.
+    await openOverflowMenu(page);
 
     const logo = page.locator('img[src*="github-mark"]').first();
     await expect(logo).toBeVisible();

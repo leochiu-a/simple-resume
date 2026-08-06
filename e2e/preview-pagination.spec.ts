@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { preview } from "./helpers";
+import { preview, selectTemplate } from "./helpers";
 
 /**
  * The preview lays the resume out as one sheet per page. What makes that useful
@@ -92,11 +92,8 @@ const shownPage = async (page: Page) =>
     await preview(page).locator("[data-resume-page]").first().getAttribute("data-resume-page"),
   );
 
-const selectTemplate = async (page: Page, label: string) => {
-  await page.getByRole("button", { name: "Change template" }).click();
-  await page.getByRole("menuitem").filter({ hasText: label }).click();
-  await expect(page.getByRole("button", { name: "Change template" })).toContainText(label);
-};
+/* `selectTemplate` comes from ./helpers now — see the note in
+   formal-template.spec.ts for why the local copies were removed. */
 
 /**
  * Every unbreakable block's offset within the sheet, paired with its height, so

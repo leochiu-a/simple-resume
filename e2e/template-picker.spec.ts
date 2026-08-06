@@ -6,9 +6,11 @@ import {
   downloadHtml,
   downloadMenu,
   downloadPdf,
+  openAppearanceMenu,
   openColorPicker,
   preview,
   readPdfFacts,
+  selectTemplate,
 } from "./helpers";
 
 /**
@@ -18,13 +20,17 @@ import {
  * pass.
  */
 
-const templatePicker = (page: Page) => page.getByRole("button", { name: "Change template" });
-
-const selectTemplate = async (page: Page, label: string) => {
-  await templatePicker(page).click();
-  await page.getByRole("menuitem").filter({ hasText: label }).click();
-  await expect(templatePicker(page)).toContainText(label);
-};
+/**
+ * The picker is the appearance panel that floats over the preview now, not a
+ * dropdown in the header, and its entries are buttons rather than menu items —
+ * a thumbnail grid is not a menu. `appearanceMenu` and `selectTemplate` in
+ * ./helpers carry both facts; this file used to keep its own copy of them.
+ *
+ * Each card's accessible name is "<label> — <description>", so a template is
+ * addressed by that prefix, and the current one is the card marked pressed.
+ */
+const templateCard = (page: Page, label: string) =>
+  page.getByRole("button", { name: new RegExp(`^${label} —`) });
 
 test.describe("template picker", () => {
   test.beforeEach(async ({ page }) => {
@@ -34,30 +40,29 @@ test.describe("template picker", () => {
   // Kept in the order they appear in the registry's TEMPLATES. Adding a template
   // means adding it here too — the assertion below is exact so a new one cannot
   // slip in unnoticed.
-  const EXPECTED_TEMPLATES = [/Classic/, /Modern/, /Formal/, /Timeline/];
+  const EXPECTED_TEMPLATES = ["Classic", "Modern", "Formal", "Timeline"];
 
   test("starts on Classic and offers every registered template", async ({ page }) => {
-    await expect(templatePicker(page)).toContainText("Classic");
+    await openAppearanceMenu(page);
 
-    await templatePicker(page).click();
-    // The same menu carries the colour controls, so the template entries are the
-    // ones that are not the custom-colour escape hatch. Still an exact match, so a
-    // new template cannot slip in unnoticed.
-    await expect(page.getByRole("menuitem").filter({ hasNotText: "Custom colour" })).toHaveText(
-      EXPECTED_TEMPLATES,
+    // Classic is the default, and the panel says so by marking its card pressed.
+    await expect(templateCard(page, "Classic")).toHaveAttribute("aria-pressed", "true");
+
+    // Exact, so a new template cannot slip in unnoticed. The cards are the
+    // buttons whose name carries the "<label> — <description>" separator, which
+    // the colour swatches beside them do not.
+    await expect(page.getByRole("button", { name: /^\w+ — / })).toHaveText(
+      EXPECTED_TEMPLATES.map((label) => new RegExp(label)),
     );
   });
 
   test("shows each template as a thumbnail of your own resume", async ({ page }) => {
-    await templatePicker(page).click();
+    await openAppearanceMenu(page);
 
-    for (const label of ["Classic", "Modern", "Formal", "Timeline"]) {
+    for (const label of EXPECTED_TEMPLATES) {
       // Each card renders the real template in its own sheet frame, so the picker
       // cannot show a layout the editor does not produce.
-      const thumbnail = page
-        .getByRole("menuitem")
-        .filter({ hasText: label })
-        .frameLocator("iframe");
+      const thumbnail = templateCard(page, label).frameLocator("iframe");
 
       await expect(thumbnail.locator("page")).toBeVisible();
       await expect(thumbnail.getByText("Senior Engineer")).toBeVisible();

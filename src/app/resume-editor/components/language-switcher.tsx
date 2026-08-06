@@ -11,52 +11,60 @@ interface LanguageSwitcherProps {
 }
 
 /**
- * Which language of the resume is being edited, as tabs over the form.
+ * Which language of the resume is being edited.
  *
- * Not in the nav: the theme, the download and the on-device AI button up there
- * are tools, and this is not one — it says which document you are looking at, so
- * it belongs on the document. The dot marks the original, the one everything
+ * Still the document's own control and not a tool — that has not changed — but it
+ * no longer needs a bar to say so. It sits in the centre slot of the single
+ * header, and being centred is what now carries the meaning the separate bar used
+ * to: the tools are on the right, the identity is on the left, and the one thing
+ * in the middle is what you are looking at.
+ *
+ * A filled segmented control rather than the old underlined tabs. Underlines want
+ * a rule to sit on — that is what made them read as tabs, and the rule they sat
+ * on was the second header's. Inside a bar with no rule of its own, a pill is
+ * what reads as selected. The dot still marks the original, the one everything
  * else is translated from, because that is what the rest of the editor's
  * behaviour hangs off.
- *
- * Sticky under the nav rather than scrolling away with the form: it is a mode,
- * and a mode you cannot see is a mode you forget you are in. It sits in the form
- * column only, so the preview — a sticky sibling of its own — keeps its full
- * height.
  */
 const LanguageSwitcher: FC<LanguageSwitcherProps> = ({ activeLang, primaryLang, onSwitch }) => (
-  // z-9, under the nav's z-10, so this slides beneath it rather than over it.
-  <div className="sticky top-14 z-[9] border-b bg-background">
-    <div className="mx-4 flex items-end gap-6 lg:mx-12">
-      {RESUME_LANGS.map((lang) => {
-        const active = lang === activeLang;
+  <div
+    role="tablist"
+    aria-label="Resume language"
+    className="flex items-center gap-0.5 rounded-md bg-muted p-0.5"
+  >
+    {RESUME_LANGS.map((lang) => {
+      const active = lang === activeLang;
 
-        return (
-          <button
-            key={lang}
-            type="button"
-            onClick={() => onSwitch(lang)}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              // -mb-px pulls the underline onto the container's rule, so the
-              // active tab reads as a sheet in front of the others.
-              "-mb-px flex h-11 items-center gap-1.5 border-b-2 text-sm transition-colors",
-              active
-                ? "border-foreground font-medium text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {LANG_LABEL[lang]}
-            {lang === primaryLang && (
-              <>
-                <span aria-hidden className="size-1 rounded-full bg-current" />
-                <span className="sr-only">(original)</span>
-              </>
-            )}
-          </button>
-        );
-      })}
-    </div>
+      return (
+        <button
+          key={lang}
+          type="button"
+          role="tab"
+          aria-selected={active}
+          onClick={() => onSwitch(lang)}
+          className={cn(
+            "flex h-8 items-center gap-1.5 rounded-[3px] px-3 text-sm transition-colors",
+            active
+              ? // The raised paper, not the accent: this is a selected segment,
+                // not a primary action, and a filled-green pill in the middle of
+                // the bar would outrank the download button beside it.
+                "bg-card font-medium text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {LANG_LABEL[lang]}
+          {lang === primaryLang && (
+            <>
+              <span
+                aria-hidden
+                className={cn("size-1 rounded-full", active ? "bg-brand" : "bg-current")}
+              />
+              <span className="sr-only">(original)</span>
+            </>
+          )}
+        </button>
+      );
+    })}
   </div>
 );
 
