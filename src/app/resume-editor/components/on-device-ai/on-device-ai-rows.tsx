@@ -5,6 +5,7 @@ import { FaRobot } from "react-icons/fa6";
 import { Languages } from "lucide-react";
 
 import { LangPair, TranslatorStatus } from "@/lib/translator";
+import { cn } from "@/lib/utils";
 import { WebMcpStatus } from "@/lib/webmcp";
 import { useTranslatorCapability } from "../../hooks/useTranslatorCapability";
 import CapabilityRow, { CapabilityState } from "./capability-row";
@@ -16,6 +17,13 @@ interface OnDeviceAiRowsProps {
   pair: LangPair | null;
   /** Human-readable direction for the row, e.g. "Chinese → English". */
   pairLabel: string | null;
+  /**
+   * Draws the rows as a bordered card. On inside the header's overflow menu,
+   * where the group needs an edge of its own to separate it from the menu's other
+   * sections; off inside the mobile dialog's popover, which is already a card and
+   * would otherwise nest one inside another.
+   */
+  framed?: boolean;
 }
 
 const TRANSLATOR_ROW_STATE: Record<TranslatorStatus["state"], CapabilityState> = {
@@ -89,12 +97,28 @@ const translationDetail = (
  * screen after the click that starts it; and a menu's roving tabindex would take
  * the Enable button out of the tab order entirely.
  */
-const OnDeviceAiRows: FC<OnDeviceAiRowsProps> = ({ mcpStatus, mcpToolCount, pair, pairLabel }) => {
+const OnDeviceAiRows: FC<OnDeviceAiRowsProps> = ({
+  mcpStatus,
+  mcpToolCount,
+  pair,
+  pairLabel,
+  framed = false,
+}) => {
   const translator = useTranslatorCapability(pair);
   const canEnable = translator.state === "downloadable" || translator.state === "error";
 
   return (
-    <>
+    /*
+      A bordered card, not a run of full-bleed rows.
+
+      Inside the header's overflow menu the old edge-to-edge dividers were the
+      same line the menu draws between its own sections, so these two capability
+      rows read as loose siblings of Light/Dark/System rather than as one group
+      with a heading. Boxing them and insetting the box from the menu's padding
+      makes the grouping structural rather than something the label alone has to
+      imply.
+    */
+    <div className={cn(framed && "mx-1 my-1 overflow-hidden rounded-sm border bg-muted/30")}>
       <div className="divide-y">
         <CapabilityRow
           icon={<FaRobot className="size-3.5" />}
@@ -130,7 +154,7 @@ const OnDeviceAiRows: FC<OnDeviceAiRowsProps> = ({ mcpStatus, mcpToolCount, pair
       <p className="border-t px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
         Both models run inside your browser. Nothing in this resume is sent anywhere.
       </p>
-    </>
+    </div>
   );
 };
 

@@ -19,6 +19,16 @@ export const PREVIEW_FRAME_TITLE = "Resume preview";
 export const CROP_MARK_GUTTER = 24;
 
 /**
+ * A ceiling on the sheet, so it stops growing before it becomes absurd.
+ *
+ * The preview is driven by the width it is given, which on a 27" monitor is a lot
+ * of width — and a sheet grown past its natural size is just a magnified one,
+ * with type to match. A4 is 794px at 96dpi, so this holds the preview a little
+ * under 1:1 and never above it.
+ */
+export const MAX_SHEET_WIDTH_PX = 720;
+
+/**
  * How large the sheet can be drawn, measured from the box it is actually in.
  *
  * This used to be arithmetic on `window`: half the viewport wide, and the height
@@ -46,22 +56,22 @@ const useResumeScale = (containerRef: RefObject<HTMLElement | null>) => {
       const { width, height } = el.getBoundingClientRect();
       if (!width || !height) return;
 
-      if (matches) {
-        // Reserved whether or not the pager is showing, so the sheet does not
-        // resize out from under you the moment a resume spills onto a second page.
-        const pagerHeight = 40 + 16;
-        // The marks sit outside the trim on all four sides and this box clips, so
-        // the gutter is held back on both axes — vertically too, which the old
-        // `window`-based version forgot, clipping the top and bottom marks.
-        const available = width - CROP_MARK_GUTTER * 2;
-        const availableHeight = height - pagerHeight - CROP_MARK_GUTTER * 2;
+      /*
+        Width decides, on every breakpoint.
 
-        // Whichever axis runs out first decides: a tall, narrow window would
-        // otherwise hand back a sheet wider than the column it sits in.
-        setScale(Math.min(availableHeight / A4_HEIGHT_PX, available / A4_WIDTH_PX));
-      } else {
-        setScale(width / A4_WIDTH_PX);
-      }
+        This used to take `Math.min` of the width fit and the height fit, and for
+        an A4 sheet in a half-window pane the height always won — so the sheet was
+        shrunk until its full length fitted on screen, leaving it floating in the
+        middle of a pane it never filled. Fitting the whole page into the viewport
+        is not what a preview is for; the pane scrolls, and a page you can read is
+        worth more than a whole page you cannot.
+
+        MAX_SHEET_WIDTH_PX is what keeps that honest on a wide monitor, where an
+        unbounded sheet would grow past the size any of this is ever printed at.
+      */
+      const available = Math.min(width - CROP_MARK_GUTTER * 2, MAX_SHEET_WIDTH_PX);
+
+      setScale(available / A4_WIDTH_PX);
     };
 
     measure();
@@ -87,10 +97,11 @@ const ResumeIframe = ({ children }: PropsWithChildren) => {
   const currentPage = Math.min(page, pageCount - 1);
 
   return (
-    <div
-      ref={containerRef}
-      className="flex h-full w-full flex-col items-center justify-center gap-4"
-    >
+    // Anchored to the top rather than centred. The sheet is sized to fill the
+    // width now, so it is usually taller than the pane — and a centred box taller
+    // than its container overflows equally in both directions, putting the top of
+    // the resume above the scroll origin where it cannot be reached.
+    <div ref={containerRef} className="flex w-full flex-col items-center gap-4 py-6">
       <div
         className="relative"
         style={{

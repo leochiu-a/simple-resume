@@ -58,7 +58,11 @@ const AppearancePanel = ({
   const isCurrentColor = (hex: string) => hex.toLowerCase() === backgroundColor.toLowerCase();
 
   return (
-    <div className="mx-4 my-10 lg:mx-12">
+    // Capped rather than filling the column. The thumbnails are A4-proportioned
+    // now, so an unbounded two-column grid makes each one taller than the pane on
+    // a wide monitor — you would scroll to compare two templates that are meant to
+    // be seen side by side.
+    <div className="mx-4 my-10 max-w-2xl lg:mx-12">
       <div className="mb-8 flex items-center justify-between">
         <h2 className="font-display text-2xl font-semibold tracking-[-0.02em]">Appearance</h2>
         <Button

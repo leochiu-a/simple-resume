@@ -134,6 +134,10 @@ const EditorHeader: FC<EditorHeaderProps> = ({
                 mcpToolCount={mcpToolCount}
                 pair={pair}
                 pairLabel={pairLabel}
+                // Boxed here: without an edge of its own the group's dividers are
+                // the same line the menu draws between its sections, so the two
+                // rows read as loose siblings of Light/Dark/System.
+                framed
               />
 
               <DropdownMenuSeparator />

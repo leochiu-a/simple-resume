@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Frame from "react-frame-component";
 
 import { Resume } from "@/types/resume";
@@ -22,11 +23,24 @@ import { TemplateDefinition } from "./registry";
  * runs past it.
  */
 
-/** Two of these plus the menu's padding is what sets the picker's width. */
-export const THUMBNAIL_WIDTH_PX = 132;
-
-const scale = THUMBNAIL_WIDTH_PX / A4_WIDTH_PX;
-
+/**
+ * Fills the width it is given, at the sheet's own proportions.
+ *
+ * This used to be a fixed 132px wide — a number chosen for the 320px dropdown the
+ * picker lived in. The picker is a full-width panel now, so the card grew and the
+ * sheet did not: the resume sat in the left third of a wide landscape box with
+ * dead paper filling the rest, which is the one thing a template preview must not
+ * do. A thumbnail whose shape is not the page's shape is showing a layout you
+ * will never get.
+ *
+ * `aspect-ratio` holds the box at the page's proportions whatever width the grid
+ * gives it, and the sheet inside is scaled to match by measuring that width.
+ *
+ * Measured rather than expressed in CSS: `transform: scale` needs a number, and
+ * `zoom` — which would have taken a `cqw` calc and needed no JS — does not apply
+ * one reliably here, so the sheet rendered full size and the card showed a
+ * fragment of the first heading. A ResizeObserver is the boring option that works.
+ */
 const TemplateThumbnail = ({
   template,
   resume,
@@ -36,18 +50,38 @@ const TemplateThumbnail = ({
   resume: Resume;
   backgroundColor: string;
 }) => {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0);
+
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+
+    const measure = () => setScale(el.getBoundingClientRect().width / A4_WIDTH_PX);
+
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div
-      style={{ width: `${THUMBNAIL_WIDTH_PX}px`, height: `${A4_HEIGHT_PX * scale}px` }}
-      className="overflow-hidden bg-white"
+      ref={boxRef}
+      style={{ aspectRatio: `${A4_WIDTH_PX} / ${A4_HEIGHT_PX}` }}
+      className="relative w-full overflow-hidden bg-white"
     >
       {/* Scaling leaves the element occupying its unscaled size, so the box above
-          crops it back to the space it appears to take. */}
+          crops it back to the space it appears to take. Hidden until measured —
+          one frame at full size is a flash of enormous type. */}
       <div
         style={{
           width: `${A4_WIDTH_PX}px`,
           height: `${A4_HEIGHT_PX}px`,
           transform: `scale(${scale})`,
+          visibility: scale ? "visible" : "hidden",
         }}
         className="origin-top-left"
       >
