@@ -17,11 +17,18 @@ export interface UseResumeTranslationResult {
   error: string | null;
   /** How many fields the primary has changed under since the last translation. */
   staleCount: number;
+  /** How many fields hold wording the user typed over the machine's. */
+  editedCount: number;
   /**
    * Enables the model if it is not on the device yet and then translates.
    * Must be called straight from a click: the enable path needs that activation.
    */
   run: (overwrite?: readonly FieldPath[]) => Promise<void>;
+  /**
+   * Translates the whole resume again from the primary, discarding every
+   * hand-edit here. Same activation rule as `run`.
+   */
+  retranslate: () => Promise<void>;
 }
 
 /**
@@ -47,16 +54,16 @@ export const useResumeTranslation = (doc: UseResumeDocResult): UseResumeTranslat
   const secondaryResume = doc.doc.locales[secondaryLang];
   const secondaryMeta = doc.doc.translation[secondaryLang];
 
-  const staleCount = useMemo(
-    () =>
-      secondaryResume
-        ? countStale(listFieldStatuses(primaryResume, secondaryResume, secondaryMeta))
-        : 0,
+  const statuses = useMemo(
+    () => (secondaryResume ? listFieldStatuses(primaryResume, secondaryResume, secondaryMeta) : []),
     [primaryResume, secondaryResume, secondaryMeta],
   );
 
-  const run = useCallback(
-    async (overwrite: readonly FieldPath[] = []) => {
+  const staleCount = useMemo(() => countStale(statuses), [statuses]);
+  const editedCount = useMemo(() => statuses.filter((status) => status.edited).length, [statuses]);
+
+  const translate = useCallback(
+    async (overwrite: readonly FieldPath[], force: boolean) => {
       setError(null);
       setRunning(true);
       setProgress(null);
@@ -68,6 +75,7 @@ export const useResumeTranslation = (doc: UseResumeDocResult): UseResumeTranslat
           meta: secondaryMeta,
           pair,
           overwrite,
+          force,
           onProgress: setProgress,
         });
 
@@ -86,5 +94,22 @@ export const useResumeTranslation = (doc: UseResumeDocResult): UseResumeTranslat
     [doc, pair, primaryResume, secondaryLang, secondaryMeta, secondaryResume],
   );
 
-  return { translator, pair, running, progress, error, staleCount, run };
+  const run = useCallback(
+    (overwrite: readonly FieldPath[] = []) => translate(overwrite, false),
+    [translate],
+  );
+
+  const retranslate = useCallback(() => translate([], true), [translate]);
+
+  return {
+    translator,
+    pair,
+    running,
+    progress,
+    error,
+    staleCount,
+    editedCount,
+    run,
+    retranslate,
+  };
 };

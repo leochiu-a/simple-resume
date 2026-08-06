@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -50,9 +50,10 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
   translation,
   onMakePrimary,
 }) => {
-  const { translator, running, staleCount, error, run } = translation;
+  const { translator, running, staleCount, editedCount, error, run, retranslate } = translation;
   const unsupported = translator.state === "unsupported";
   const busy = running || translator.state === "downloading";
+  const [confirmingRedo, setConfirmingRedo] = useState(false);
 
   if (!hasLocale) {
     return (
@@ -119,6 +120,47 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
                 Update translation
               </Button>
             </>
+          )}
+
+          {/* Distinct from "Update translation": that one protects your
+              rewrites, this one throws them away. Hence the confirm step. */}
+          {confirmingRedo ? (
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <span className="text-[11px] text-muted-foreground">
+                {editedCount > 0
+                  ? `Translate all over again? ${editedCount} ${
+                      editedCount === 1 ? "field you rewrote" : "fields you rewrote"
+                    } will be replaced.`
+                  : "Translate all over again?"}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  setConfirmingRedo(false);
+                  void retranslate();
+                }}
+              >
+                Re-translate
+              </Button>
+              <button
+                type="button"
+                onClick={() => setConfirmingRedo(false)}
+                className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                Cancel
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              disabled={unsupported}
+              onClick={() => setConfirmingRedo(true)}
+              className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Re-translate from {LANG_LABEL[primaryLang]}
+            </button>
           )}
 
           <button

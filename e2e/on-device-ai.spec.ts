@@ -97,7 +97,7 @@ const readDoc = (page: Page) =>
   ) as Promise<{
     primaryLang: string;
     activeLang: string;
-    locales: Record<string, { profile: string; name: string }>;
+    locales: Record<string, { profile: string; name: string; wantedJob: string }>;
     translation: Record<string, unknown>;
   }>;
 
@@ -251,5 +251,50 @@ test.describe("Resume translation", () => {
 
     await expect(preview(page).getByText("[en] Principal Engineer")).toBeVisible();
     await expect(page.getByText(/changed in the original/)).toBeHidden();
+  });
+
+  test("re-translating replaces a hand-edited field the update would have kept", async ({
+    page,
+  }) => {
+    await languageButton(page, "English").click();
+    await page.getByRole("button", { name: "Translate from 中文" }).click();
+    await expect(preview(page).getByText("[en] Senior job")).toBeVisible();
+
+    // Rewrite the wanted job here. "Update translation" exists to protect this;
+    // re-translating is the way to say you want it gone.
+    await page.getByRole("textbox").nth(0).fill("Staff Engineer");
+    await expect(preview(page).getByText("Staff Engineer")).toBeVisible();
+
+    await page.getByRole("button", { name: "Re-translate from 中文" }).click();
+    await expect(page.getByText(/1 field you rewrote will be replaced/)).toBeVisible();
+    await page.getByRole("button", { name: "Re-translate", exact: true }).click();
+
+    // Back to the machine's wording, from the untouched Chinese original.
+    await expect(preview(page).getByText("[en] Senior job")).toBeVisible();
+    await expect(preview(page).getByText("Staff Engineer")).toBeHidden();
+
+    const doc = await readDoc(page);
+
+    expect(doc.locales.en.wantedJob).toBe("[en] Senior job");
+    expect(doc.locales["zh-Hant"].wantedJob).toBe("Senior job");
+  });
+
+  test("re-translating can be backed out of, and changes nothing when it is", async ({ page }) => {
+    await languageButton(page, "English").click();
+    await page.getByRole("button", { name: "Translate from 中文" }).click();
+    await expect(preview(page).getByText("[en] Senior job")).toBeVisible();
+
+    await page.getByRole("textbox").nth(0).fill("Staff Engineer");
+    await expect(preview(page).getByText("Staff Engineer")).toBeVisible();
+
+    await page.getByRole("button", { name: "Re-translate from 中文" }).click();
+    await page.getByRole("button", { name: "Cancel" }).click();
+
+    await expect(preview(page).getByText("Staff Engineer")).toBeVisible();
+    // Polled, not read once: the edit reaches storage through a 300ms debounce,
+    // and cancelling — unlike a translation — never flushes it.
+    await expect
+      .poll(async () => (await readDoc(page)).locales.en.wantedJob)
+      .toBe("Staff Engineer");
   });
 });

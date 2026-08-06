@@ -17,6 +17,12 @@ export interface TranslateResumeOptions {
   pair: LangPair;
   /** Fields whose hand-edits should be thrown away and translated afresh. */
   overwrite?: readonly FieldPath[];
+  /**
+   * Translates every field again from scratch, hand-edits and unchanged source
+   * text included. `overwrite` is the surgical version of this; this is the
+   * "start the translation over" the editor offers explicitly.
+   */
+  force?: boolean;
   onProgress?: (progress: TranslateProgress) => void;
   signal?: AbortSignal;
 }
@@ -53,6 +59,10 @@ const countCalls = (jobs: Job[]) =>
  * - A field the user rewrote and whose source *has* moved is still left alone,
  *   and its provenance is left stale so the editor can offer the update rather
  *   than take it. Pass the path in `overwrite` to accept the new translation.
+ *
+ * Both of those protections are the default, not a law: `force` drops them and
+ * translates everything again. It exists so "redo this translation" is something
+ * the user can ask for outright, rather than something they get by accident.
  */
 export const translateResume = async ({
   source,
@@ -60,6 +70,7 @@ export const translateResume = async ({
   meta,
   pair,
   overwrite = [],
+  force = false,
   onProgress,
   signal,
 }: TranslateResumeOptions): Promise<TranslateResumeResult> => {
@@ -83,14 +94,14 @@ export const translateResume = async ({
     const edited = !!previous && targetText !== previous.machine;
     const stale = !previous || previous.source !== sourceText;
 
-    if (!stale && previous) {
+    if (!force && !stale && previous) {
       // Unchanged at the source: keep whatever is here, edits included.
       setFieldValue(resume, path, targetText);
       nextMeta[path] = previous;
       continue;
     }
 
-    if (stale && edited && previous && !overwrite.includes(path)) {
+    if (!force && stale && edited && previous && !overwrite.includes(path)) {
       // The user's wording wins; the stale provenance is what makes the editor
       // able to say "the original changed" instead of silently overwriting.
       setFieldValue(resume, path, targetText);
