@@ -78,8 +78,9 @@ const waitForStoredResume = (page: Page) =>
 
 /**
  * Registration used to be readable straight off the nav; it now lives in the
- * on-device AI panel, so the gate every test needs is the stub's own view of
- * what got registered rather than a click into the panel each time.
+ * on-device AI panel, behind that panel's own trigger, so the gate every test
+ * needs is the stub's own view of what got registered rather than a click into
+ * the panel each time.
  */
 const waitForRegistration = (page: Page) => expect.poll(() => listTools(page)).toHaveLength(12);
 
@@ -93,7 +94,7 @@ test.describe("WebMCP resume tools", () => {
     await waitForRegistration(page);
   });
 
-  test("registers the full tool set and reports it in the nav", async ({ page }) => {
+  test("registers the full tool set and reports it in the on-device AI panel", async ({ page }) => {
     const names = await listTools(page);
 
     expect(names).toEqual([
