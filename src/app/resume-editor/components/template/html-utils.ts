@@ -1,5 +1,7 @@
 /** Helpers shared by the standalone HTML builders. */
 
+import { toParagraphs } from "@/lib/paragraphs";
+
 export const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")
@@ -7,6 +9,23 @@ export const escapeHtml = (value: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+
+/**
+ * The profile as one `<p>` per paragraph.
+ *
+ * `white-space: pre-line` keeps the single newlines *inside* a paragraph, which
+ * `escapeHtml` alone would leave for the browser to collapse. Between paragraphs
+ * the `<p>` does the work, so the export reads the way the textarea does.
+ *
+ * `className` is optional because only Formal's summary is styled by class.
+ */
+export const paragraphsHtml = (profile: string, className?: string) =>
+  toParagraphs(profile)
+    .map(
+      (paragraph) =>
+        `<p${className ? ` class="${className}"` : ""} style="white-space: pre-line;">${escapeHtml(paragraph)}</p>`,
+    )
+    .join("");
 
 /**
  * Only http(s) and mailto links survive; anything else (javascript:, data:, …)

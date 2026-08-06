@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, View, Text, Document } from "@react-pdf/renderer";
+import { Page, View, Document } from "@react-pdf/renderer";
 
 import { Resume } from "@/types/resume";
 
@@ -10,6 +10,7 @@ import Sidebar from "./sidebar";
 import Experience from "./experience";
 import Education from "./education";
 import Section from "./section";
+import Summary from "../summary";
 
 /**
  * The Modern template: a tinted sidebar for identity, contact details, links and
@@ -32,7 +33,7 @@ const ModernTemplate = ({
         <View style={styles.content}>
           {resume.visibility.profile && (
             <Section title="Summary" color={CONTENT_COLOR}>
-              <Text style={styles.summary}>{resume.profile}</Text>
+              <Summary profile={resume.profile} style={styles.summary} />
             </Section>
           )}
 

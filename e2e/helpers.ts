@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { inflateSync } from "node:zlib";
 import { expect, type Locator, type Page } from "@playwright/test";
 
 /**
@@ -181,6 +182,101 @@ export function readPdfFacts(path: string): PdfFacts {
     embeddedFonts: fonts,
     linkAnnotations: (raw.match(/\/Type\s*\/Annot/g) ?? []).length,
   };
+}
+
+/** A4's height in points, the unit PDF coordinates are expressed in. */
+export const A4_HEIGHT_PT = 841.89;
+
+export interface PdfPageText {
+  /** How many glyph runs the page draws. */
+  runs: number;
+  /** Distance from the top of the page down to the highest text on it. */
+  topGap: number;
+  /** Distance from the lowest text on the page down to the bottom of it. */
+  bottomGap: number;
+}
+
+/**
+ * Where the text actually sits on each page, in points from the page edges.
+ *
+ * Unlike `readPdfFacts` this has to decompress the content streams, because
+ * position is only knowable from the drawing operators inside them. @react-pdf
+ * resets the text matrix for every run and carries the real offset in the
+ * graphics matrix instead, so the y of a run is only correct once the nested
+ * `cm` transforms are composed — which means tracking the `q`/`Q` stack rather
+ * than reading `Tm` on its own.
+ *
+ * What it is for: a page break must not leave text jammed against the trim, and
+ * that is invisible to any check that only counts pages.
+ */
+export function readPdfPageText(path: string): PdfPageText[] {
+  const raw = readFileSync(path).toString("latin1");
+
+  const contentStreams: string[] = [];
+  for (const match of raw.matchAll(/stream\r?\n/g)) {
+    const start = match.index + match[0].length;
+    const end = raw.indexOf("endstream", start);
+    if (end < 0) continue;
+
+    const bytes = Buffer.from(raw.slice(start, end), "latin1");
+    let text: string;
+    try {
+      text = inflateSync(bytes).toString("latin1");
+    } catch {
+      text = bytes.toString("latin1");
+    }
+
+    // A page's content stream is the one that both selects a font and draws with it.
+    if (text.includes("Tf") && text.includes("BT")) contentStreams.push(text);
+  }
+
+  type Matrix = [number, number, number, number, number, number];
+  const IDENTITY: Matrix = [1, 0, 0, 1, 0, 0];
+
+  const compose = (inner: Matrix, outer: Matrix): Matrix => [
+    inner[0] * outer[0] + inner[1] * outer[2],
+    inner[0] * outer[1] + inner[1] * outer[3],
+    inner[2] * outer[0] + inner[3] * outer[2],
+    inner[2] * outer[1] + inner[3] * outer[3],
+    inner[4] * outer[0] + inner[5] * outer[2] + outer[4],
+    inner[4] * outer[1] + inner[5] * outer[3] + outer[5],
+  ];
+
+  const NUM = String.raw`-?[\d.]+`;
+  const operators = new RegExp(
+    String.raw`(${NUM})\s+(${NUM})\s+(${NUM})\s+(${NUM})\s+(${NUM})\s+(${NUM})\s+(cm|Tm)` +
+      String.raw`|\b(q)\b|\b(Q)\b|\b(BT)\b|(TJ|Tj)`,
+    "g",
+  );
+
+  return contentStreams.map((stream) => {
+    let ctm: Matrix = IDENTITY;
+    let textMatrix: Matrix = IDENTITY;
+    const stack: Matrix[] = [];
+    const ys: number[] = [];
+
+    for (const op of stream.matchAll(operators)) {
+      if (op[7]) {
+        const matrix = op.slice(1, 7).map(Number) as Matrix;
+        if (op[7] === "cm") ctm = compose(matrix, ctm);
+        else textMatrix = matrix;
+      } else if (op[8]) {
+        stack.push(ctm);
+      } else if (op[9]) {
+        ctm = stack.pop() ?? ctm;
+      } else if (op[10]) {
+        textMatrix = IDENTITY;
+      } else if (op[11]) {
+        ys.push(compose(textMatrix, ctm)[5]);
+      }
+    }
+
+    return {
+      runs: ys.length,
+      topGap: ys.length ? Math.min(...ys) : 0,
+      bottomGap: ys.length ? A4_HEIGHT_PT - Math.max(...ys) : 0,
+    };
+  });
 }
 
 /**
