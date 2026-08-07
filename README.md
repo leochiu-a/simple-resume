@@ -9,10 +9,16 @@ Online site: https://simple-resume-nu.vercel.app
 ## Features
 
 - Create a resume easily.
-- Pick between [four templates](#templates) and tint any of them with the colour picker.
+- Pick between [four templates](#templates) and tint any of them, from the
+  [appearance panel](#templates).
 - Export the resume as a PDF, as a [standalone HTML file](#html-export), or
   [copy it as Markdown](#markdown-for-agents) to paste into an AI agent.
-- The resume data is stored in local storage — there is no account and no server to send it to.
+- Keep the same resume in [two languages](#two-languages), translated by the model built into the
+  browser and corrected by hand afterwards.
+- [Rewrite the profile or a role description](#rewriting-on-device) with the browser's own language
+  model, previewing the result before it replaces anything.
+- The resume data is stored in local storage — there is no account and no server to send it to. The
+  AI runs on the device as well, so that stays true with it switched on.
 - Build the resume by talking to a browser AI agent, via [WebMCP](#webmcp-experimental).
 
 ## Tech Stack
@@ -22,6 +28,10 @@ Online site: https://simple-resume-nu.vercel.app
 - Tailwind CSS
 - Shadcn UI
 - react-pdf/renderer
+- next-themes for light/dark
+- The browser's built-in AI: the [Translator API](#two-languages) and the
+  [Prompt API](#rewriting-on-device)
+- Playwright for the end-to-end suite, oxlint and oxfmt for lint and format
 
 ## Local Development
 
@@ -32,6 +42,10 @@ Online site: https://simple-resume-nu.vercel.app
 5. Open your browser and visit http://localhost:3000 — the editor itself is at
    [/resume-editor](http://localhost:3000/resume-editor)
 
+The project runs on Node 24 (`engines` in `package.json`). The other scripts are `pnpm lint`
+(oxlint), `pnpm format` (oxfmt) and `pnpm test:e2e` for the Playwright suite in [`e2e/`](e2e) —
+`pnpm test:e2e:ui` opens it in the runner. CI runs all four plus a typecheck and a build.
+
 ## Look and feel
 
 Both surfaces are the same printed page — the landing page with the argument, the editor with the
@@ -39,6 +53,12 @@ tools out. That is enforced rather than agreed: [`globals.css`](src/app/globals.
 `--c-*` values and everything else aliases them. shadcn's tokens (`--background`, `--border`,
 `--primary`…) point at them for the editor, and the landing page points at them again under paper
 names (`--paper`, `--rule`, `--graphite`). Retuning a colour moves both, and neither can drift.
+
+Dark mode is the same aliases over a second set of `--c-*` values under `.dark`, so nothing else in
+the app knows which theme is on. Both surfaces flip the same way, too:
+[`applyTheme`](src/lib/theme-transition.ts) runs the change inside a View Transition and wipes a
+circle out from wherever you clicked — the editor's `…` menu and the landing page's toggle share it.
+A browser without the API just gets the new theme.
 
 Three faces, registered in [`layout.tsx`](src/app/layout.tsx) and used the same way on both surfaces:
 **Fraunces** for anything display, **Archivo** for body copy, **IBM Plex Mono** for labels, eyebrows
@@ -73,6 +93,23 @@ at `opacity: 0`.
 
 ### The editor
 
+The editor is a fixed-height column rather than a scrolling page: the shell is `h-dvh`, and the form
+and the preview each own an `overflow-y-auto` region. That is what separates the two scrollbars.
+While the page scrolled and the preview was `sticky`, dragging anywhere moved the form and the
+preview merely held its position, which is why the two felt joined. (`h-dvh` and not `h-screen`:
+`100vh` is the _largest_ viewport on mobile, so the bottom of the page would sit behind the address
+bar until it retracted.)
+
+Above them is one bar, laid out as a three-column grid — identity left, document centre, tools
+right. The centre slot holds the [language tabs](#two-languages), which are the one control here
+that says _which document you are looking at_; centring is what makes that read as a mode rather
+than as another button. A grid rather than flex with auto margins, because the two side slots are
+different widths and under flex the tabs would sit visibly off-axis.
+
+The tools on the right are Download, the on-device AI button, and a `…` menu holding the theme and
+the GitHub link. Appearance is not among them: it moved onto the preview, where you can see what it
+changes — see [Templates](#templates).
+
 The form is set as a document in parts rather than a stack of cards: each section is a hairline rule,
 a number in mono and a name in Fraunces — see [`section.tsx`](src/app/resume-editor/components/form/section.tsx).
 Fields are hairline boxes filled with `--card`, and focus draws the border rather than a glow. The
@@ -85,17 +122,29 @@ preview column scrolls, `CROP_MARK_GUTTER` is held back on each side when the sc
 otherwise the marks land outside the scroll box and are clipped. They are desktop-only for the same
 reason: at mobile widths the gutter costs more than the marks add.
 
-Two things not to do to the editor's nav:
+Two things not to do to the editor:
 
-- **No `backdrop-filter`.** A backdrop-filter makes the nav a containing block for fixed positioning,
-  and the colour picker's dismiss overlay is a `fixed inset-0` rendered inside the nav. Blur the bar
-  and that overlay shrinks to the height of the bar, so clicking the page stops closing the picker.
-- **Nothing whose accessible name contains "Simple Resume"** other than the wordmark itself. Two
-  links in one bar whose names overlap are ambiguous to read out and to select.
+- **Nothing in the bar whose accessible name contains "Simple Resume"** other than the wordmark
+  itself. Two links in one bar whose names overlap are ambiguous to read out and to select.
+- **Do not give the form an action, a method or a submit handler.** Nothing here is ever submitted —
+  the `<form>` groups the fields and gives react-hook-form something to own, and every change is
+  saved to local storage as you type. A button inside a form with no `type` is a submit button, and
+  a programmatic click on one serialises every field into the query string, where name, phone and
+  profile reach the server in the request line and stay in history. For an app whose promise is that
+  the resume stays in the browser, that is the one navigation that must not be possible. The buttons
+  carry `type="button"`; the `preventDefault` on the form is the backstop.
 
 ## Templates
 
-The button to the left of the colour picker switches between four layouts:
+The palette button floating over the preview opens the appearance panel — six preset swatches, a
+custom colour picker behind **Custom…**, and thumbnails of the four layouts rendered from your own
+resume. The panel takes over the editing column rather than floating over the sheet: four
+thumbnails want to be compared at a size worth judging, and a popover perched over the preview would
+cover the very thing they are previews of. It is a mode, not a route — the form underneath is
+hidden rather than unmounted, so nothing in it is lost, and the ✕ is the way back. On mobile the
+same trigger sits in the preview dialog's toolbar, always solid, since a touch device never hovers.
+
+The four layouts:
 
 | Template     | Layout                                                                                              | The colour picker tints |
 | ------------ | --------------------------------------------------------------------------------------------------- | ----------------------- |
@@ -187,6 +236,71 @@ clipboard, which is why
 The builder is [`src/lib/resume-markdown.ts`](src/lib/resume-markdown.ts), independent of the
 templates: there is one Markdown rendering, not one per template.
 
+## Two languages
+
+A resume can be kept in Chinese and in English at once. The tabs in the middle of the editor's bar
+switch between them, and the dot marks the **original** — the one language everything else is a
+translation of.
+
+What is in local storage is a [`ResumeDoc`](src/types/resume-doc.ts): one `Resume` per language,
+plus a `primaryLang` that names the source of truth. `Resume` itself is untouched by any of it, so
+the templates, the PDF and the WebMCP tools keep seeing exactly the shape they always have. One
+invariant holds the whole thing up, and it lives in
+[`useResumeDoc`](src/app/resume-editor/hooks/useResumeDoc.ts): a write only ever lands in the locale
+that was active when it was requested, and the debounced save is flushed before any switch. Text
+typed in English cannot end up in the Chinese locale, and corrections made in a translation never
+travel back to the original.
+
+Only prose is translated. [`fields.ts`](src/lib/translation/fields.ts) lists the fields a translator
+may touch — the wanted job, the city, the profile, job titles and descriptions, schools, degrees and
+majors — and everything absent from it is copied verbatim. That is the point: names, emails, phones
+and URLs are not prose, and a skill list through a translator turns TypeScript into 打字稿 and
+Google into 谷歌. Company names sit just inside that line too, and are copied.
+
+Each translated field remembers two strings: the source text it was made from, and what the
+translator produced. Storing the strings rather than a hash costs a few KB and buys plain `===`
+comparisons for the two states the editor has to tell apart — **stale** (the original has moved on)
+and **edited** (you rewrote it) — plus a free revert. That is what lets the panel at the top of a
+translated resume offer three different things:
+
+- **Update translation**, when the original has changed. Fields you rewrote are left exactly as they
+  are; only untouched ones take the new translation.
+- **Re-translate**, which throws those rewrites away and starts over. It asks first, and says how
+  many fields it would replace.
+- **Make this the original**, which swaps the roles of the two languages. It seeds provenance for
+  the demoted locale — without that every field would read stale, and the editor would offer to
+  "update" hand-written text by sending it back through the translator.
+
+The translator is the browser's own ([`translator.ts`](src/lib/translator.ts) wraps it), so the
+resume is not uploaded to translate it. The model is downloaded once, on a user activation, from the
+**Translation** row of the sparkles panel in the bar; after that it stays on the device. Chrome 138+
+or Edge 148+ on desktop — elsewhere the second language still works, you just write it yourself.
+
+## Rewriting on-device
+
+The wand beside **Profile** and beside each role's description opens advice on writing that section,
+and offers to do it for you.
+
+Opening it costs nothing. The guidance is written down rather than generated, so the panel is useful
+in a browser with no model at all, and a reader who only wanted to know what to write never waits on
+anything. The model is reached only when one of the three actions is pressed — polish, shorten, lead
+with strengths for a profile; polish, strong verbs, concise for a description. The result streams in
+as a draft and the field keeps what it has until **Use this** is pressed, which is what makes trying
+an action safe.
+
+Two details in [`rewrite.ts`](src/lib/rewrite.ts) are worth knowing before editing it. Every run
+clones the shared session rather than reusing it, so a rewrite never sees the earlier ones — reusing
+the session directly would leave the profile in context while a job description is rewritten, and
+turn a retry into "rewrite it again". And the bullet fields are stored as one string joined by
+`SPLIT_TEXT`, a bare `|` that means nothing to a model: it goes in as `- ` lines and comes back
+through a parser that strips every common bullet glyph, because models are inconsistent about which
+one they use even when told.
+
+The API is Chrome's Prompt API, wrapped by
+[`language-model.ts`](src/lib/language-model.ts) the same way and for the same reasons the translator
+is — a download has to survive the popover that started it being closed, and every wand in the form
+has to show the same answer. Coverage is in [`e2e/rewrite.spec.ts`](e2e/rewrite.spec.ts).
+
 ## WebMCP (experimental)
 
 The editor registers itself as a set of AI agent tools using
@@ -197,10 +311,12 @@ draft — it is not a W3C Standard and the API is still moving.
 Twelve tools cover reading the resume plus writing every section — the header, the summary, skills,
 social links, employment history, education, and per-section visibility.
 
-WebMCP ships in Edge 147+, and in Chrome behind a flag: open `chrome://flags/#enable-webmcp-testing`,
-set it to **Enabled**, and relaunch. The nav bar shows an **Agent ready** badge when registration
-succeeded, and **Agent unavailable** when the browser has no WebMCP support. Then ask the agent
-something like:
+WebMCP ships natively in Edge 147+. In Chrome 149 it is an origin trial; locally, open
+`chrome://flags/#enable-webmcp-testing`, set it to **Enabled**, and relaunch. The sparkles button in
+the editor's bar reports where you stand, on its **Browser agent** row: **Ready** with the number of
+tools registered, **Unavailable** when the browser has no `document.modelContext`, **Error** when
+`registerTool` rejected. It is the same panel that turns on translation, since both are models built
+into the browser and neither sends the resume anywhere. Then ask the agent something like:
 
 > Read my resume, then rewrite the profile summary for a staff frontend role and add my job at Vercel
 > from March 2020 to now.
