@@ -7,8 +7,8 @@ import { DEFAULT_TEMPLATE_ID, getTemplate } from "../components/template/registr
  * The preview's presentation state: which template renders the resume, and the
  * colour it is tinted with.
  *
- * The two templates tint different areas — a full-height sidebar versus a light
- * contact panel — so a colour chosen for one rarely suits the other. Switching
+ * The templates tint different areas — a full-height sidebar, a light contact
+ * panel, the name — so a colour chosen for one rarely suits another. Switching
  * template therefore resets the colour to that template's own default instead of
  * carrying the previous choice over.
  */
@@ -33,9 +33,6 @@ const useTemplateOptions = () => {
     selectColor: setBackgroundColor,
     displayColorPicker,
     toggleColorPicker: () => setDisplayColorPicker((shown) => !shown),
-    /** For dismissing the whole appearance panel, which must not leave the picker
-     *  open behind it — it would have nothing left to close it. */
-    closeColorPicker: () => setDisplayColorPicker(false),
     changeBackgroundColor: (color: ColorResult) => setBackgroundColor(color.hex),
   };
 };

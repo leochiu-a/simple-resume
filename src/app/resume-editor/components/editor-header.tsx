@@ -77,11 +77,8 @@ const EditorHeader: FC<EditorHeaderProps> = ({
   const { template, backgroundColor } = options;
 
   return (
-    /* Solid paper, and no `backdrop-blur`: a backdrop-filter would make this a
-       containing block for fixed positioning, and the appearance panel's
-       full-screen click-catcher is a `fixed inset-0`. Blurring here shrinks that
-       overlay to the height of the bar and the picker stops closing on an outside
-       click. The same trap is documented on the panel itself. */
+    /* Solid paper. The bar is the same stock as the page with a rule under it —
+       a blurred bar would be a third material on a surface that only has two. */
     <header className="z-20 shrink-0 border-b bg-background">
       <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 md:px-6">
         <div className="flex min-w-0 items-center gap-3">

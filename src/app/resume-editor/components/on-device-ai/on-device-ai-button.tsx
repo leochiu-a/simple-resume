@@ -41,10 +41,8 @@ interface OnDeviceAiButtonProps {
  *
  * A Popover and not a DropdownMenu, deliberately — see the note on
  * `OnDeviceAiRows` for the progress-bar, close-on-select and roving-tabindex
- * reasons. Popover is also non-modal by default, so the nav and the colour
- * picker's full-screen click-catcher keep working while it is open — and, for
- * the same containing-block reason the nav gives, nothing here may use
- * `backdrop-blur`.
+ * reasons. Popover is also non-modal by default, so the rest of the bar keeps
+ * working while it is open.
  */
 const OnDeviceAiButton: FC<OnDeviceAiButtonProps> = ({
   mcpStatus,

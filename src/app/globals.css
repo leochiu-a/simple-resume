@@ -323,8 +323,9 @@
    * z-index -1 so it paints above this element's own background and below every
    * piece of content, which needs a stacking context here to resolve against.
    * Deliberately not `transform`, `filter` or `backdrop-filter` — all three would
-   * make this a containing block for fixed positioning and break the colour
-   * picker's full-screen click-catcher, the same trap the editor's nav documents.
+   * make this a containing block for fixed positioning, and the layer below is a
+   * `position: fixed` `::after`. It would then size itself to the page rather
+   * than the viewport, and the lights would scroll away with it.
    */
   [data-landing] {
     isolation: isolate;
