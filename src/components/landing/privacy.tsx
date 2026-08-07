@@ -4,7 +4,7 @@ const Privacy = () => (
   <section className="border-b border-[var(--rule)]">
     <div className="mx-auto w-full max-w-[1280px] px-6 py-20 lg:px-10 lg:py-28">
       <SectionHeading
-        index="03"
+        index="04"
         label="Privacy"
         title={
           <>
@@ -28,8 +28,10 @@ const Privacy = () => (
               worse than no claim. */}
           <p className="mt-8 max-w-[62ch] border-t border-[var(--rule)] pt-5 font-mono text-[0.78rem] leading-[1.85] text-[var(--graphite-soft)]">
             <span className="uppercase tracking-[0.2em] text-[var(--accent)]">Full disclosure</span>{" "}
-            — page views are counted with Vercel Analytics, and the sheet loads Noto Sans and Noto
-            Serif from Google Fonts. Neither of those ever sees what you typed.
+            — page views are counted with Vercel Analytics, the sheet loads Noto Sans and Noto Serif
+            from Google Fonts, and the rewrite and translate features download a model from your
+            browser&rsquo;s vendor the first time you use them. None of those ever sees what you
+            typed.
           </p>
         </div>
       </div>
