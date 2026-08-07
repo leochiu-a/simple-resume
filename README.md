@@ -1,6 +1,6 @@
 # Simple RESUME
 
-![](public/image.png)
+![The Simple Resume landing page: a template rendered live on the right, with the template and colour pickers above it](docs/screenshot.webp)
 
 An online tool to create a resume — with no account, and nothing uploaded anywhere.
 
@@ -325,3 +325,7 @@ into the browser and neither sends the resume anywhere. Then ask the agent somet
 
 Automated coverage lives in [`e2e/webmcp.spec.ts`](e2e/webmcp.spec.ts), which stubs
 `document.modelContext` so the tools can be exercised in plain Chromium.
+
+## License
+
+[MIT](LICENSE) © Leo Chiu
