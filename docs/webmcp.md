@@ -63,13 +63,13 @@ the flag themselves (or who are on a browser with native support).
 
 ## How it is wired
 
-| File                                                                                                                                                | Role                                             |
-| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| [`src/types/webmcp.d.ts`](../src/types/webmcp.d.ts)                                                                                                 | Ambient types for `document.modelContext`        |
-| [`src/lib/webmcp.ts`](../src/lib/webmcp.ts)                                                                                                         | Feature detection, `defineTool`, result helpers  |
-| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 12 tool definitions                          |
-| [`src/app/resume-editor/hooks/useResumeMcp.ts`](../src/app/resume-editor/hooks/useResumeMcp.ts)                                                     | Registers on mount, aborts on unmount            |
-| [`src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx`](../src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx) | The nav panel, shared with on-device translation |
+| File                                                                                                                                                | Role                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [`src/types/webmcp.d.ts`](../src/types/webmcp.d.ts)                                                                                                 | Ambient types for `document.modelContext`                            |
+| [`src/lib/webmcp.ts`](../src/lib/webmcp.ts)                                                                                                         | Feature detection, `defineTool`, result helpers                      |
+| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 12 tool definitions                                              |
+| [`src/app/resume-editor/hooks/useResumeMcp.ts`](../src/app/resume-editor/hooks/useResumeMcp.ts)                                                     | Registers on mount, aborts on unmount, feeds in the language context |
+| [`src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx`](../src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx) | The nav panel, shared with on-device translation                     |
 
 Lifecycle: tools are registered once when the editor mounts and torn down by aborting the controller
 when it unmounts, so navigating away from `/resume-editor` removes all 12 tools and coming back
@@ -92,6 +92,12 @@ accept, and every list entry carries its `index`:
 
 ```json
 {
+  "language": {
+    "active": "zh-Hant",
+    "primary": "zh-Hant",
+    "isTranslation": false,
+    "exists": true
+  },
   "name": "Leo Chiu",
   "wantedJob": "Staff Frontend Engineer",
   "city": "Taipei",
@@ -129,6 +135,9 @@ accept, and every list entry carries its `index`:
   }
 }
 ```
+
+The `language` block describes the document rather than the resume, and it is the only way to tell
+two locales apart — see [Languages](#languages) below.
 
 ### `update-basic-info`
 
@@ -226,6 +235,39 @@ so this is a toggle, not a delete.
 | `section` | string  | yes      | `profile` \| `socialLinks` \| `skills` \| `educations` \| `employmentHistory` |
 | `visible` | boolean | yes      |                                                                               |
 
+## Languages
+
+A resume is one document with a `Resume` per language ([`ResumeDoc`](../src/types/resume-doc.ts)).
+One language is the **primary** — the source of truth — and the other is a translation of it that the
+user may hand-correct; corrections never travel back. The form holds whichever locale the editor is
+showing, so every tool reads and writes that one locale, and `get-resume`'s `language` block is the
+only thing that says which:
+
+| Field           | Meaning                                                                      |
+| --------------- | ---------------------------------------------------------------------------- |
+| `active`        | The locale the tools are pointed at, `"zh-Hant"` or `"en"`                   |
+| `primary`       | The source of truth                                                          |
+| `isTranslation` | `active !== primary` — edits here stay in the translation                    |
+| `exists`        | Whether the active locale has been created yet. **`false` means read-only.** |
+
+Two rules follow, and both are enforced rather than documented-and-hoped-for:
+
+**A missing locale refuses writes.** A locale is an empty slot until the user runs the translation,
+and a save aimed at an empty slot is dropped. Rather than report a success that storage ignored,
+every write tool fails:
+
+```
+There is no English version of this resume yet, so nothing can be written to it. Ask the user to
+create it from the translation panel, or to switch the editor back to Chinese.
+```
+
+**A write into a translation says so.** It is allowed — hand-correcting a translation is what that
+locale is for — but the result carries a second text block noting that the edit stayed in the
+translation, and that the fields it touched are now marked hand-corrected, so the editor will no
+longer overwrite them with a fresh translation.
+
+There is no tool for switching language or for running a translation. Both stay user actions.
+
 ## Conventions an agent has to follow
 
 **Months, not dates.** Pass `"YYYY-MM"`. Anything else is normalised by taking the leading
@@ -279,7 +321,8 @@ pnpm test:e2e webmcp
 ```
 
 It covers registering the full set, the flattened `get-resume` view, each write path reaching the
-form and the preview, out-of-range and unknown-section errors, and teardown on unmount.
+form and the preview, out-of-range and unknown-section errors, both language rules above, and
+teardown on unmount.
 
 ## When the spec moves
 

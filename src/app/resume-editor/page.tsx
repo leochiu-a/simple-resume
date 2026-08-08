@@ -32,7 +32,9 @@ const ResumeEditorPage = () => {
   const viewingTranslation = doc.activeLang !== doc.primaryLang;
 
   const matches = useMediaQuery("(min-width: 1024px)");
-  const { status: mcpStatus, toolCount: mcpToolCount } = useResumeMcp(formMethods);
+  // `doc` carries the language context the tools need: which locale the form is
+  // bound to, which one is the source of truth, and whether the active one exists.
+  const { status: mcpStatus, toolCount: mcpToolCount } = useResumeMcp(formMethods, doc);
   // Held here rather than in the preview because two places drive it: the
   // appearance panel floating over the desktop preview, and the mobile dialog's
   // header. Both have to move the same sheet.

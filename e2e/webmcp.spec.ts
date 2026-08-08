@@ -47,6 +47,13 @@ const installModelContextStub = async (
   }, surface);
 };
 
+/** Just enough of the stored `ResumeDoc` for the language assertions below. */
+interface ResumeDocShape {
+  primaryLang: string;
+  activeLang: string;
+  locales: Record<string, { name: string } | undefined>;
+}
+
 interface ToolResult {
   content: { type: string; text: string }[];
   isError?: boolean;
@@ -131,6 +138,86 @@ test.describe("WebMCP resume tools", () => {
       from: "2018-01",
       bullets: ["A,B,C,D"],
     });
+    // The form holds one Resume, so this block is the only thing telling the
+    // agent which of the document's locales it is looking at.
+    expect(resume.language).toEqual({
+      active: "zh-Hant",
+      primary: "zh-Hant",
+      isTranslation: false,
+      exists: true,
+    });
+  });
+
+  /**
+   * A locale is an empty slot until the translation panel fills it, and
+   * `useResumeDoc` drops every save aimed at one. The form still accepts the
+   * write, so a tool that did not check this reported success over a change that
+   * never reached storage.
+   */
+  test("a write is refused while the active language has no version yet", async ({ page }) => {
+    await waitForStoredResume(page);
+    await page.addInitScript(() => {
+      const stored = JSON.parse(window.localStorage.getItem("resume-doc") as string);
+
+      // Primary is Chinese and no English locale exists.
+      stored.activeLang = "en";
+      window.localStorage.setItem("resume-doc", JSON.stringify(stored));
+    });
+    await page.goto("/resume-editor");
+    await waitForRegistration(page);
+
+    expect(JSON.parse(textOf(await callTool(page, "get-resume"))).language).toEqual({
+      active: "en",
+      primary: "zh-Hant",
+      isTranslation: true,
+      exists: false,
+    });
+
+    const result = await callTool(page, "update-basic-info", {
+      name: "Ada Lovelace",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toContain("no English version");
+    // The refusal is the point: the locale is still absent either way, but the
+    // agent now knows the edit did not happen.
+    const stored = await page.evaluate(
+      () => JSON.parse(window.localStorage.getItem("resume-doc") as string) as ResumeDocShape,
+    );
+    expect(stored.locales.en).toBeUndefined();
+    expect(errors).toEqual([]);
+  });
+
+  test("a write into a translated locale lands there and says so", async ({ page }) => {
+    await waitForStoredResume(page);
+    await page.addInitScript(() => {
+      const stored = JSON.parse(window.localStorage.getItem("resume-doc") as string);
+
+      stored.locales.en = stored.locales[stored.primaryLang];
+      stored.activeLang = "en";
+      window.localStorage.setItem("resume-doc", JSON.stringify(stored));
+    });
+    await page.goto("/resume-editor");
+    await waitForRegistration(page);
+
+    const result = await callTool(page, "update-basic-info", {
+      name: "Ada Lovelace",
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(textOf(result)).toContain("English translation");
+    await expect(preview(page).getByText("Ada Lovelace")).toBeVisible();
+
+    // It reached the translation and left the source of truth alone.
+    await expect
+      .poll(async () => {
+        const stored = await page.evaluate(
+          () => JSON.parse(window.localStorage.getItem("resume-doc") as string) as ResumeDocShape,
+        );
+
+        return [stored.locales.en?.name, stored.locales["zh-Hant"]?.name];
+      })
+      .toEqual(["Ada Lovelace", "My Name"]);
   });
 
   // The "Present" switch stores `to: null` rather than "", so a resume with an

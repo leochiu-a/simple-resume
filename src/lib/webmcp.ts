@@ -12,11 +12,13 @@ export type WebMcpStatus = "checking" | "unsupported" | "ready" | "error";
  */
 export type WebMcpTool = ModelContextTool<never>;
 
-export const defineTool = <Args>(
-  tool: Omit<ModelContextTool<Args>, "execute"> & {
-    execute: (args: Args) => ModelContextToolResult | Promise<ModelContextToolResult>;
-  },
-): WebMcpTool => tool as unknown as WebMcpTool;
+/** A tool as it is declared, before `defineTool` erases the argument type. */
+export type WebMcpToolInit<Args> = Omit<ModelContextTool<Args>, "execute"> & {
+  execute: (args: Args) => ModelContextToolResult | Promise<ModelContextToolResult>;
+};
+
+export const defineTool = <Args>(tool: WebMcpToolInit<Args>): WebMcpTool =>
+  tool as unknown as WebMcpTool;
 
 /**
  * Resolves the ModelContext across the origin-trial transition window.

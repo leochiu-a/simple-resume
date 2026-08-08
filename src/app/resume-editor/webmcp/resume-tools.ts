@@ -1,7 +1,8 @@
 import { UseFormReturn } from "react-hook-form";
 
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
-import { defineTool, toolError, toolText, WebMcpTool } from "@/lib/webmcp";
+import { LANG_NAME_EN } from "@/lib/resume-doc";
+import { defineTool, toolError, toolText, WebMcpTool, WebMcpToolInit } from "@/lib/webmcp";
 import {
   Education,
   EmploymentHistory,
@@ -10,8 +11,20 @@ import {
   Timeline,
   Visibility,
 } from "@/types/resume";
+import { ResumeLang } from "@/types/resume-doc";
 
 const SECTIONS = ["profile", "socialLinks", "skills", "educations", "employmentHistory"] as const;
+
+/**
+ * What the tools have to know about the multi-language document they are editing.
+ * Read fresh on every call: all three change while the tools stay registered.
+ */
+export interface ResumeMcpContext {
+  activeLang: ResumeLang;
+  primaryLang: ResumeLang;
+  /** False while the active locale is still an empty slot no translation has filled. */
+  hasActiveLocale: boolean;
+}
 
 const monthSchema = (description: string) => ({
   type: "string",
@@ -40,8 +53,20 @@ const fromBulletText = (value: string) => value.split(SPLIT_TEXT);
  * The stored shape is awkward to reason about — timelines are full ISO dates and
  * job descriptions are one delimited string — so the agent gets a flattened view
  * that matches the arguments the write tools accept, plus the entry indexes.
+ *
+ * The `language` block is the agent's only way to tell one locale from another:
+ * the form holds a single `Resume`, so without it a Chinese resume and an English
+ * translation of the same document are indistinguishable.
  */
-const toAgentView = (resume: Resume) => ({
+const toAgentView = (resume: Resume, context: ResumeMcpContext) => ({
+  language: {
+    active: context.activeLang,
+    primary: context.primaryLang,
+    /** True when edits land in a translation rather than the source of truth. */
+    isTranslation: context.activeLang !== context.primaryLang,
+    /** False means this locale has not been created yet and cannot be written to. */
+    exists: context.hasActiveLocale,
+  },
   ...resume,
   employmentHistory: resume.employmentHistory.map((job, index) => ({
     index,
@@ -74,13 +99,57 @@ const describeTimeline = ({ from, to }: Timeline) =>
  * field arrays (and remounts the contentEditable bullet fields, which only read
  * their value on mount), so agent edits show up in the form and the preview.
  */
-export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpTool[] => {
+export const createResumeTools = (
+  getForm: () => UseFormReturn<Resume>,
+  getContext: () => ResumeMcpContext,
+): WebMcpTool[] => {
   const read = () => getForm().getValues();
 
   const write = (update: (previous: Resume) => Resume) => {
     const form = getForm();
     form.reset(update(form.getValues()));
   };
+
+  /**
+   * Wraps every mutating tool in the two things the multi-language document adds.
+   *
+   * A write lands in whichever locale the editor is showing, and that locale may
+   * not exist yet: until the translation panel creates it, `useResumeDoc` drops
+   * every save, so the form would accept the write and storage would ignore it.
+   * Reporting success there is the one lie the tool set can tell, so the write is
+   * refused instead.
+   *
+   * When the active locale does exist but is a translation the write is allowed —
+   * hand-correcting a translation is what that locale is for — and the result says
+   * where it landed, because those edits never travel back to the primary.
+   */
+  const defineWriteTool = <Args>(tool: WebMcpToolInit<Args>) =>
+    defineTool<Args>({
+      ...tool,
+      execute: async (args) => {
+        const { activeLang, primaryLang, hasActiveLocale } = getContext();
+
+        if (!hasActiveLocale) {
+          return toolError(
+            `There is no ${LANG_NAME_EN[activeLang]} version of this resume yet, so nothing can be written to it. Ask the user to create it from the translation panel, or to switch the editor back to ${LANG_NAME_EN[primaryLang]}.`,
+          );
+        }
+
+        const result = await tool.execute(args);
+        if (result.isError || activeLang === primaryLang) return result;
+
+        return {
+          ...result,
+          content: [
+            ...result.content,
+            {
+              type: "text" as const,
+              text: `This landed in the ${LANG_NAME_EN[activeLang]} translation, not the primary ${LANG_NAME_EN[primaryLang]} version: the edited fields are now marked as hand-corrected and will not flow back to the primary.`,
+            },
+          ],
+        };
+      },
+    });
 
   const outOfRange = (label: string, index: number, length: number) =>
     toolError(
@@ -94,12 +163,12 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       name: "get-resume",
       title: "Read the resume",
       description:
-        "Returns the resume currently in the editor as JSON, including the index of every employment and education entry. Call this before updating or removing an entry.",
+        "Returns the resume currently in the editor as JSON, including the index of every employment and education entry. Also reports which language the editor is showing, whether that language is a translation of the primary version, and whether it exists yet — writes are refused while it does not. Call this before updating or removing an entry.",
       annotations: { readOnlyHint: true },
-      execute: () => toolText(JSON.stringify(toAgentView(read()), null, 2)),
+      execute: () => toolText(JSON.stringify(toAgentView(read(), getContext()), null, 2)),
     }),
 
-    defineTool<Partial<Pick<Resume, "name" | "wantedJob" | "city" | "phone" | "email">>>({
+    defineWriteTool<Partial<Pick<Resume, "name" | "wantedJob" | "city" | "phone" | "email">>>({
       name: "update-basic-info",
       title: "Update contact details",
       description:
@@ -134,7 +203,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{ profile: string }>({
+    defineWriteTool<{ profile: string }>({
       name: "update-profile",
       title: "Write the profile summary",
       description:
@@ -153,7 +222,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{ skills: string[] }>({
+    defineWriteTool<{ skills: string[] }>({
       name: "set-skills",
       title: "Set the skill list",
       description:
@@ -176,7 +245,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{ socialLinks: SocialLink[] }>({
+    defineWriteTool<{ socialLinks: SocialLink[] }>({
       name: "set-social-links",
       title: "Set the social links",
       description:
@@ -207,7 +276,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{
+    defineWriteTool<{
       company: string;
       jobTitle: string;
       from: string;
@@ -254,7 +323,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{
+    defineWriteTool<{
       index: number;
       company?: string;
       jobTitle?: string;
@@ -306,7 +375,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{ index: number }>({
+    defineWriteTool<{ index: number }>({
       name: "remove-employment",
       title: "Remove a job",
       description:
@@ -334,7 +403,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{ school: string; degree: string; major: string; from: string; to?: string }>({
+    defineWriteTool<{ school: string; degree: string; major: string; from: string; to?: string }>({
       name: "add-education",
       title: "Add a school",
       description: "Appends one entry to the education section.",
@@ -370,7 +439,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{
+    defineWriteTool<{
       index: number;
       school?: string;
       degree?: string;
@@ -420,7 +489,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{ index: number }>({
+    defineWriteTool<{ index: number }>({
       name: "remove-education",
       title: "Remove a school",
       description:
@@ -446,7 +515,7 @@ export const createResumeTools = (getForm: () => UseFormReturn<Resume>): WebMcpT
       },
     }),
 
-    defineTool<{ section: keyof Visibility; visible: boolean }>({
+    defineWriteTool<{ section: keyof Visibility; visible: boolean }>({
       name: "set-section-visibility",
       title: "Show or hide a section",
       description:
