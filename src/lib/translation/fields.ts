@@ -27,6 +27,10 @@ const TRANSLATABLE_PATTERNS: readonly TranslatablePattern[] = [
   // call comes back with the separators moved or eaten, and shorter inputs
   // translate better anyway.
   { pattern: "employmentHistory.*.description", splitOn: SPLIT_TEXT },
+  // The project's own name is a proper noun and its URL is not prose — both are
+  // copied. Only the bullets describing the work are translated, one at a time
+  // for the same reason as the employment ones.
+  { pattern: "projects.*.description", splitOn: SPLIT_TEXT },
   { pattern: "educations.*.school" },
   { pattern: "educations.*.degree" },
   { pattern: "educations.*.major" },

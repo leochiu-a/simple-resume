@@ -37,7 +37,9 @@ test.describe("HTML export", () => {
     // Everything but the Google Fonts stylesheet has to be inlined, and no
     // scripts may ride along.
     expect(html).not.toContain("<script");
-    const hosts = new Set([...html.matchAll(/https?:\/\/([^/"' ]+)/g)].map((m) => m[1]));
+    // `<` terminates the host too: a project link renders its URL as the anchor
+    // text, so the host is followed by `</a>` rather than a quote or a slash.
+    const hosts = new Set([...html.matchAll(/https?:\/\/([^/"' <]+)/g)].map((m) => m[1]));
     expect([...hosts].sort()).toEqual([
       "fonts.googleapis.com",
       "fonts.gstatic.com",
@@ -62,7 +64,7 @@ test.describe("HTML export", () => {
     await expect(
       page.getByText("Bachelor of Computer Science, University of California").first(),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: "Github" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Github", exact: true })).toHaveAttribute(
       "href",
       "https://github.com",
     );

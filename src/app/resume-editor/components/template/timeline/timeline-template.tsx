@@ -7,6 +7,7 @@ import { Resume } from "@/types/resume";
 import { styles } from "./styles";
 import Section from "./section";
 import Experience from "./experience";
+import Projects from "./projects";
 import Education from "./education";
 import Rail from "./rail";
 import Summary from "../summary";
@@ -44,6 +45,10 @@ const TimelineTemplate = ({
 
             {resume.visibility.employmentHistory && (
               <Experience employmentHistory={resume.employmentHistory} accent={backgroundColor} />
+            )}
+
+            {resume.visibility.projects && (
+              <Projects projects={resume.projects ?? []} accent={backgroundColor} />
             )}
 
             {resume.visibility.educations && <Education educations={resume.educations} />}

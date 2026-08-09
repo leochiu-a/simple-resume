@@ -8,6 +8,7 @@ import { styles } from "./styles";
 import Header from "./header";
 import Section from "./section";
 import Experience from "./experience";
+import Projects from "./projects";
 import Education from "./education";
 import Skills from "./skills";
 import Links from "./links";
@@ -44,6 +45,8 @@ const FormalTemplate = ({
           {visibility.employmentHistory && (
             <Experience employmentHistory={resume.employmentHistory} />
           )}
+
+          {visibility.projects && <Projects projects={resume.projects ?? []} />}
 
           {visibility.educations && <Education educations={resume.educations} />}
 

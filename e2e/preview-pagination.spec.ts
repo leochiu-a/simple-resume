@@ -61,12 +61,14 @@ const LONG_RESUME = {
         `Achievement ${i + 1} at company ${n}, written long enough that the line has to wrap onto a second line in every one of the four templates.`,
     ).join("|"),
   })),
+  projects: [],
   visibility: {
     profile: true,
     socialLinks: true,
     skills: true,
     educations: true,
     employmentHistory: true,
+    projects: true,
   },
 };
 

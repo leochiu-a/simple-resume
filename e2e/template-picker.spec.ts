@@ -119,7 +119,7 @@ test.describe("template picker", () => {
     for (const heading of ["Details", "Links", "Skills", "Summary", "Experience", "Education"]) {
       await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
     }
-    await expect(page.getByRole("link", { name: "Github" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Github", exact: true })).toHaveAttribute(
       "href",
       "https://github.com",
     );
@@ -154,8 +154,8 @@ test.describe("template picker", () => {
     for (const family of ["NotoSans-Regular", "NotoSans-Bold"]) {
       expect(pdf.embeddedFonts.some((f) => f.endsWith(family))).toBe(true);
     }
-    // Github / Medium / Threads stay clickable in the sidebar.
-    expect(pdf.linkAnnotations).toBe(3);
+    // Github / Medium / Threads stay clickable in the sidebar, plus the project link.
+    expect(pdf.linkAnnotations).toBe(4);
   });
 
   test("leaves the colour picker working after a template change", async ({ page }) => {

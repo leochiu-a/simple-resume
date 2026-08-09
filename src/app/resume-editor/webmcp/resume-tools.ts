@@ -6,6 +6,7 @@ import { defineTool, toolError, toolText, WebMcpTool, WebMcpToolInit } from "@/l
 import {
   Education,
   EmploymentHistory,
+  Project,
   Resume,
   SocialLink,
   Timeline,
@@ -13,7 +14,14 @@ import {
 } from "@/types/resume";
 import { ResumeLang } from "@/types/resume-doc";
 
-const SECTIONS = ["profile", "socialLinks", "skills", "educations", "employmentHistory"] as const;
+const SECTIONS = [
+  "profile",
+  "socialLinks",
+  "skills",
+  "educations",
+  "employmentHistory",
+  "projects",
+] as const;
 
 /**
  * What the tools have to know about the multi-language document they are editing.
@@ -83,6 +91,12 @@ const toAgentView = (resume: Resume, context: ResumeMcpContext) => ({
     major: education.major,
     from: toAgentMonth(education.timeline.from),
     to: toAgentMonth(education.timeline.to),
+  })),
+  projects: (resume.projects ?? []).map((project, index) => ({
+    index,
+    name: project.name,
+    url: project.url,
+    bullets: fromBulletText(project.description),
   })),
   skills: resume.skills.map((skill) => skill.name),
 });
@@ -512,6 +526,109 @@ export const createResumeTools = (
         }));
 
         return toolText(`Removed "${current.school}".`);
+      },
+    }),
+
+    defineWriteTool<{ name: string; url?: string; bullets?: string[] }>({
+      name: "add-project",
+      title: "Add a project",
+      description: "Appends one entry to the projects section.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "The project's name." },
+          url: { type: "string", description: "Where to see it — a repo, a demo, a write-up." },
+          bullets: {
+            type: "array",
+            items: { type: "string" },
+            description: "One line per bullet, as shown under the project.",
+          },
+        },
+        required: ["name"],
+      },
+      execute: ({ name, url, bullets }) => {
+        const entry: Project = {
+          name,
+          url: url ?? "",
+          description: toBulletText(bullets ?? []),
+        };
+
+        let index = 0;
+        write((previous) => {
+          const entries = previous.projects ?? [];
+          index = entries.length;
+
+          return { ...previous, projects: [...entries, entry] };
+        });
+
+        return toolText(`Added the project "${name}" at index ${index}.`);
+      },
+    }),
+
+    defineWriteTool<{ index: number; name?: string; url?: string; bullets?: string[] }>({
+      name: "update-project",
+      title: "Edit a project",
+      description:
+        "Updates one project entry. Get the index from get-resume. Only the fields you pass are changed.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          index: { type: "number", description: "Zero-based index from get-resume." },
+          name: { type: "string" },
+          url: { type: "string" },
+          bullets: {
+            type: "array",
+            items: { type: "string" },
+            description: "Replaces every bullet on this project.",
+          },
+        },
+        required: ["index"],
+      },
+      execute: ({ index, name, url, bullets }) => {
+        const entries = read().projects ?? [];
+        const current = entries[index];
+        if (!current) return outOfRange("project", index, entries.length);
+
+        const entry: Project = {
+          name: name ?? current.name,
+          url: url ?? current.url,
+          description: bullets ? toBulletText(bullets) : current.description,
+        };
+
+        write((previous) => ({
+          ...previous,
+          projects: (previous.projects ?? []).map((item, itemIndex) =>
+            itemIndex === index ? entry : item,
+          ),
+        }));
+
+        return toolText(`Updated the project at index ${index}: ${entry.name}.`);
+      },
+    }),
+
+    defineWriteTool<{ index: number }>({
+      name: "remove-project",
+      title: "Remove a project",
+      description:
+        "Deletes one project entry. Get the index from get-resume — indexes shift after a removal.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          index: { type: "number", description: "Zero-based index from get-resume." },
+        },
+        required: ["index"],
+      },
+      execute: ({ index }) => {
+        const entries = read().projects ?? [];
+        const current = entries[index];
+        if (!current) return outOfRange("project", index, entries.length);
+
+        write((previous) => ({
+          ...previous,
+          projects: (previous.projects ?? []).filter((_, itemIndex) => itemIndex !== index),
+        }));
+
+        return toolText(`Removed "${current.name}".`);
       },
     }),
 

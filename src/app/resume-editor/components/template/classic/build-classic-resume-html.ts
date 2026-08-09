@@ -298,6 +298,41 @@ const employmentHistorySection = (resume: Resume) => {
         </section>`;
 };
 
+const projectsSection = (resume: Resume) => {
+  const items = (resume.projects ?? [])
+    .filter(({ name, description }) => name.trim() !== "" || description.trim() !== "")
+    .map(({ name, url, description }) => {
+      const bullets = description
+        .split(SPLIT_TEXT)
+        .filter((item) => item.trim() !== "")
+        .map((item) => `<li class="text">${escapeHtml(item)}</li>`)
+        .join("");
+
+      const href = url ? safeHref(url) : null;
+      const link = href
+        ? `<a href="${escapeHtml(href)}">${escapeHtml(url)}</a>`
+        : url
+          ? escapeHtml(url)
+          : "";
+
+      return `
+            <article>
+              <p class="text job-heading">
+                <strong>${escapeHtml(name)}</strong>
+                ${link ? `<br /><span class="meta">${link}</span>` : ""}
+              </p>
+              ${bullets ? `<ul class="bullets">${bullets}</ul>` : ""}
+            </article>`;
+    })
+    .join("");
+
+  return `
+        <section class="block">
+          <h2>Projects</h2>
+          <div class="jobs">${items}</div>
+        </section>`;
+};
+
 const educationSection = (resume: Resume) => {
   const educations = resume.educations
     .map(({ school, degree, major, timeline }) => {
@@ -343,6 +378,7 @@ ${infoSection(resume)}
       <div class="content">
 ${resume.visibility.profile ? profileSection(resume.profile) : ""}
 ${resume.visibility.employmentHistory ? employmentHistorySection(resume) : ""}
+${resume.visibility.projects ? projectsSection(resume) : ""}
 ${resume.visibility.educations ? educationSection(resume) : ""}
       </div>
     </main>

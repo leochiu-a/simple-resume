@@ -5,6 +5,7 @@ import { Page, View, Document } from "@react-pdf/renderer";
 import { styles } from "./styles";
 import Profile from "./profile";
 import EmploymentHistory from "./employment-history";
+import Projects from "./projects";
 import Education from "./education";
 import Info from "./info";
 import { A4_HEIGHT_PT } from "../constants";
@@ -51,6 +52,7 @@ const ClassicTemplate = ({
             {resume.visibility.employmentHistory && (
               <EmploymentHistory employmentHistory={resume.employmentHistory} />
             )}
+            {resume.visibility.projects && <Projects projects={resume.projects ?? []} />}
             {resume.visibility.educations && <Education educations={resume.educations} />}
           </View>
         </View>

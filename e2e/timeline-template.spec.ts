@@ -24,7 +24,7 @@ import {
 const selectTimeline = (page: Page) => selectTemplate(page, "Timeline");
 
 /** The headings Timeline renders, across both of its columns. */
-const HEADINGS = ["Summary", "Experience", "Education", "Skills", "Links"];
+const HEADINGS = ["Summary", "Experience", "Projects", "Education", "Skills", "Links"];
 
 test.describe("timeline template", () => {
   test.beforeEach(async ({ page }) => {
@@ -99,10 +99,10 @@ test.describe("timeline template", () => {
         };
       });
 
-    // One dot per employment entry (1) plus one per education entry (2).
-    expect(timeline.dots).toBe(3);
-    // Only the first of the two educations is connected; employment has a single
-    // entry, and the last entry of a list never trails a line.
+    // One dot per employment entry (1), per project (1) and per education entry (2).
+    expect(timeline.dots).toBe(4);
+    // Only the first of the two educations is connected; employment and projects
+    // have a single entry each, and the last entry of a list never trails a line.
     expect(timeline.connectors).toHaveLength(1);
     expect(timeline.connectors[0].height).toBeGreaterThan(10);
     expect(timeline.connectors[0].width).toBeLessThan(4);
@@ -125,7 +125,7 @@ test.describe("timeline template", () => {
     for (const heading of HEADINGS) {
       await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
     }
-    await expect(page.getByRole("link", { name: "Github" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Github", exact: true })).toHaveAttribute(
       "href",
       "https://github.com",
     );
@@ -146,7 +146,8 @@ test.describe("timeline template", () => {
         .filter((style) => style.content !== "none")
         .map((style) => parseFloat(style.height)),
     );
-    // One employment entry (last, so no line) and two educations (one line).
+    // One employment entry and one project (each last of its list, so no line),
+    // and two educations (one line).
     expect(connectors).toHaveLength(1);
     expect(connectors[0]).toBeGreaterThan(0);
   });
@@ -170,7 +171,9 @@ test.describe("timeline template", () => {
     for (const family of ["NotoSans-Regular", "NotoSans-Bold"]) {
       expect(pdf.embeddedFonts.some((f) => f.endsWith(family))).toBe(true);
     }
-    // Github / Medium / Threads stay clickable in the rail.
-    expect(pdf.linkAnnotations).toBe(3);
+    // Github / Medium / Threads stay clickable in the rail, plus the project
+    // link — which wraps in the narrow column, and react-pdf emits one
+    // annotation per line box of a link.
+    expect(pdf.linkAnnotations).toBe(5);
   });
 });

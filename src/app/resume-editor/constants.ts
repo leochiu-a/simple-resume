@@ -60,11 +60,19 @@ export const DEFAULT_RESUME: Resume = {
       description: "A,B,C,D",
     },
   ],
+  projects: [
+    {
+      name: "Simple Resume",
+      url: "https://github.com/simple-resume",
+      description: "Built a local-first resume editor with four print-ready templates",
+    },
+  ],
   visibility: {
     profile: true,
     socialLinks: true,
     skills: true,
     educations: true,
     employmentHistory: true,
+    projects: true,
   },
 };

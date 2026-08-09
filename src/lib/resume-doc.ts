@@ -73,11 +73,13 @@ export const createEmptyResume = (): Resume => ({
   skills: [],
   educations: [],
   employmentHistory: [],
+  projects: [],
   visibility: {
     profile: true,
     socialLinks: true,
     skills: true,
     educations: true,
     employmentHistory: true,
+    projects: true,
   },
 });

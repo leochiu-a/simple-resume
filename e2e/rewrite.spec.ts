@@ -115,6 +115,19 @@ const installLanguageModelStub = async (page: Page, options: StubOptions = {}) =
 const improveButton = (page: Page, index = 0) =>
   page.getByRole("button", { name: /suggestions$/ }).nth(index);
 
+/**
+ * Projects carry a description too — and so the same rewrite guide — further down
+ * the form, so "the last trigger on the page" no longer identifies employment's.
+ * Everything here scopes to the section instead.
+ */
+const employmentSection = (page: Page) =>
+  page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name: "Employment History" }) });
+
+const employmentImproveButton = (page: Page) =>
+  employmentSection(page).getByRole("button", { name: /suggestions$/ });
+
 const panel = (page: Page) => page.getByRole("dialog");
 
 const readPrompts = (page: Page) =>
@@ -216,10 +229,7 @@ test.describe("Rewrite popover", () => {
     await installLanguageModelStub(page);
     await page.goto("/resume-editor");
 
-    await page
-      .getByRole("button", { name: /suggestions$/ })
-      .last()
-      .click();
+    await employmentImproveButton(page).click();
 
     await expect(page.getByText(/Write a first draft here/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Polish the wording" })).toBeDisabled();
@@ -258,7 +268,8 @@ test.describe("Rewriting a job description", () => {
    * rather than filled. Every test here needs a real draft to work from.
    */
   const writeDescription = async (page: Page, lines: string[]) => {
-    const field = page.locator('[contenteditable="true"]').last();
+    // Scoped to the section: projects carry a description field further down.
+    const field = employmentSection(page).locator('[contenteditable="true"]').last();
     await field.click();
     await page.keyboard.press("ControlOrMeta+a");
     for (const [index, line] of lines.entries()) {
@@ -279,9 +290,7 @@ test.describe("Rewriting a job description", () => {
   });
 
   test("sends bullets as a list and never leaks the separator", async ({ page }) => {
-    // The last trigger on the page is the one in employment history.
-    const triggers = page.getByRole("button", { name: /suggestions$/ });
-    await triggers.last().click();
+    await employmentImproveButton(page).click();
 
     await expect(page.getByText("Writing a role description")).toBeVisible();
     await page.getByRole("button", { name: "Start with strong verbs" }).click();
@@ -296,10 +305,7 @@ test.describe("Rewriting a job description", () => {
   });
 
   test("applies the rewrite back into the description field", async ({ page }) => {
-    await page
-      .getByRole("button", { name: /suggestions$/ })
-      .last()
-      .click();
+    await employmentImproveButton(page).click();
     await page.getByRole("button", { name: "Polish the wording" }).click();
     await expect(page.getByText("Suggested rewrite")).toBeVisible();
 

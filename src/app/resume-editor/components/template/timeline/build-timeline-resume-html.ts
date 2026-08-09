@@ -227,6 +227,11 @@ const styles = (accent: string) => `
   /* Education spaces its two lines with the school's own margin instead. */
   .entry-right.education { gap: 0; }
 
+  .entry-right .url {
+    color: inherit;
+    text-decoration: underline;
+  }
+
   .description {
     display: flex;
     flex-direction: column;
@@ -357,6 +362,42 @@ ${heading("Experience")}
         </section>`;
 };
 
+const projectsSection = (resume: Resume) => {
+  const entries = (resume.projects ?? [])
+    .filter(({ name, description }) => name.trim() !== "" || description.trim() !== "")
+    .map(({ name, url, description }) => {
+      const bullets = description
+        .split(SPLIT_TEXT)
+        .filter((item) => item.trim() !== "")
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+
+      const href = safeHref(url);
+      const link = href
+        ? `<p><a class="url" href="${escapeHtml(href)}">${escapeHtml(url)}</a></p>`
+        : "";
+
+      return `
+            <article class="entry">
+              <div class="entry-left">
+                <span class="marker" aria-hidden="true"></span>
+              </div>
+              <div class="entry-right">
+                <p class="title">${escapeHtml(name)}</p>
+                ${link}
+                ${bullets ? `<ul class="description">${bullets}</ul>` : ""}
+              </div>
+            </article>`;
+    })
+    .join("");
+
+  return `
+        <section>
+${heading("Projects")}
+          <div class="entries">${entries}</div>
+        </section>`;
+};
+
 const educationSection = (resume: Resume) => {
   const entries = resume.educations
     .map(({ school, degree, major, timeline }) => {
@@ -456,6 +497,7 @@ const buildTimelineResumeHtml = ({
         <div class="main">
 ${resume.visibility.profile ? summarySection(resume.profile) : ""}
 ${resume.visibility.employmentHistory ? experienceSection(resume) : ""}
+${resume.visibility.projects ? projectsSection(resume) : ""}
 ${resume.visibility.educations ? educationSection(resume) : ""}
         </div>
 ${rail(resume)}

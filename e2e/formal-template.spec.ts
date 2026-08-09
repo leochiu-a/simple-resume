@@ -76,7 +76,7 @@ test.describe("Formal template", () => {
       await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
     }
 
-    await expect(page.getByRole("link", { name: "Github" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Github", exact: true })).toHaveAttribute(
       "href",
       "https://github.com",
     );

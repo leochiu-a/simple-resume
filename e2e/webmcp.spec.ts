@@ -89,7 +89,7 @@ const waitForStoredResume = (page: Page) =>
  * needs is the stub's own view of what got registered rather than a click into
  * the panel each time.
  */
-const waitForRegistration = (page: Page) => expect.poll(() => listTools(page)).toHaveLength(12);
+const waitForRegistration = (page: Page) => expect.poll(() => listTools(page)).toHaveLength(15);
 
 test.describe("WebMCP resume tools", () => {
   let errors: string[] = [];
@@ -116,6 +116,9 @@ test.describe("WebMCP resume tools", () => {
       "add-education",
       "update-education",
       "remove-education",
+      "add-project",
+      "update-project",
+      "remove-project",
       "set-section-visibility",
     ]);
 
@@ -336,6 +339,36 @@ test.describe("WebMCP resume tools", () => {
     expect(JSON.parse(textOf(await callTool(page, "get-resume"))).employmentHistory).toEqual([]);
   });
 
+  test("add-project appends a project and renders each bullet separately", async ({ page }) => {
+    const result = await callTool(page, "add-project", {
+      name: "Tideline",
+      url: "https://example.com/tideline",
+      bullets: ["Offline-first tide charts", "Ships as a PWA"],
+    });
+
+    expect(textOf(result)).toContain("at index 1");
+
+    await expect(preview(page).getByText("Tideline", { exact: true })).toBeVisible();
+    await expect(preview(page).getByText("https://example.com/tideline")).toBeVisible();
+    await expect(preview(page).getByText("Offline-first tide charts")).toBeVisible();
+    await expect(preview(page).getByText("Ships as a PWA")).toBeVisible();
+  });
+
+  test("update-project edits one entry and leaves the rest alone", async ({ page }) => {
+    await callTool(page, "add-project", { name: "Tideline" });
+    await callTool(page, "update-project", { index: 1, name: "Tideline 2" });
+
+    const resume = JSON.parse(textOf(await callTool(page, "get-resume")));
+    expect(resume.projects[0].name).toBe("Simple Resume");
+    expect(resume.projects[1].name).toBe("Tideline 2");
+  });
+
+  test("remove-project deletes the entry", async ({ page }) => {
+    await callTool(page, "remove-project", { index: 0 });
+
+    expect(JSON.parse(textOf(await callTool(page, "get-resume"))).projects).toEqual([]);
+  });
+
   test("an out-of-range index comes back as a tool error, not a crash", async ({ page }) => {
     const result = await callTool(page, "remove-employment", { index: 7 });
 
@@ -378,11 +411,11 @@ test.describe("WebMCP resume tools", () => {
     await installModelContextStub(legacyPage, "navigator");
     await legacyPage.goto("/resume-editor");
 
-    await expect.poll(() => listTools(legacyPage)).toHaveLength(12);
+    await expect.poll(() => listTools(legacyPage)).toHaveLength(15);
     expect(await legacyPage.evaluate(() => "modelContext" in document)).toBe(false);
 
     await openOnDeviceAiPanel(legacyPage);
-    await expect(legacyPage.getByText("12 tools registered")).toBeVisible();
+    await expect(legacyPage.getByText("15 tools registered")).toBeVisible();
 
     await callTool(legacyPage, "update-basic-info", { name: "Grace Hopper" });
     await expect(preview(legacyPage).getByText("Grace Hopper")).toBeVisible();
@@ -391,7 +424,7 @@ test.describe("WebMCP resume tools", () => {
   });
 
   test("tools are unregistered when the editor unmounts", async ({ page }) => {
-    expect(await listTools(page)).toHaveLength(12);
+    expect(await listTools(page)).toHaveLength(15);
 
     await page.getByRole("link", { name: "Simple Resume" }).click();
     await expect(page).toHaveURL("/");

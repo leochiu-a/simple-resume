@@ -74,11 +74,30 @@ export const SHOWCASE_RESUME: Resume = {
       ),
     },
   ],
+  projects: [
+    {
+      name: "Tideline",
+      url: "https://github.com/tideline",
+      description: bullets(
+        "An offline-first tide chart for small-boat sailors, 3k monthly users",
+        "Renders a year of predictions client-side from a 40kb harmonic table",
+      ),
+    },
+    {
+      name: "Gridpaper",
+      url: "https://github.com/gridpaper",
+      description: bullets(
+        "A CSS grid inspector that overlays the implied grid on any page",
+        "Published as a browser extension with 12k installs",
+      ),
+    },
+  ],
   visibility: {
     profile: true,
     socialLinks: true,
     skills: true,
     educations: true,
     employmentHistory: true,
+    projects: true,
   },
 };

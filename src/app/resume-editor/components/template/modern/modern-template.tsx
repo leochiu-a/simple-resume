@@ -8,6 +8,7 @@ import { styles, CONTENT_COLOR } from "./styles";
 import panelColors from "./panel-color";
 import Sidebar from "./sidebar";
 import Experience from "./experience";
+import Projects from "./projects";
 import Education from "./education";
 import Section from "./section";
 import Summary from "../summary";
@@ -40,6 +41,8 @@ const ModernTemplate = ({
           {resume.visibility.employmentHistory && (
             <Experience employmentHistory={resume.employmentHistory} />
           )}
+
+          {resume.visibility.projects && <Projects projects={resume.projects ?? []} />}
 
           {resume.visibility.educations && <Education educations={resume.educations} />}
         </View>

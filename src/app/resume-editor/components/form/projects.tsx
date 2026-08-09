@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { FaPlus, FaTrash } from "react-icons/fa6";
 
@@ -7,38 +7,38 @@ import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-import { LabeledDatePickerField } from "./labeled-date-picker-field";
 import { LabeledInputField } from "./labeled-input-field";
+import { LabeledBulletTextAreaField } from "./labeled-bullet-textarea-field";
+import RewritePopover from "./rewrite-popover";
 import VisibleSwitch from "./visible-switch";
 import { Section, SectionBody, SectionTitle } from "./section";
 
-const Educations: FC = () => {
-  const { control, watch } = useFormContext<Resume>();
+const Projects: FC = () => {
+  const { control, watch, getValues } = useFormContext<Resume>();
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "educations",
+    name: "projects",
   });
-  const visible = watch("visibility.educations");
+  const visible = watch("visibility.projects");
+
+  // Same remount trick as the employment description — see EmploymentHistory.
+  const [applied, setApplied] = useState<Record<number, number>>({});
 
   const handleAdd = () => {
     append({
-      school: "",
-      degree: "",
-      major: "",
-      timeline: {
-        from: "",
-        to: "",
-      },
+      name: "",
+      url: "",
+      description: "",
     });
   };
 
   return (
     <Section className={cn(!visible && "opacity-50")}>
-      <SectionTitle index="07">
-        <span>Educations</span>
+      <SectionTitle index="06">
+        <span>Projects</span>
         <Controller
           control={control}
-          name="visibility.educations"
+          name="visibility.projects"
           render={({ field }) => <VisibleSwitch {...field} />}
         />
       </SectionTitle>
@@ -48,39 +48,49 @@ const Educations: FC = () => {
             <div className="mt-4 grid xl:grid-cols-2 grid-cols-1 gap-4">
               <Controller
                 control={control}
-                name={`educations.${index}.degree`}
+                name={`projects.${index}.name`}
                 render={({ field }) => (
-                  <LabeledInputField label="Degree" placeholder="Degree" {...field} />
+                  <LabeledInputField label="Project" placeholder="Project name" {...field} />
                 )}
               />
               <Controller
                 control={control}
-                name={`educations.${index}.school`}
+                name={`projects.${index}.url`}
                 render={({ field }) => (
-                  <LabeledInputField label="School" placeholder="School" {...field} />
+                  <LabeledInputField
+                    label="Link"
+                    placeholder="https://github.com/you/project"
+                    {...field}
+                  />
                 )}
               />
               <Controller
                 control={control}
-                name={`educations.${index}.major`}
+                name={`projects.${index}.description`}
                 render={({ field }) => (
-                  <LabeledInputField label="Major" placeholder="Major" {...field} />
-                )}
-              />
-              <Controller
-                control={control}
-                name={`educations.${index}.timeline`}
-                render={({ field }) => (
-                  <LabeledDatePickerField
-                    label="Date"
-                    switchText="In school"
+                  <LabeledBulletTextAreaField
+                    key={applied[index] ?? 0}
+                    label="Description"
                     onChange={field.onChange}
                     value={field.value}
+                    className="xl:col-span-2"
+                    action={
+                      <RewritePopover
+                        section="description"
+                        getValue={() => getValues(`projects.${index}.description`)}
+                        onApply={(value) => {
+                          field.onChange(value);
+                          setApplied((previous) => ({
+                            ...previous,
+                            [index]: (previous[index] ?? 0) + 1,
+                          }));
+                        }}
+                      />
+                    }
                   />
                 )}
               />
             </div>
-
             <Tooltip title="Delete">
               <Button
                 variant="outline"
@@ -103,4 +113,4 @@ const Educations: FC = () => {
   );
 };
 
-export default Educations;
+export default Projects;

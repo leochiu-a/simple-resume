@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns";
 
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
-import { Education, EmploymentHistory, Resume, Timeline } from "@/types/resume";
+import { Education, EmploymentHistory, Project, Resume, Timeline } from "@/types/resume";
 
 /**
  * Renders a resume as Markdown.
@@ -68,6 +68,16 @@ const employmentEntry = (job: EmploymentHistory) => {
   return paragraphs([heading ? `### ${heading}` : "", timeline, bullets]);
 };
 
+const projectEntry = (project: Project) => {
+  const name = project.name?.trim();
+  const url = project.url?.trim();
+  // The name carries the link when both are present, so the URL is never twice.
+  const heading = name && url ? `[${name}](${url})` : name || url;
+  const bullets = bulletList(project.description ? project.description.split(SPLIT_TEXT) : []);
+
+  return paragraphs([heading ? `### ${heading}` : "", bullets]);
+};
+
 const educationEntry = (education: Education) => {
   const heading = education.school?.trim();
   const detail = [education.degree, education.major]
@@ -108,6 +118,9 @@ export const buildResumeMarkdown = (resume: Resume): string => {
           "Employment History",
           resume.employmentHistory.map(employmentEntry).filter(Boolean).join("\n\n"),
         )
+      : "",
+    visibility.projects
+      ? section("Projects", (resume.projects ?? []).map(projectEntry).filter(Boolean).join("\n\n"))
       : "",
     visibility.educations
       ? section("Education", resume.educations.map(educationEntry).filter(Boolean).join("\n\n"))
