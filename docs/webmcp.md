@@ -67,12 +67,12 @@ the flag themselves (or who are on a browser with native support).
 | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | [`src/types/webmcp.d.ts`](../src/types/webmcp.d.ts)                                                                                                 | Ambient types for `document.modelContext`                            |
 | [`src/lib/webmcp.ts`](../src/lib/webmcp.ts)                                                                                                         | Feature detection, `defineTool`, result helpers                      |
-| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 12 tool definitions                                              |
+| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 17 tool definitions                                              |
 | [`src/app/resume-editor/hooks/useResumeMcp.ts`](../src/app/resume-editor/hooks/useResumeMcp.ts)                                                     | Registers on mount, aborts on unmount, feeds in the language context |
 | [`src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx`](../src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx) | The nav panel, shared with on-device translation                     |
 
 Lifecycle: tools are registered once when the editor mounts and torn down by aborting the controller
-when it unmounts, so navigating away from `/resume-editor` removes all 12 tools and coming back
+when it unmounts, so navigating away from `/resume-editor` removes all 17 tools and coming back
 re-registers them. Form state is read through a ref, so a tool always writes to the current form
 without re-registering on every keystroke.
 
@@ -138,6 +138,121 @@ accept, and every list entry carries its `index`:
 
 The `language` block describes the document rather than the resume, and it is the only way to tell
 two locales apart — see [Languages](#languages) below.
+
+### `score-resume`
+
+Read-only (`readOnlyHint: true`). Takes no arguments. Grades the resume against twelve rules — eleven scored, one advisory — and
+returns the score with every failing check.
+
+This is the one tool that answers _is this resume any good_ rather than _what does it say_. Without
+it an agent has no feedback signal: it writes a bullet, reads its own prose back through
+`get-resume`, and has to decide from taste alone whether to keep going. Scoring closes that loop —
+"keep editing until the score stops improving" becomes a condition the agent can check rather than a
+feeling. Nothing is mutated, so it is safe to call between every edit.
+
+```json
+{
+  "score": 62,
+  "band": "fair",
+  "outOf": 100,
+  "scoredLanguage": "en",
+  "findings": [
+    {
+      "id": "quantified",
+      "title": "Quantified results",
+      "status": "fail",
+      "gain": 16,
+      "detail": "No bullet carries a number. Numbers are what a reader remembers…",
+      "locations": [
+        {
+          "section": "employmentHistory",
+          "entryIndex": 0,
+          "entryLabel": "KKday",
+          "bulletIndex": 1,
+          "text": "Built the shared design system"
+        }
+      ]
+    }
+  ],
+  "passing": ["Contact details", "Email looks valid", "Skills listed"],
+  "notes": ["The action-verb check matches the first word against a fixed list…"]
+}
+```
+
+| Field       | Meaning                                                                     |
+| ----------- | --------------------------------------------------------------------------- |
+| `score`     | 0–100, rescaled over the rules that apply — hidden sections are not counted |
+| `gain`      | What bringing this check to a pass adds to the score. `0` when `advisory`   |
+| `advisory`  | Reported but not scored — see below                                         |
+| `locations` | Where the finding is, in the same indexes `get-resume` reports              |
+| `notes`     | Caveats about a check's reliability, when it has any                        |
+
+`locations` is the part worth using: `entryIndex` and `bulletIndex` are the indexes
+`update-employment` and `update-project` accept, so a finding carries straight into the call that
+fixes it without searching for the text again. Findings about the document as a whole (overall
+length, contact details) have an empty `locations`.
+
+Three things to know before trusting the numbers:
+
+- **`gain` is a floor, not a prediction.** The rules overlap — rewriting a bullet to add a metric
+  often fixes its length at the same time, so the score can move by more than the advertised amount.
+- **The score is not a ratchet.** An edit can lower it: padding a profile past 120 words trips a
+  different rule than the one it was meant to fix. Re-score after each change rather than assuming
+  an edit was an improvement.
+- **An `advisory` finding will never move the score.** `action-verbs` is the only one today. It
+  matches the opening word against a fixed list rather than deciding a part of speech, so it misses
+  verbs the list has not met (Instrumented, Containerised) and in Chinese cannot separate a verb from
+  a noun sharing its prefix — 管理團隊 and 管理層 both match 管理. The finding is still worth acting
+  on, because an agent can read the flagged line and judge where the list cannot; it just carries no
+  points, and an agent hill-climbing on `score` should not read a stubborn advisory finding as a
+  failure to make progress.
+
+The tool reports findings and locations only. It does not name a tool to call or an order to call
+them in — that keeps the scorer from breaking when a tool is renamed, and leaves the plan to the
+agent, which can see the resume it is holding.
+
+### `submit-review`
+
+Publishes a qualitative review into the score panel, under a heading that credits it to the user's
+assistant. Requires `summary`; `notes` is optional and capped at 20.
+
+| Argument  | Type     | Required | Notes                                      |
+| --------- | -------- | -------- | ------------------------------------------ |
+| `summary` | string   | yes      | One or two sentences on the resume overall |
+| `notes`   | object[] | no       | At most 20; anything beyond is dropped     |
+
+Each note takes `comment` (required) plus optional `section`
+(`employmentHistory` \| `projects` \| `profile` \| `skills`), `entryIndex`, `bulletIndex`, `quote`
+and `suggestion`. Indexes are the ones `get-resume` reports, and the panel resolves them to a
+heading — `entryIndex: 0` on `employmentHistory` renders as the company name.
+
+This is the counterpart to [`score-resume`](#score-resume), and the division between them is the
+point:
+
+|                 | `score-resume`     | `submit-review`         |
+| --------------- | ------------------ | ----------------------- |
+| Direction       | Agent reads        | Agent writes            |
+| Answers         | Is the shape right | Is the content any good |
+| Produced by     | Twelve fixed rules | The agent's judgement   |
+| Carries a score | Yes, 0–100         | **No, by design**       |
+
+`score-resume` is exact about shape and blind to meaning — "Increased synergy by 200%" satisfies
+every rule and says nothing, and no word list separates 管理團隊 from 管理層. That gap is what a
+review fills.
+
+**A review carries no score and never changes one.** The header number is a property of the resume:
+the same document scores the same 55 every time, computed from fixed weights, whether or not an agent
+ever visits. A model-supplied number would make it a property of one conversation instead — different
+on every run, absent for the visitors who have no agent, and unable to update as the user types.
+Notes compose with the rules; a second, rival score would not.
+
+The review is held in memory for the session and is **not** persisted, unlike the resume. It comments
+on one version of a document that changes every keystroke, so restoring yesterday's review beside
+today's text would present stale judgement as current. The panel shows when it arrived, and the user
+can dismiss it.
+
+Submitting replaces any previous review. Applying a suggestion is a separate step — call the update
+tools if the user wants one taken up.
 
 ### `update-basic-info`
 

@@ -2,6 +2,8 @@ import { UseFormReturn } from "react-hook-form";
 
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { LANG_NAME_EN } from "@/lib/resume-doc";
+import { buildAgentReport } from "@/lib/resume-score/agent-report";
+import { AgentReview, MAX_REVIEW_NOTES, ReviewNote } from "@/lib/resume-score/review";
 import { defineTool, toolError, toolText, WebMcpTool, WebMcpToolInit } from "@/lib/webmcp";
 import {
   Education,
@@ -116,6 +118,7 @@ const describeTimeline = ({ from, to }: Timeline) =>
 export const createResumeTools = (
   getForm: () => UseFormReturn<Resume>,
   getContext: () => ResumeMcpContext,
+  submitReview: (review: AgentReview) => void,
 ): WebMcpTool[] => {
   const read = () => getForm().getValues();
 
@@ -180,6 +183,142 @@ export const createResumeTools = (
         "Returns the resume currently in the editor as JSON, including the index of every employment and education entry. Also reports which language the editor is showing, whether that language is a translation of the primary version, and whether it exists yet — writes are refused while it does not. Call this before updating or removing an entry.",
       annotations: { readOnlyHint: true },
       execute: () => toolText(JSON.stringify(toAgentView(read(), getContext()), null, 2)),
+    }),
+
+    /*
+      The one tool here that answers "is this resume any good" rather than "what
+      does it say". Without it an agent writing a resume has no feedback: it
+      calls get-resume, reads its own prose back, and has to decide from taste
+      alone whether to keep going. Scoring gives it a signal it can re-measure,
+      so "keep editing until this stops improving" becomes a condition it can
+      actually check rather than a feeling.
+
+      Read-only, and deliberately not wrapped in `defineWriteTool`: it mutates
+      nothing, so it should be free to call between every edit — which is the
+      loop it exists to support.
+    */
+    defineTool({
+      name: "score-resume",
+      title: "Score the resume",
+      description:
+        "Grades the resume in the editor against twelve rules — quantified results, action verbs, bullet and overall length, section completeness, contact details — and returns the score out of 100 with every failing check, what it is worth, and the exact entry and bullet indexes the check is complaining about. Those indexes are the same ones get-resume reports. Runs entirely in the browser and changes nothing, so it is safe to call after each edit to see whether the score moved. Reports findings only; deciding what to do about them is yours.",
+      annotations: { readOnlyHint: true },
+      execute: () =>
+        toolText(JSON.stringify(buildAgentReport(read(), getContext().activeLang), null, 2)),
+    }),
+
+    /*
+      The counterpart to `score-resume`, and the one tool that carries judgement
+      rather than measurement.
+
+      `score-resume` is exact about shape and blind to meaning: "Increased
+      synergy by 200%" satisfies every rule and says nothing, and no word list
+      separates 管理團隊 from 管理層. That is the gap this fills — an agent reads
+      the content and writes its notes back into the panel.
+
+      It carries no score, and that is the point. The header number is a property
+      of the resume: same document, same 55, computed from fixed weights whether
+      or not an agent ever visits. A model-supplied number would make it a
+      property of one conversation instead — different on every run, absent for
+      the visitors who have no agent at all, and unable to move as you type.
+      Notes compose with the rules; a second, rival score would not.
+
+      Not wrapped in `defineWriteTool`: that guard exists because writes land in
+      whichever locale is showing and a missing translation would silently
+      swallow them. A review is commentary held in memory for this session, not
+      a document edit, so neither concern applies.
+    */
+    defineTool<{ summary?: string; notes?: unknown }>({
+      name: "submit-review",
+      title: "Submit a review of the resume",
+      description:
+        "Publishes your qualitative review of the resume into the editor's score panel, where the user sees it under a heading that credits it to their assistant. Use it for the judgements the rules cannot make: whether a bullet is specific enough to survive a follow-up question, whether a claim is vague or unsupported, whether the profile matches the target job. Each note may point at a section and entry index — the same indexes get-resume reports — and may carry a suggested rewrite. Submitting replaces any previous review. This does not change the resume and does not affect the score, which stays rule-based; call the update tools separately if the user wants a suggestion applied.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          summary: {
+            type: "string",
+            description: "One or two sentences on the resume as a whole.",
+          },
+          notes: {
+            type: "array",
+            description: `Specific observations, at most ${MAX_REVIEW_NOTES}.`,
+            items: {
+              type: "object",
+              properties: {
+                comment: { type: "string", description: "What is wrong or worth changing." },
+                section: {
+                  type: "string",
+                  enum: ["employmentHistory", "projects", "profile", "skills"],
+                  description: "Where this applies. Omit for a whole-document note.",
+                },
+                entryIndex: { type: "number", description: "Zero-based index from get-resume." },
+                bulletIndex: { type: "number", description: "Zero-based index within the entry." },
+                quote: { type: "string", description: "The text being commented on." },
+                suggestion: {
+                  type: "string",
+                  description: "A concrete replacement, if you have one.",
+                },
+              },
+              required: ["comment"],
+            },
+          },
+        },
+        required: ["summary"],
+      },
+      execute: ({ summary, notes }) => {
+        /* Arguments arrive as untrusted JSON that only nominally matches the
+           schema above — see `WebMcpTool`. Everything below narrows it rather
+           than trusting it, because these strings are rendered into the panel. */
+        const text = typeof summary === "string" ? summary.trim() : "";
+        if (text === "") {
+          return toolError("A review needs a summary: one or two sentences on the resume overall.");
+        }
+
+        const rawNotes = Array.isArray(notes) ? notes : [];
+        const clean: ReviewNote[] = [];
+
+        for (const item of rawNotes) {
+          if (typeof item !== "object" || item === null) continue;
+
+          const note = item as Record<string, unknown>;
+          const comment = typeof note.comment === "string" ? note.comment.trim() : "";
+          if (comment === "") continue;
+
+          const section = note.section;
+          const asIndex = (value: unknown) =>
+            typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : undefined;
+          const asText = (value: unknown) =>
+            typeof value === "string" && value.trim() !== "" ? value.trim() : undefined;
+
+          clean.push({
+            comment,
+            section:
+              section === "employmentHistory" ||
+              section === "projects" ||
+              section === "profile" ||
+              section === "skills"
+                ? section
+                : undefined,
+            entryIndex: asIndex(note.entryIndex),
+            bulletIndex: asIndex(note.bulletIndex),
+            quote: asText(note.quote),
+            suggestion: asText(note.suggestion),
+          });
+        }
+
+        // Capped so one submission cannot turn the drawer into an endless scroll.
+        const kept = clean.slice(0, MAX_REVIEW_NOTES);
+        const dropped = clean.length - kept.length;
+
+        submitReview({ summary: text, notes: kept, submittedAt: Date.now() });
+
+        return toolText(
+          `Review published to the score panel: ${kept.length} ${
+            kept.length === 1 ? "note" : "notes"
+          }.${dropped > 0 ? ` ${dropped} beyond the ${MAX_REVIEW_NOTES}-note limit were dropped.` : ""} The user can see it under "From your assistant". The score itself is unchanged — it stays rule-based.`,
+        );
+      },
     }),
 
     defineWriteTool<Partial<Pick<Resume, "name" | "wantedJob" | "city" | "phone" | "email">>>({

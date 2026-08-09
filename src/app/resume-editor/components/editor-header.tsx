@@ -17,6 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { LangPair } from "@/lib/translator";
 import { applyTheme } from "@/lib/theme-transition";
+import { AgentReview } from "@/lib/resume-score/review";
+import { ScoreReport } from "@/lib/resume-score/rules";
 import { WebMcpStatus } from "@/lib/webmcp";
 import { ResumeLang } from "@/types/resume-doc";
 import { Resume } from "@/types/resume";
@@ -25,6 +27,7 @@ import type useTemplateOptions from "../hooks/useTemplateOptions";
 import DownloadButton from "./template/download-button";
 import LanguageSwitcher from "./language-switcher";
 import OnDeviceAiButton from "./on-device-ai/on-device-ai-button";
+import ScoreButton from "./score/score-button";
 
 interface EditorHeaderProps {
   resume: Resume;
@@ -36,6 +39,9 @@ interface EditorHeaderProps {
   mcpToolCount: number;
   pair: LangPair | null;
   pairLabel: string | null;
+  score: ScoreReport;
+  review: AgentReview | null;
+  onClearReview: () => void;
   /** Desktop only: at mobile widths the tools ride in the preview dialog. */
   showTools: boolean;
 }
@@ -71,6 +77,9 @@ const EditorHeader: FC<EditorHeaderProps> = ({
   mcpToolCount,
   pair,
   pairLabel,
+  score,
+  review,
+  onClearReview,
   showTools,
 }) => {
   const { setTheme, resolvedTheme } = useTheme();
@@ -99,6 +108,18 @@ const EditorHeader: FC<EditorHeaderProps> = ({
         />
 
         <div className="flex items-center justify-end gap-2">
+          {/* The score stays in the bar at every width, unlike Download and the
+              AI button beside it. It is the one control here that is also a
+              readout: hidden on mobile it would not merely be harder to reach,
+              it would stop telling you anything, and the number is most of what
+              this feature is worth. */}
+          <ScoreButton
+            report={score}
+            resume={resume}
+            review={review}
+            onClearReview={onClearReview}
+          />
+
           {/* Download is the one thing anybody came here to do, so it is the one
               thing that stays a button. Appearance moved out of this bar entirely
               — it now lives on the preview, where you can see what it changes. */}

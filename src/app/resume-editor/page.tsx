@@ -16,6 +16,8 @@ import AppearancePanel from "./components/template/appearance-panel";
 import { useResumeMcp } from "./hooks/useResumeMcp";
 import { useResumeDoc } from "./hooks/useResumeDoc";
 import { useResumeTranslation } from "./hooks/useResumeTranslation";
+import { useResumeScore } from "./hooks/useResumeScore";
+import { useAgentReview } from "./hooks/useAgentReview";
 import useTemplateOptions from "./hooks/useTemplateOptions";
 import { DEFAULT_RESUME } from "./constants";
 
@@ -32,13 +34,23 @@ const ResumeEditorPage = () => {
   const viewingTranslation = doc.activeLang !== doc.primaryLang;
 
   const matches = useMediaQuery("(min-width: 1024px)");
+  /* Holds whatever an agent last submitted through `submit-review`. Declared
+     before the tools are registered, because one of them writes to it. */
+  const agentReview = useAgentReview();
   // `doc` carries the language context the tools need: which locale the form is
   // bound to, which one is the source of truth, and whether the active one exists.
-  const { status: mcpStatus, toolCount: mcpToolCount } = useResumeMcp(formMethods, doc);
+  const { status: mcpStatus, toolCount: mcpToolCount } = useResumeMcp(
+    formMethods,
+    doc,
+    agentReview.submit,
+  );
   // Held here rather than in the preview because two places drive it: the
   // appearance panel floating over the desktop preview, and the mobile dialog's
   // header. Both have to move the same sheet.
   const templateOptions = useTemplateOptions();
+  // Scored against the locale on screen, not the primary one — the rules read
+  // the words you are looking at.
+  const score = useResumeScore(resume, doc.activeLang);
   /* Which of the two things the editing column is showing. A mode rather than a
      route: the form is never unmounted, so nothing it holds is lost while the
      appearance panel is up. */
@@ -86,6 +98,9 @@ const ResumeEditorPage = () => {
         mcpToolCount={mcpToolCount}
         pair={translation.pair}
         pairLabel={pairLabel}
+        score={score}
+        review={agentReview.review}
+        onClearReview={agentReview.clear}
         showTools={matches}
       />
       <main className="min-h-0 flex-1">

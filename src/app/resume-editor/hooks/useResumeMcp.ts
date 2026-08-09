@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 
+import { AgentReview } from "@/lib/resume-score/review";
 import { isWebMcpSupported, registerTools, WebMcpStatus } from "@/lib/webmcp";
 import { Resume } from "@/types/resume";
 import { createResumeTools, ResumeMcpContext } from "../webmcp/resume-tools";
@@ -24,6 +25,7 @@ interface UseResumeMcpResult {
 export const useResumeMcp = (
   formMethods: UseFormReturn<Resume>,
   context: ResumeMcpContext,
+  onSubmitReview: (review: AgentReview) => void,
 ): UseResumeMcpResult => {
   const [status, setStatus] = useState<WebMcpStatus>("checking");
   const [toolCount, setToolCount] = useState(0);
@@ -38,6 +40,11 @@ export const useResumeMcp = (
     contextRef.current = context;
   }, [context]);
 
+  const submitReviewRef = useRef(onSubmitReview);
+  useEffect(() => {
+    submitReviewRef.current = onSubmitReview;
+  }, [onSubmitReview]);
+
   useEffect(() => {
     if (!isWebMcpSupported()) {
       setStatus("unsupported");
@@ -49,6 +56,7 @@ export const useResumeMcp = (
     const tools = createResumeTools(
       () => formRef.current,
       () => contextRef.current,
+      (review) => submitReviewRef.current(review),
     );
 
     registerTools(tools, controller.signal)
