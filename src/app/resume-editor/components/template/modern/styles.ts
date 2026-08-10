@@ -22,6 +22,18 @@ export const CONTENT_COLOR = "#2e404a";
 export const SECTION_SPACING = pt(32);
 export const ICON_SIZE = 20;
 
+/**
+ * The band kept clear at the top and bottom of *every* page.
+ *
+ * It lives on the `Page` rather than on the two columns because that is the only
+ * place either renderer repeats it: @react-pdf re-applies a page's padding to
+ * each page it spills onto, and `use-pagination` reads this same padding back off
+ * the element to decide where the preview's breaks may land. As the columns' own
+ * padding it only ever indented the first page — page two opened with its first
+ * line against the trim.
+ */
+export const PAGE_PADDING_Y = pt(25);
+
 export const styles = StyleSheet.create({
   /*
    * `boxSizing` is load-bearing, not decoration: yoga treats `minHeight` as
@@ -34,6 +46,8 @@ export const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     minHeight: PAGE_MIN_HEIGHT,
+    paddingTop: PAGE_PADDING_Y,
+    paddingBottom: PAGE_PADDING_Y,
     backgroundColor: "#fff",
     fontFamily: SANS,
     fontSize: pt(14),
@@ -44,15 +58,41 @@ export const styles = StyleSheet.create({
   sidebar: {
     display: "flex",
     flexDirection: "column",
+    position: "relative",
     width: "38%",
-    padding: `${pt(25)} ${pt(18)} ${pt(25)} ${pt(24)}`,
+    paddingRight: pt(18),
+    paddingLeft: pt(24),
     rowGap: SECTION_SPACING,
+  },
+
+  /*
+   * The tint itself, as a layer behind the sidebar's contents rather than the
+   * sidebar's own `backgroundColor`.
+   *
+   * The page's vertical padding is what keeps text off the trim on every page,
+   * and a background painted on the padded column would stop at that padding —
+   * leaving a white band across the top and bottom of a panel whose whole point
+   * is to run edge to edge. Taken out of the flow it can be pushed back over the
+   * padding and given the full height of the page. It is the sidebar's first
+   * child, so the contents paint over it.
+   */
+  sidebarPanel: {
+    position: "absolute",
+    top: `-${PAGE_PADDING_Y}`,
+    bottom: `-${PAGE_PADDING_Y}`,
+    left: 0,
+    right: 0,
+    // The floor is a page: in the PDF the panel is stretched by nothing else, and
+    // it has to reach the foot of the sheet even on a resume that stops halfway.
+    // `bottom` is what carries it past one page in the preview, where the sidebar
+    // is as tall as the whole run rather than as tall as a page.
+    minHeight: PAGE_MIN_HEIGHT,
   },
   content: {
     display: "flex",
     flexDirection: "column",
     width: "62%",
-    padding: `${pt(25)} ${pt(24)} ${pt(25)} ${pt(16)}`,
+    padding: `0 ${pt(24)} 0 ${pt(16)}`,
     rowGap: SECTION_SPACING,
   },
 
