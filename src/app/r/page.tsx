@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { decodeSharePayload, SharePayload } from "@/lib/share-link";
 import { getTemplate } from "@/app/resume-editor/components/template/registry";
+import ResumeIframeCSR from "@/app/resume-editor/components/template/resume-iframe";
 
 /**
  * The read-only end of a share link.
@@ -14,10 +15,13 @@ import { getTemplate } from "@/app/resume-editor/components/template/registry";
  * `window.location.hash` after mount — which is also why there is a loading
  * state at all for a page with no network calls.
  *
- * The resume is drawn with the template's own `buildHtml`, the same self-contained
- * document the HTML export produces, dropped into a sandboxed iframe. That reuses
- * the one renderer that is already designed to stand alone, and the sandbox means
- * a hand-crafted payload has no reach into this page.
+ * The sheet is the editor's own preview — `ResumeIframe` around
+ * `template.render(...)` — not a second renderer built for this page. It already
+ * scales A4 to the space it is given, paginates with the same rules the PDF uses,
+ * and comes with its page pager, so a shared resume breaks across pages exactly
+ * where the downloaded PDF does. The alternative, dropping the HTML export into an
+ * iframe, cannot page: that document is one continuous column that only becomes
+ * sheets under `@media print`.
  */
 
 type State =
@@ -98,19 +102,18 @@ const SharedResumePage = () => {
   }
 
   const { resume, templateId, backgroundColor } = state.payload;
-  const html = getTemplate(templateId).buildHtml({ resume, backgroundColor });
 
   return (
-    <main className="min-h-dvh bg-muted/40 py-8">
-      <div className="mx-auto w-full max-w-[860px] px-4">
-        <iframe
-          // No allow-scripts: the payload came from a URL a stranger can write,
-          // and the exported document is static markup that needs none.
-          sandbox=""
-          title={`${resume.name || "Shared"} — resume`}
-          srcDoc={html}
-          className="h-[1123px] w-full rounded-sm border-0 bg-white shadow-[0_18px_50px_-20px_rgba(23,21,15,0.45)]"
-        />
+    // The same wash the editor's preview pane uses, so the sheet reads as paper on
+    // a desk rather than white on white.
+    <main className="min-h-dvh bg-muted/40">
+      {/* `px-6` is CROP_MARK_GUTTER: the preview draws crop marks outside the trim,
+          and this box clips. The sheet sizes itself to whatever room it is given,
+          so the width cap is what keeps it from growing past 1:1 on a wide screen. */}
+      <div className="mx-auto w-full max-w-[860px] px-6">
+        <ResumeIframeCSR>
+          {getTemplate(templateId).render({ resume, backgroundColor })}
+        </ResumeIframeCSR>
       </div>
     </main>
   );
