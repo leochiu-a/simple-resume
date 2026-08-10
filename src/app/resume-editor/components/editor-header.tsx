@@ -42,6 +42,9 @@ interface EditorHeaderProps {
   score: ScoreReport;
   review: AgentReview | null;
   onClearReview: () => void;
+  /** Opens the share-link import dialog, which the page owns. Passed through to
+   *  the Share menu, where importing sits beside the exports. */
+  onImport: () => void;
   /** Desktop only: at mobile widths the tools ride in the preview dialog. */
   showTools: boolean;
 }
@@ -80,6 +83,7 @@ const EditorHeader: FC<EditorHeaderProps> = ({
   score,
   review,
   onClearReview,
+  onImport,
   showTools,
 }) => {
   const { setTheme, resolvedTheme } = useTheme();
@@ -120,11 +124,17 @@ const EditorHeader: FC<EditorHeaderProps> = ({
             onClearReview={onClearReview}
           />
 
-          {/* Download is the one thing anybody came here to do, so it is the one
-              thing that stays a button. Appearance moved out of this bar entirely
-              — it now lives on the preview, where you can see what it changes. */}
+          {/* Getting the resume out is the one thing anybody came here to do, so
+              Share is the one thing that stays a button. Appearance moved out of
+              this bar entirely — it now lives on the preview, where you can see
+              what it changes. */}
           {showTools && (
-            <DownloadButton resume={resume} backgroundColor={backgroundColor} template={template} />
+            <DownloadButton
+              resume={resume}
+              backgroundColor={backgroundColor}
+              template={template}
+              onImport={onImport}
+            />
           )}
 
           {/* On-device AI is the thing that makes this editor unusual, and it
@@ -134,9 +144,9 @@ const EditorHeader: FC<EditorHeaderProps> = ({
               Its own trigger fixes both: the capability is visible in the bar,
               and the menu is back to being a short list of settings.
 
-              Right of Download, not left: the icon buttons on this side of the
+              Right of Share, not left: the icon buttons on this side of the
               bar are the secondary controls, and putting one before the primary
-              action pushes Download off the bar's right edge. */}
+              action pushes Share off the bar's right edge. */}
           {showTools && (
             <OnDeviceAiButton
               mcpStatus={mcpStatus}

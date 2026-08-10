@@ -1,5 +1,5 @@
 import { usePDF } from "@react-pdf/renderer";
-import { Check, ChevronDown, Download } from "lucide-react";
+import { Check, ChevronDown, Share } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
@@ -8,37 +8,105 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { buildResumeMarkdown } from "@/lib/resume-markdown";
+import { buildShareUrl } from "@/lib/share-link";
 import { Resume } from "@/types/resume";
 
 import { TemplateDefinition } from "./registry";
 
+const COPY_ANNOUNCEMENT = {
+  markdown: "Resume copied as Markdown",
+  link: "Share link copied",
+  none: "",
+} as const;
+
 /**
- * One button for every way of taking the resume out of the editor.
+ * A menu item that confirms a copy in place.
  *
- * Two full-width buttons side by side were the widest thing in the nav, and
- * exporting is a thing you do once at the end — worth a second click to keep
- * the bar calm the rest of the time. The Markdown copy rides in here for the
- * same reason, even though it lands on the clipboard rather than on disk.
+ * `preventDefault` on select keeps the menu open, which is the only place the copy
+ * can be confirmed — the click that triggers it would otherwise close the one
+ * surface able to say so.
+ */
+const CopyItem = ({
+  label,
+  copied,
+  onCopy,
+}: {
+  label: string;
+  copied: boolean;
+  onCopy: () => void;
+}) => (
+  <DropdownMenuItem
+    data-copied={copied}
+    onSelect={(event) => event.preventDefault()}
+    onClick={onCopy}
+  >
+    {/* Both labels occupy the same grid cell, so the item is always as wide as the
+        longer of the two and confirming the copy cannot resize the menu under the
+        pointer. They cross-fade on `opacity` rather than `visibility`: that keeps
+        the resting label in the accessibility tree, so the item's name stays put
+        while the tick — which on its own says nothing — is hidden from it, and the
+        live region in the parent is what actually announces the copy. */}
+    <span className="grid">
+      <span className={cn("col-start-1 row-start-1 transition-opacity", copied && "opacity-0")}>
+        {label}
+      </span>
+      <span
+        aria-hidden
+        className={cn(
+          "col-start-1 row-start-1 flex items-center gap-2 transition-opacity",
+          !copied && "opacity-0",
+        )}
+      >
+        <Check className="size-4" />
+        Copied
+      </span>
+    </span>
+  </DropdownMenuItem>
+);
+
+/**
+ * One button for every way a resume moves in or out of the editor.
+ *
+ * Two full-width buttons side by side were the widest thing in the nav, and none of
+ * this is done while writing — worth a second click to keep the bar calm the rest
+ * of the time.
+ *
+ * The label has moved twice, each time because the menu outgrew it. "Download" was
+ * already a stretch for the Markdown copy and plainly wrong once a share link
+ * joined it: two of the four items hand back a string, not a file. "Export" fixed
+ * that and then broke in turn when importing arrived — a menu that reads a resume
+ * *in* is not an export menu.
+ *
+ * "Share" covers all of it, and is what the feature is actually called: a link is
+ * how a resume leaves this editor and how it gets back in. Import sits under a
+ * separator at the bottom, because it is the one item here that overwrites rather
+ * than emits — grouping is what keeps a destructive action from looking like
+ * another way to save a file.
  */
 const DownloadButton = ({
   resume,
   backgroundColor,
   template,
+  onImport,
 }: {
   resume: Resume;
   backgroundColor: string;
   template: TemplateDefinition;
+  onImport: () => void;
 }) => {
   const [instance, update] = usePDF({
     document: template.render({ resume, backgroundColor }),
   });
   const [startDownload, setStartDownload] = useState(false);
-  const [copied, setCopied] = useState(false);
+  /* Which item last confirmed a copy, rather than a boolean per item: only one
+     tick can be showing at a time, and a new copy must clear the other's. */
+  const [copied, setCopied] = useState<"markdown" | "link" | null>(null);
   const copiedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => () => clearTimeout(copiedTimer.current), []);
@@ -76,72 +144,63 @@ const DownloadButton = ({
    * The one export that does not produce a file: Markdown for pasting into an AI
    * agent, which reads headings and bullets far better than a laid-out PDF.
    */
-  const copyMarkdown = async () => {
+  const confirmCopy = async (what: "markdown" | "link", text: () => Promise<string> | string) => {
     try {
-      await navigator.clipboard.writeText(buildResumeMarkdown(resume));
-      setCopied(true);
+      await navigator.clipboard.writeText(await text());
+      setCopied(what);
       clearTimeout(copiedTimer.current);
-      copiedTimer.current = setTimeout(() => setCopied(false), 2000);
+      copiedTimer.current = setTimeout(() => setCopied(null), 2000);
     } catch {
       // Denied clipboard permission, or an insecure origin. Nothing was copied,
       // so the item must not claim otherwise.
-      setCopied(false);
+      setCopied(null);
     }
   };
+
+  const copyMarkdown = () => confirmCopy("markdown", () => buildResumeMarkdown(resume));
+
+  /**
+   * A link that carries the whole resume in its fragment. Nothing is uploaded —
+   * see `share-link` for why the payload travels in the URL rather than behind it.
+   */
+  const copyShareLink = () =>
+    confirmCopy("link", () =>
+      buildShareUrl(window.location.origin, {
+        resume,
+        templateId: template.id,
+        backgroundColor,
+      }),
+    );
 
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button type="button" aria-label="Download">
+          <Button type="button" aria-label="Share">
             {/* The spinner takes the icon's place rather than the whole label: a
                 button that briefly turns into an unlabelled box reads as broken. */}
-            {instance.loading ? <LoadingSpinner /> : <Download className="size-4" />}
-            <span className="ml-2">Download</span>
+            {instance.loading ? <LoadingSpinner /> : <Share className="size-4" />}
+            <span className="ml-2">Share</span>
             <ChevronDown className="ml-1 size-3 opacity-60" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={downloadPdf}>Download PDF</DropdownMenuItem>
           <DropdownMenuItem onClick={downloadHtml}>Download HTML</DropdownMenuItem>
-          {/* `preventDefault` keeps the menu open, which is the only place the copy
-              can be confirmed — the click that triggers it would otherwise close
-              the one surface able to say so. */}
-          <DropdownMenuItem
-            data-copied={copied}
-            onSelect={(event) => event.preventDefault()}
-            onClick={copyMarkdown}
-          >
-            {/* Both labels occupy the same grid cell, so the item is always as wide
-                as the longer of the two and confirming the copy cannot resize the
-                menu under the pointer. They cross-fade on `opacity` rather than
-                `visibility`: that keeps the resting label in the accessibility tree,
-                so the item's name stays "Copy as Markdown" while the tick — which on
-                its own says nothing — is hidden from it, and the live region below is
-                what actually announces the copy. */}
-            <span className="grid">
-              <span
-                className={cn("col-start-1 row-start-1 transition-opacity", copied && "opacity-0")}
-              >
-                Copy as Markdown
-              </span>
-              <span
-                aria-hidden
-                className={cn(
-                  "col-start-1 row-start-1 flex items-center gap-2 transition-opacity",
-                  !copied && "opacity-0",
-                )}
-              >
-                <Check className="size-4" />
-                Copied
-              </span>
-            </span>
-          </DropdownMenuItem>
+          <CopyItem label="Copy as Markdown" copied={copied === "markdown"} onCopy={copyMarkdown} />
+          <CopyItem label="Copy share link" copied={copied === "link"} onCopy={copyShareLink} />
+
+          {/* Below a rule, because everything above emits a copy of the resume and
+              this one replaces it. The two directions belong in the same menu — a
+              share link is how a resume leaves and how it returns — but not in the
+              same undifferentiated list. */}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onImport}>Import from link…</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu: a live region among the items would be a child of
           `role="menu"`, and the tick alone says nothing to a screen reader. */}
-      <output className="sr-only">{copied ? "Resume copied as Markdown" : ""}</output>
+      <output className="sr-only">{COPY_ANNOUNCEMENT[copied ?? "none"]}</output>
     </>
   );
 };
