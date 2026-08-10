@@ -5,23 +5,29 @@ import { useLayoutEffect, useState } from "react";
  *
  * The preview is one continuous run of content shown through an A4-tall window,
  * so left alone a break lands wherever the sheet happens to run out — through the
- * middle of a line of text. @react-pdf does better than that in the PDF, and this
- * mirrors its two rules:
+ * middle of a line of text, and hard against the trim. @react-pdf does better
+ * than that in the PDF, and this mirrors what it does:
  *
- * - a block marked `wrap={false}` (see `avoid-break.tsx`) moves whole onto the
- *   next page rather than being split;
- * - everything else may split, but only between lines of text.
+ * - every page keeps a margin clear at its top and bottom, which is the `Page`'s
+ *   own padding — @react-pdf re-applies it to each page the content spills onto,
+ *   while the preview's single copy of that CSS only ever indents the first and
+ *   the last;
+ * - nothing may reach into that margin: a block that would moves whole onto the
+ *   next page, whether or not it is marked `wrap={false}` (see `avoid-break.tsx`).
  *
- * Both are enforced the same way: the offending element gets a top margin that
- * pushes the break down to a place it is allowed to happen. The margins open real
- * whitespace, which is what makes it safe to show the content through a hard-edged
- * window at all. The second rule is the cheaper of the two — it costs at most one
- * line of blank space, where treating a paragraph as unbreakable would cost the
- * rest of the page.
+ * Both are enforced with a top margin on the offending element, which pushes it
+ * down to somewhere it is allowed to sit. Those margins open real whitespace,
+ * which is what makes it safe to show the content through a hard-edged window at
+ * all.
  *
  * It approximates @react-pdf's layout engine rather than sharing it, so the page
- * count is not guaranteed identical for pathological content — a block taller than
- * a whole page still has to be split, exactly as the PDF splits it.
+ * count is not guaranteed identical for pathological content. The one place it
+ * knowingly falls short: a single run of text taller than a whole page has to
+ * split, and no margin can open a page's margins around a split *inside* an
+ * element — a margin moves every line of it by the same amount. Such a run breaks
+ * between lines, at the trim, where the PDF gives it the page's margins. Text
+ * arrives as one element per typed line (see `summary.tsx`), so this is the
+ * single-paragraph-longer-than-a-page case rather than the long-profile one.
  */
 
 const AVOID_BREAK = "[data-avoid-break]";
@@ -39,6 +45,28 @@ const NUDGED = "data-page-nudged";
  * absorbs the 1/64px that browsers round layout to.
  */
 const OVERSHOOT_TOLERANCE_PX = 2;
+
+/**
+ * The band each page keeps clear at its top and bottom, read off the sheet rather
+ * than configured here.
+ *
+ * @react-pdf re-applies a page's padding to every page the content spills onto, so
+ * that padding *is* the margin the printed resume has. The preview is one
+ * continuous run of content behind an A4 window, where the same CSS padding only
+ * ever indents the first and last page — so the value has to be read back and
+ * honoured at each break by hand. Taking it from the element keeps the two
+ * renderers agreeing by construction: a template that changes its page padding
+ * moves the preview's breaks with it.
+ */
+const safeArea = (content: HTMLElement) => {
+  const page = content.querySelector<HTMLElement>("page");
+  const style = page?.ownerDocument.defaultView?.getComputedStyle(page);
+
+  return {
+    top: Number.parseFloat(style?.paddingTop ?? "") || 0,
+    bottom: Number.parseFloat(style?.paddingBottom ?? "") || 0,
+  };
+};
 
 /**
  * Where a nudge has to be applied to actually move something.
@@ -103,28 +131,70 @@ export const paginate = (content: HTMLElement, pageHeight: number): number => {
   };
 
   const sheetTop = content.getBoundingClientRect().top;
+  const safe = safeArea(content);
+
+  /** How much of a page is left to put content on, once its margins are taken. */
+  const usableHeight = pageHeight - safe.top - safe.bottom;
+
+  /** Which page an offset falls on, and what that page allows. */
+  const placement = (top: number) => {
+    const index = Math.floor(top / pageHeight);
+    const boundary = (index + 1) * pageHeight;
+
+    return {
+      index,
+      /** The page edge itself, which only content too tall to place still meets. */
+      boundary,
+      /** Where content may begin on this page. */
+      start: index * pageHeight + safe.top,
+      /** How far down this page content may reach. */
+      limit: boundary - safe.bottom,
+      /** Where content lands when it gives up and starts the next page. */
+      next: boundary + safe.top,
+    };
+  };
 
   for (const element of candidates) {
     // Reading the rect flushes layout, so each element is measured against the
     // shifts already applied above it.
     const rect = element.getBoundingClientRect();
     const top = rect.top - sheetTop;
-    const boundary = (Math.floor(top / pageHeight) + 1) * pageHeight;
+    const { index, boundary, start, limit, next } = placement(top);
 
-    // Comfortably clear of the boundary, or already ending on it.
-    if (top + rect.height - boundary <= OVERSHOOT_TOLERANCE_PX) continue;
-
-    if (element.hasAttribute("data-avoid-break")) {
-      // Too tall to fit a page of its own: it has to split, as it does in the PDF.
-      if (rect.height > pageHeight) continue;
-
-      nudge(element, boundary - top);
+    // Stranded in a page's top margin — a gap between two blocks can drop
+    // something there without it ever reaching far enough down to be caught by
+    // the rule below. The first page is left alone: nothing has been moved onto
+    // it, so anything sitting above the margin there is the template's own doing.
+    if (index > 0 && start - top > OVERSHOOT_TOLERANCE_PX) {
+      nudge(shiftTarget(element, content), start - top);
       continue;
     }
 
-    // Text may split, but not through a line. Find the line the boundary lands
-    // inside and move it down to start the next page; if the boundary already
-    // falls in the gap between two lines, there is nothing to fix.
+    // Comfortably clear of the page's bottom margin, or ending exactly on it.
+    if (top + rect.height - limit <= OVERSHOOT_TOLERANCE_PX) continue;
+
+    /*
+     * It fits on a page, so it moves onto the next one whole — text as much as an
+     * unbreakable block.
+     *
+     * Splitting text between its lines instead is not an option a margin can
+     * offer, however much cheaper it would be. A margin moves every line of the
+     * element by the same amount: a shift big enough to carry the overflowing
+     * line past the boundary drags the line above it down into the margin the
+     * shift was opening. There is no value that leaves one line behind and moves
+     * the next, and pushing repeatedly only walks the whole block down the sheet.
+     */
+    if (rect.height <= usableHeight) {
+      nudge(shiftTarget(element, content), next - top);
+      continue;
+    }
+
+    // Taller than any page: it has to split, exactly as the PDF splits it, and
+    // for the same reason the margins cannot be opened around the split. What is
+    // still worth doing is keeping the break out of the middle of a line — the
+    // line the page edge falls through starts the next page instead.
+    if (element.hasAttribute("data-avoid-break")) continue;
+
     const straddled = lineBoxes(element, sheetTop).find(
       (line) =>
         line.top < boundary - OVERSHOOT_TOLERANCE_PX &&

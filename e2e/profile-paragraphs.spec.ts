@@ -51,17 +51,18 @@ test.describe("profile paragraphs", () => {
         .locator("text")
         .filter({ hasText: /paragraph|line,/i });
 
-      // One element per paragraph rather than one holding all three.
-      await expect(blocks).toHaveCount(3);
+      // One element per line the writer typed — three paragraphs, the last of
+      // which holds two — rather than one element holding all of it. The split
+      // goes down to the line because that is the grain the preview's paginator
+      // breaks on; see `summary.tsx`.
+      await expect(blocks).toHaveCount(4);
 
-      // The newline inside the third is a real break, so it occupies one more
-      // line box than its text would otherwise wrap to.
-      const lines = await blocks.last().evaluate((element) => {
-        const range = element.ownerDocument.createRange();
-        range.selectNodeContents(element);
-        return Array.from(range.getClientRects()).length;
-      });
-      expect(lines).toBeGreaterThan(1);
+      // The newline inside the third paragraph is a real break, so the line after
+      // it starts below the line before it rather than beside it.
+      const [gamma, delta] = await blocks.evaluateAll((elements) =>
+        elements.slice(-2).map((element) => element.getBoundingClientRect()),
+      );
+      expect(delta.top).toBeGreaterThanOrEqual(gamma.bottom - 1);
     });
 
     test(`${template} keeps them in the exported PDF`, async ({ page }) => {

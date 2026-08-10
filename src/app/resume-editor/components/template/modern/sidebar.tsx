@@ -27,7 +27,9 @@ const Sidebar = ({ resume, panel }: { resume: Resume; panel: PanelColors }) => {
   const icon = { disc: panel.text, glyph: panel.background };
 
   return (
-    <View style={{ ...styles.sidebar, backgroundColor: panel.background, color: panel.text }}>
+    <View style={{ ...styles.sidebar, color: panel.text }}>
+      <View style={{ ...styles.sidebarPanel, backgroundColor: panel.background }} />
+
       <View style={styles.identity}>
         <Text style={styles.name}>{resume.name}</Text>
         <Text style={styles.jobTitle}>{resume.wantedJob}</Text>

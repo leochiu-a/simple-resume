@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { preview, selectTemplate } from "./helpers";
+import { MANY_ENTRIES, seedResume, UNBROKEN } from "./seeds";
 
 /**
  * The preview lays the resume out as one sheet per page. What makes that useful
@@ -20,68 +21,6 @@ const A4_HEIGHT_PX = (842 * 4) / 3;
  * would fail on arithmetic rather than on layout.
  */
 const SUBPIXEL_SLACK_PX = 1;
-
-/** Long enough to need a second sheet in every template. */
-const LONG_RESUME = {
-  name: "Ada Lovelace",
-  wantedJob: "Frontend Engineer",
-  email: "ada@example.com",
-  phone: "0975812267",
-  city: "Taipei",
-  profile:
-    "Frontend engineer with 5+ years building and architecting production web applications. Led technical planning across teams, introduced TypeScript and CI/CD, and cut bundle size by 40%.",
-  socialLinks: [
-    { name: "Medium", url: "https://medium.com" },
-    { name: "GitHub", url: "https://github.com" },
-  ],
-  skills: ["TypeScript", "React", "Next.js", "Vue", "GraphQL", "AWS"].map((name) => ({ name })),
-  educations: [
-    {
-      school: "Providence University",
-      degree: "Bachelor",
-      major: "Computer Science",
-      timeline: { from: "2014-09-01", to: "2018-07-01" },
-    },
-    {
-      school: "National Central University",
-      degree: "Master",
-      major: "Computer Science",
-      timeline: { from: "2018-08-01", to: "2020-08-01" },
-    },
-  ],
-  // Sized to overflow one page in every template, including the two-column ones
-  // whose wider content area fits considerably more than the single-column ones.
-  employmentHistory: [1, 2, 3, 4, 5].map((n) => ({
-    company: `Company ${n}`,
-    jobTitle: "Frontend Engineer",
-    timeline: { from: "2020-10-01", to: "2024-11-01" },
-    description: Array.from(
-      { length: 8 },
-      (_, i) =>
-        `Achievement ${i + 1} at company ${n}, written long enough that the line has to wrap onto a second line in every one of the four templates.`,
-    ).join("|"),
-  })),
-  projects: [],
-  visibility: {
-    profile: true,
-    socialLinks: true,
-    skills: true,
-    educations: true,
-    employmentHistory: true,
-    projects: true,
-  },
-};
-
-/** Bulk carried by one very long paragraph, so a break must land inside it. */
-const PARAGRAPH_RESUME = {
-  ...LONG_RESUME,
-  profile: Array.from(
-    { length: 40 },
-    (_, i) =>
-      `Sentence ${i + 1} of a single unbroken paragraph, long enough that the summary alone runs past the bottom of the first page.`,
-  ).join(" "),
-  employmentHistory: LONG_RESUME.employmentHistory.slice(0, 1),
-};
 
 /** The pager only exists once there is more than one page to move between. */
 const pager = (page: Page) => page.getByRole("navigation", { name: "Resume pages" });
@@ -151,9 +90,7 @@ test.describe("preview pagination", () => {
     test(`${label} splits a long resume across sheets without slicing an entry`, async ({
       page,
     }) => {
-      await page.addInitScript(
-        `localStorage.setItem("resume", ${JSON.stringify(JSON.stringify(LONG_RESUME))})`,
-      );
+      await seedResume(page, MANY_ENTRIES);
       await page.goto("/resume-editor");
       await selectTemplate(page, label);
 
@@ -181,9 +118,7 @@ test.describe("preview pagination", () => {
     });
 
     test(`${label} breaks a long paragraph between lines, never through one`, async ({ page }) => {
-      await page.addInitScript(
-        `localStorage.setItem("resume", ${JSON.stringify(JSON.stringify(PARAGRAPH_RESUME))})`,
-      );
+      await seedResume(page, UNBROKEN);
       await page.goto("/resume-editor");
       await selectTemplate(page, label);
       await expect(pager(page)).toBeVisible();
@@ -202,9 +137,7 @@ test.describe("preview pagination", () => {
   }
 
   test("every page is one click away, and the current one is marked", async ({ page }) => {
-    await page.addInitScript(
-      `localStorage.setItem("resume", ${JSON.stringify(JSON.stringify(LONG_RESUME))})`,
-    );
+    await seedResume(page, MANY_ENTRIES);
     await page.goto("/resume-editor");
     await expect(pager(page)).toBeVisible();
 
@@ -230,9 +163,7 @@ test.describe("preview pagination", () => {
   });
 
   test("the pager disappears when the resume shrinks back to one page", async ({ page }) => {
-    await page.addInitScript(
-      `localStorage.setItem("resume", ${JSON.stringify(JSON.stringify(LONG_RESUME))})`,
-    );
+    await seedResume(page, MANY_ENTRIES);
     await page.goto("/resume-editor");
 
     await expect(pager(page)).toBeVisible();
