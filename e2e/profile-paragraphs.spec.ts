@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { downloadPdf, preview, readPdfPageText, selectTemplate } from "./helpers";
+import { downloadHtml, downloadPdf, preview, readPdfPageText, selectTemplate } from "./helpers";
 
 /**
  * The profile is the one free-text field, and the paragraphs typed into it were
@@ -93,11 +93,10 @@ test.describe("profile paragraphs", () => {
       await selectTemplate(page, template);
 
       const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-      await page
-        .getByRole("button", { name: /download/i })
-        .first()
-        .click();
-      await page.getByRole("menuitem", { name: /html/i }).click();
+      // Via the helper rather than a `/download/i` regex of its own: the export
+      // menu's trigger is named there and nowhere else, so a rename cannot leave
+      // this file behind again.
+      await downloadHtml(page);
       const html = readFileSync((await (await downloadPromise).path())!, "utf8");
 
       // A paragraph each, and `pre-line` so the newline inside the third holds.
