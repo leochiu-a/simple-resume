@@ -22,12 +22,12 @@ export const closeAppearance = (page: Page) =>
 export const previewPane = (page: Page): Locator => page.locator("[data-preview-pane]");
 
 /**
- * The export menu. Named `downloadMenu` still because most of its callers are
- * about the two downloads; the trigger itself says "Export", since the menu also
- * hands back a Markdown copy and a share link.
+ * The share menu. Named `downloadMenu` still because most of its callers are about
+ * the two downloads; the trigger itself says "Share", since the menu covers every
+ * direction a resume moves — two files, two clipboard copies, and the import.
  */
 export const downloadMenu = (page: Page): Locator =>
-  page.getByRole("button", { name: "Export", exact: true });
+  page.getByRole("button", { name: "Share", exact: true });
 
 /**
  * Hover the preview first, then click.
@@ -99,6 +99,14 @@ export const copyShareLink = async (page: Page) => {
   await page.getByRole("menuitem", { name: "Copy share link" }).click();
 };
 
+/** Importing shares the Share menu with the exports, under a separator. */
+export const openImportDialog = async (page: Page) => {
+  await downloadMenu(page).click();
+  await page.getByRole("menuitem", { name: "Import from link…" }).click();
+
+  return page.getByRole("dialog");
+};
+
 /**
  * The editor's overflow menu — everything that is neither the wordmark, the
  * language tabs, nor the download button. Theme, the on-device AI row and the
@@ -117,7 +125,7 @@ export const setTheme = async (page: Page, mode: "Light" | "Dark" | "System") =>
 /**
  * Both browser-built-in capabilities — the WebMCP agent and the on-device
  * translator — report from a popover behind their own icon button, which sits
- * right of Export in the header and in the mobile preview dialog's toolbar.
+ * right of Share in the header and in the mobile preview dialog's toolbar.
  *
  * The rows spent a release inline in the overflow menu, so this was once just
  * `openOverflowMenu`. They have their own trigger again: a status nobody can find

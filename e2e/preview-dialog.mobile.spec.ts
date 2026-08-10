@@ -96,8 +96,8 @@ test.describe("mobile preview dialog", () => {
     await expect(dialog).toBeVisible();
 
     const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-    // The dialog header carries the same Export dropdown the nav does.
-    await dialog.getByRole("button", { name: "Export", exact: true }).click();
+    // The dialog header carries the same Share dropdown the nav does.
+    await dialog.getByRole("button", { name: "Share", exact: true }).click();
     await page.getByRole("menuitem", { name: "Download PDF" }).click();
     const download = await downloadPromise;
 

@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/components/ui/spinner";
@@ -70,27 +71,34 @@ const CopyItem = ({
 );
 
 /**
- * One button for every way of taking the resume out of the editor.
+ * One button for every way a resume moves in or out of the editor.
  *
- * Two full-width buttons side by side were the widest thing in the nav, and
- * exporting is a thing you do once at the end — worth a second click to keep
- * the bar calm the rest of the time.
+ * Two full-width buttons side by side were the widest thing in the nav, and none of
+ * this is done while writing — worth a second click to keep the bar calm the rest
+ * of the time.
  *
- * It is labelled "Export" rather than "Download" because only half of what is in
- * here downloads anything: the PDF and the HTML land on disk, but the Markdown
- * and the share link land on the clipboard. "Download" was already a stretch for
- * the Markdown copy and became plainly wrong once a link joined it — a menu whose
- * trigger promises a file and then hands back a URL is a small lie about what the
- * button does. "Export" covers all four without favouring the file ones.
+ * The label has moved twice, each time because the menu outgrew it. "Download" was
+ * already a stretch for the Markdown copy and plainly wrong once a share link
+ * joined it: two of the four items hand back a string, not a file. "Export" fixed
+ * that and then broke in turn when importing arrived — a menu that reads a resume
+ * *in* is not an export menu.
+ *
+ * "Share" covers all of it, and is what the feature is actually called: a link is
+ * how a resume leaves this editor and how it gets back in. Import sits under a
+ * separator at the bottom, because it is the one item here that overwrites rather
+ * than emits — grouping is what keeps a destructive action from looking like
+ * another way to save a file.
  */
 const DownloadButton = ({
   resume,
   backgroundColor,
   template,
+  onImport,
 }: {
   resume: Resume;
   backgroundColor: string;
   template: TemplateDefinition;
+  onImport: () => void;
 }) => {
   const [instance, update] = usePDF({
     document: template.render({ resume, backgroundColor }),
@@ -168,11 +176,11 @@ const DownloadButton = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button type="button" aria-label="Export">
+          <Button type="button" aria-label="Share">
             {/* The spinner takes the icon's place rather than the whole label: a
                 button that briefly turns into an unlabelled box reads as broken. */}
             {instance.loading ? <LoadingSpinner /> : <Share className="size-4" />}
-            <span className="ml-2">Export</span>
+            <span className="ml-2">Share</span>
             <ChevronDown className="ml-1 size-3 opacity-60" />
           </Button>
         </DropdownMenuTrigger>
@@ -181,6 +189,13 @@ const DownloadButton = ({
           <DropdownMenuItem onClick={downloadHtml}>Download HTML</DropdownMenuItem>
           <CopyItem label="Copy as Markdown" copied={copied === "markdown"} onCopy={copyMarkdown} />
           <CopyItem label="Copy share link" copied={copied === "link"} onCopy={copyShareLink} />
+
+          {/* Below a rule, because everything above emits a copy of the resume and
+              this one replaces it. The two directions belong in the same menu — a
+              share link is how a resume leaves and how it returns — but not in the
+              same undifferentiated list. */}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onImport}>Import from link…</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu: a live region among the items would be a child of

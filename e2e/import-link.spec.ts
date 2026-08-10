@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { collectConsoleErrors, copyShareLink, openOverflowMenu, preview } from "./helpers";
+import { collectConsoleErrors, copyShareLink, openImportDialog, preview } from "./helpers";
 
 /**
  * Importing is the other half of the share link: the resume travels inside the
@@ -21,13 +21,6 @@ const readClipboard = (page: Page) => page.evaluate(() => navigator.clipboard.re
  * these tests is which resume is loaded, not which field is labelled what.
  */
 const nameField = (page: Page) => page.locator('input[name="name"]');
-
-const openImportDialog = async (page: Page) => {
-  await openOverflowMenu(page);
-  await page.getByRole("menuitem", { name: "Import from link" }).click();
-
-  return page.getByRole("dialog");
-};
 
 const getShareLink = async (page: Page) => {
   await copyShareLink(page);

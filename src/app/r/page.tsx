@@ -104,9 +104,17 @@ const SharedResumePage = () => {
   const { resume, templateId, backgroundColor } = state.payload;
 
   return (
-    // The same wash the editor's preview pane uses, so the sheet reads as paper on
-    // a desk rather than white on white.
-    <main className="min-h-dvh bg-muted/40">
+    /*
+      The same wash the editor's preview pane uses, so the sheet reads as paper on a
+      desk rather than white on white.
+
+      The padding is on top of the preview's own `py-6`. Inside the editor that 24px
+      is enough because the preview sits in a pane with a header above it; here the
+      sheet is the only thing on the page, and since the crop marks are drawn
+      *outside* the trim, 24px alone put the top mark almost on the viewport edge —
+      which reads as a sheet clipped by the window rather than one placed on a desk.
+    */
+    <main className="min-h-dvh bg-muted/40 py-4 sm:py-8">
       {/* `px-6` is CROP_MARK_GUTTER: the preview draws crop marks outside the trim,
           and this box clips. The sheet sizes itself to whatever room it is given,
           so the width cap is what keeps it from growing past 1:1 on a wide screen. */}

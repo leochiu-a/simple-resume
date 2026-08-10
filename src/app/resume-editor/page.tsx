@@ -185,6 +185,7 @@ const ResumeEditorPage = () => {
                   mcpToolCount={mcpToolCount}
                   pair={translation.pair}
                   pairLabel={pairLabel}
+                  onImport={() => setShowImport(true)}
                 />
               )}
             </div>

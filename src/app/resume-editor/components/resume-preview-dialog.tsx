@@ -22,6 +22,7 @@ const ResumePreviewDialog = ({
   mcpToolCount,
   pair,
   pairLabel,
+  onImport,
 }: {
   resume: Resume;
   options: ReturnType<typeof useTemplateOptions>;
@@ -29,6 +30,9 @@ const ResumePreviewDialog = ({
   mcpToolCount: number;
   pair: LangPair | null;
   pairLabel: string | null;
+  /** Reaches the Share menu in the dialog's toolbar, which is where importing
+   *  lives at mobile widths. */
+  onImport: () => void;
 }) => {
   const [open, setOpen] = useState(false);
   /* The dialog has no second column to swap, so the appearance panel takes over
@@ -72,6 +76,7 @@ const ResumePreviewDialog = ({
               mcpToolCount={mcpToolCount}
               pair={pair}
               pairLabel={pairLabel}
+              onImport={onImport}
               onOpenAppearance={() => setShowAppearance(true)}
             />
           </div>

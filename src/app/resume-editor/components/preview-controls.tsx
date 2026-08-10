@@ -25,6 +25,7 @@ const PreviewControls = ({
   pair,
   pairLabel,
   onOpenAppearance,
+  onImport,
 }: {
   resume: Resume;
   options: ReturnType<typeof useTemplateOptions>;
@@ -33,6 +34,7 @@ const PreviewControls = ({
   pair: LangPair | null;
   pairLabel: string | null;
   onOpenAppearance: () => void;
+  onImport: () => void;
 }) => {
   const { template, backgroundColor } = options;
 
@@ -49,7 +51,12 @@ const PreviewControls = ({
         tooltip={false}
       />
 
-      <DownloadButton resume={resume} backgroundColor={backgroundColor} template={template} />
+      <DownloadButton
+        resume={resume}
+        backgroundColor={backgroundColor}
+        template={template}
+        onImport={onImport}
+      />
 
       <OnDeviceAiButton
         mcpStatus={mcpStatus}
