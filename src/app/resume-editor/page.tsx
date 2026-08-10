@@ -11,6 +11,7 @@ import ResumeForm from "./components/form/resume-form";
 import ResumePreviewDialog from "./components/resume-preview-dialog";
 import ResumePreview from "./components/resume-preview";
 import EditorHeader from "./components/editor-header";
+import ImportLinkDialog from "./components/import-link-dialog";
 import TranslationPanel from "./components/translation-panel";
 import AppearancePanel from "./components/template/appearance-panel";
 import { useResumeMcp } from "./hooks/useResumeMcp";
@@ -55,6 +56,9 @@ const ResumeEditorPage = () => {
      route: the form is never unmounted, so nothing it holds is lost while the
      appearance panel is up. */
   const [showAppearance, setShowAppearance] = useState(false);
+  /* Owned here rather than in the header, because importing writes to the document
+     and the header has no business holding that. */
+  const [showImport, setShowImport] = useState(false);
 
   const pairLabel = useMemo(
     () => `${LANG_NAME_EN[doc.primaryLang]} → ${LANG_NAME_EN[doc.secondaryLang]}`,
@@ -101,7 +105,14 @@ const ResumeEditorPage = () => {
         score={score}
         review={agentReview.review}
         onClearReview={agentReview.clear}
+        onImport={() => setShowImport(true)}
         showTools={matches}
+      />
+
+      <ImportLinkDialog
+        open={showImport}
+        onOpenChange={setShowImport}
+        onImport={doc.importIntoActiveLocale}
       />
       <main className="min-h-0 flex-1">
         <FormProvider {...formMethods}>

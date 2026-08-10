@@ -123,3 +123,29 @@ export const decodeSharePayload = async (hash: string): Promise<SharePayload | n
 
 /** The locale a share link should carry: the one on screen. */
 export const activeResume = (doc: ResumeDoc): Resume | undefined => doc.locales[doc.activeLang];
+
+/**
+ * Reads a payload out of whatever someone pasted.
+ *
+ * The import box gets a whole URL, not a fragment — and often not a clean one:
+ * copied with surrounding whitespace, wrapped in angle brackets by a mail client,
+ * or pasted as the bare `#r=…` tail by someone who only grabbed the end. All three
+ * describe the same resume, so all three are accepted rather than made the user's
+ * problem.
+ *
+ * What is *not* guessed at is the origin. The payload is self-contained, so a link
+ * from another deployment of this app decodes here too — there is nothing to fetch
+ * and no host to trust. That is a property of putting the resume in the URL, not a
+ * concession.
+ */
+export const decodeShareInput = async (input: string): Promise<SharePayload | null> => {
+  const trimmed = input.trim().replace(/^<|>$/g, "");
+  if (!trimmed) return null;
+
+  // Everything from the first `#` on. A URL has one fragment, and the payload is
+  // all of it; anything before it is origin and path this does not need.
+  const hashAt = trimmed.indexOf("#");
+  const hash = hashAt === -1 ? trimmed : trimmed.slice(hashAt + 1);
+
+  return decodeSharePayload(hash);
+};

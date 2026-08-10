@@ -27,6 +27,8 @@ export interface UseResumeDocResult {
   saveActiveLocale: (resume: Resume) => void;
   /** Used by the translation run to create or replace a whole locale at once. */
   writeLocale: (lang: ResumeLang, resume: Resume, meta: TranslationMeta) => void;
+  /** Replaces the active locale with an imported resume, clearing its provenance. */
+  importIntoActiveLocale: (resume: Resume) => void;
 }
 
 /**
@@ -145,6 +147,35 @@ export const useResumeDoc = (formMethods: UseFormReturn<Resume>): UseResumeDocRe
     [setDoc, write],
   );
 
+  /**
+   * Replaces the active locale wholesale, as an import does.
+   *
+   * Distinct from `writeLocale`, which exists for the translation run and always
+   * writes provenance with the text. An imported resume has no translation
+   * history: it came from a share link, which carries one language and no record
+   * of what it was translated from. Writing `undefined` there is the point —
+   * leaving a previous locale's provenance in place would describe the new text as
+   * a translation of something it has never seen, and mark every field stale.
+   *
+   * The pending debounce is flushed first for the same reason `switchLang` does it:
+   * the last keystrokes before an import must not land on top of the imported
+   * resume afterwards.
+   */
+  const importIntoActiveLocale = useCallback(
+    (resume: Resume) => {
+      write.flush();
+
+      const lang = activeLangRef.current;
+      formRef.current.reset(resume);
+      setDoc((prev) => ({
+        ...prev,
+        locales: { ...prev.locales, [lang]: resume },
+        translation: { ...prev.translation, [lang]: undefined },
+      }));
+    },
+    [setDoc, write],
+  );
+
   const writeLocale = useCallback(
     (lang: ResumeLang, resume: Resume, meta: TranslationMeta) => {
       write.flush();
@@ -173,5 +204,6 @@ export const useResumeDoc = (formMethods: UseFormReturn<Resume>): UseResumeDocRe
     setPrimaryLang,
     saveActiveLocale,
     writeLocale,
+    importIntoActiveLocale,
   };
 };

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FC } from "react";
 import { useTheme } from "next-themes";
-import { Monitor, MoreHorizontal, Moon, Sun } from "lucide-react";
+import { Link as LinkIcon, Monitor, MoreHorizontal, Moon, Sun } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -42,6 +42,8 @@ interface EditorHeaderProps {
   score: ScoreReport;
   review: AgentReview | null;
   onClearReview: () => void;
+  /** Opens the share-link import dialog, which the page owns. */
+  onImport: () => void;
   /** Desktop only: at mobile widths the tools ride in the preview dialog. */
   showTools: boolean;
 }
@@ -80,6 +82,7 @@ const EditorHeader: FC<EditorHeaderProps> = ({
   score,
   review,
   onClearReview,
+  onImport,
   showTools,
 }) => {
   const { setTheme, resolvedTheme } = useTheme();
@@ -178,6 +181,18 @@ const EditorHeader: FC<EditorHeaderProps> = ({
               <DropdownMenuItem onClick={(e) => applyTheme(e, () => setTheme("system"))}>
                 <Monitor />
                 System
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              {/* Import lives behind the `…` rather than beside Export. It is the
+                  one action here that overwrites the resume, and something
+                  destructive does not belong on the bar next to the button people
+                  reach for constantly — it is also a thing you do once, at the
+                  start, not repeatedly like exporting. */}
+              <DropdownMenuItem onClick={onImport}>
+                <LinkIcon />
+                Import from link
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
