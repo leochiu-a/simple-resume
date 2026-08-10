@@ -84,12 +84,41 @@ const waitForStoredResume = (page: Page) =>
   expect.poll(() => page.evaluate(() => window.localStorage.getItem("resume-doc"))).not.toBeNull();
 
 /**
+ * Every tool the editor registers, in the order it registers them.
+ *
+ * One list rather than a count in the gate and an array in the assertion: the
+ * two drifted when `score-resume` and `submit-review` were added, and a gate
+ * waiting for a tool count that can never arrive fails every test in the file
+ * from `beforeEach`, which says nothing about what actually changed.
+ */
+const REGISTERED_TOOLS = [
+  "get-resume",
+  "score-resume",
+  "submit-review",
+  "update-basic-info",
+  "update-profile",
+  "set-skills",
+  "set-social-links",
+  "add-employment",
+  "update-employment",
+  "remove-employment",
+  "add-education",
+  "update-education",
+  "remove-education",
+  "add-project",
+  "update-project",
+  "remove-project",
+  "set-section-visibility",
+];
+
+/**
  * Registration used to be readable straight off the nav; it now lives in the
  * on-device AI panel, behind that panel's own trigger, so the gate every test
  * needs is the stub's own view of what got registered rather than a click into
  * the panel each time.
  */
-const waitForRegistration = (page: Page) => expect.poll(() => listTools(page)).toHaveLength(15);
+const waitForRegistration = (page: Page) =>
+  expect.poll(() => listTools(page)).toHaveLength(REGISTERED_TOOLS.length);
 
 test.describe("WebMCP resume tools", () => {
   let errors: string[] = [];
@@ -104,23 +133,7 @@ test.describe("WebMCP resume tools", () => {
   test("registers the full tool set and reports it in the on-device AI panel", async ({ page }) => {
     const names = await listTools(page);
 
-    expect(names).toEqual([
-      "get-resume",
-      "update-basic-info",
-      "update-profile",
-      "set-skills",
-      "set-social-links",
-      "add-employment",
-      "update-employment",
-      "remove-employment",
-      "add-education",
-      "update-education",
-      "remove-education",
-      "add-project",
-      "update-project",
-      "remove-project",
-      "set-section-visibility",
-    ]);
+    expect(names).toEqual(REGISTERED_TOOLS);
 
     await openOnDeviceAiPanel(page);
     await expect(page.getByText(`${names.length} tools registered`)).toBeVisible();
@@ -411,11 +424,11 @@ test.describe("WebMCP resume tools", () => {
     await installModelContextStub(legacyPage, "navigator");
     await legacyPage.goto("/resume-editor");
 
-    await expect.poll(() => listTools(legacyPage)).toHaveLength(15);
+    await expect.poll(() => listTools(legacyPage)).toHaveLength(REGISTERED_TOOLS.length);
     expect(await legacyPage.evaluate(() => "modelContext" in document)).toBe(false);
 
     await openOnDeviceAiPanel(legacyPage);
-    await expect(legacyPage.getByText("15 tools registered")).toBeVisible();
+    await expect(legacyPage.getByText(`${REGISTERED_TOOLS.length} tools registered`)).toBeVisible();
 
     await callTool(legacyPage, "update-basic-info", { name: "Grace Hopper" });
     await expect(preview(legacyPage).getByText("Grace Hopper")).toBeVisible();
@@ -424,7 +437,7 @@ test.describe("WebMCP resume tools", () => {
   });
 
   test("tools are unregistered when the editor unmounts", async ({ page }) => {
-    expect(await listTools(page)).toHaveLength(15);
+    expect(await listTools(page)).toHaveLength(REGISTERED_TOOLS.length);
 
     await page.getByRole("link", { name: "Simple Resume" }).click();
     await expect(page).toHaveURL("/");
