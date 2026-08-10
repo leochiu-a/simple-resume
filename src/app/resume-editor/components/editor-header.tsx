@@ -120,9 +120,10 @@ const EditorHeader: FC<EditorHeaderProps> = ({
             onClearReview={onClearReview}
           />
 
-          {/* Download is the one thing anybody came here to do, so it is the one
-              thing that stays a button. Appearance moved out of this bar entirely
-              — it now lives on the preview, where you can see what it changes. */}
+          {/* Getting the resume out is the one thing anybody came here to do, so
+              Export is the one thing that stays a button. Appearance moved out of
+              this bar entirely — it now lives on the preview, where you can see
+              what it changes. */}
           {showTools && (
             <DownloadButton resume={resume} backgroundColor={backgroundColor} template={template} />
           )}
@@ -134,9 +135,9 @@ const EditorHeader: FC<EditorHeaderProps> = ({
               Its own trigger fixes both: the capability is visible in the bar,
               and the menu is back to being a short list of settings.
 
-              Right of Download, not left: the icon buttons on this side of the
+              Right of Export, not left: the icon buttons on this side of the
               bar are the secondary controls, and putting one before the primary
-              action pushes Download off the bar's right edge. */}
+              action pushes Export off the bar's right edge. */}
           {showTools && (
             <OnDeviceAiButton
               mcpStatus={mcpStatus}

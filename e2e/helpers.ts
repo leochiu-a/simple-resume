@@ -21,8 +21,13 @@ export const closeAppearance = (page: Page) =>
 /** The desk the sheet lies on — the hover target that reveals the palette button. */
 export const previewPane = (page: Page): Locator => page.locator("[data-preview-pane]");
 
+/**
+ * The export menu. Named `downloadMenu` still because most of its callers are
+ * about the two downloads; the trigger itself says "Export", since the menu also
+ * hands back a Markdown copy and a share link.
+ */
 export const downloadMenu = (page: Page): Locator =>
-  page.getByRole("button", { name: "Download", exact: true });
+  page.getByRole("button", { name: "Export", exact: true });
 
 /**
  * Hover the preview first, then click.
@@ -88,6 +93,12 @@ export const copyMarkdown = async (page: Page) => {
   await page.getByRole("menuitem", { name: "Copy as Markdown" }).click();
 };
 
+/** Same confirm-in-place behaviour as the Markdown item. */
+export const copyShareLink = async (page: Page) => {
+  await downloadMenu(page).click();
+  await page.getByRole("menuitem", { name: "Copy share link" }).click();
+};
+
 /**
  * The editor's overflow menu — everything that is neither the wordmark, the
  * language tabs, nor the download button. Theme, the on-device AI row and the
@@ -106,7 +117,7 @@ export const setTheme = async (page: Page, mode: "Light" | "Dark" | "System") =>
 /**
  * Both browser-built-in capabilities — the WebMCP agent and the on-device
  * translator — report from a popover behind their own icon button, which sits
- * right of Download in the header and in the mobile preview dialog's toolbar.
+ * right of Export in the header and in the mobile preview dialog's toolbar.
  *
  * The rows spent a release inline in the overflow menu, so this was once just
  * `openOverflowMenu`. They have their own trigger again: a status nobody can find
