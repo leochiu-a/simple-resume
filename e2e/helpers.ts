@@ -370,3 +370,76 @@ export function collectConsoleErrors(page: Page): string[] {
 
   return errors;
 }
+
+/**
+ * Where each unbreakable block on the sheet sits, and how much room is left at the
+ * foot of every page.
+ *
+ * Used to check how a template breaks a long entry. Held together as one block, an
+ * entry that does not fit in what is left of a page moves onto the next one whole
+ * and leaves a hole most of a page tall behind it; split into a run of blocks, it
+ * spills down the page and breaks between two bullets instead. The gap at the foot
+ * of a page is what tells those two apart.
+ *
+ * `headPattern` picks out the block that opens a run — the one carrying the
+ * headline — so the caller can assert the headline is bound to what follows it.
+ */
+export const entryBlockLayout = async (page: Page, headPattern: RegExp) => {
+  const A4_PX = (842 * 4) / 3;
+
+  return preview(page)
+    .locator("[data-resume-page] > div")
+    .first()
+    .evaluate(
+      (content, { pageHeight, source }) => {
+        const sheet = content.ownerDocument.querySelector<HTMLElement>("page")!;
+        const bottomMargin = Number.parseFloat(getComputedStyle(sheet).paddingBottom) || 0;
+        const sheetTop = content.getBoundingClientRect().top;
+        const isHeadBlock = new RegExp(source);
+
+        const blocks = [...content.querySelectorAll<HTMLElement>("[data-avoid-break]")].map(
+          (el) => {
+            const { top, height } = el.getBoundingClientRect();
+            const offset = top - sheetTop;
+
+            return {
+              isHead: isHeadBlock.test(el.textContent ?? ""),
+              /** Text runs inside, which is how a binding to the first bullet shows up. */
+              runsInside: el.querySelectorAll("text").length,
+              top: offset,
+              bottom: offset + height,
+              page: Math.floor(offset / pageHeight),
+            };
+          },
+        );
+
+        /*
+         * How much room is left below the last block that *starts* on each page.
+         *
+         * Only pages that something else follows are measured. The last page of the
+         * sheet is left out because its gap is just where the resume happens to
+         * end — it says nothing about how a break was chosen — and it would
+         * otherwise be the smallest or largest number here for no reason.
+         *
+         * A block can also reach past its page's limit, which is the entry too tall
+         * for any page: the paginator lets that split rather than loop forever.
+         * Those give a negative gap, so they are dropped too; the question this
+         * answers is whether a page that *could* have been filled was.
+         */
+        const pages = [...new Set(blocks.map((b) => b.page))].sort((a, b) => a - b);
+        const lastPage = Math.max(...pages);
+
+        return {
+          blocks,
+          trailingGaps: pages
+            .filter((index) => index !== lastPage)
+            .map((index) => {
+              const last = Math.max(...blocks.filter((b) => b.page === index).map((b) => b.bottom));
+              return (index + 1) * pageHeight - bottomMargin - last;
+            })
+            .filter((gap) => gap >= 0),
+        };
+      },
+      { pageHeight: A4_PX, source: headPattern.source },
+    );
+};

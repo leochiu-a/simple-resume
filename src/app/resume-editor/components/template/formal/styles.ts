@@ -183,6 +183,40 @@ export const styles = StyleSheet.create({
   },
 
   /*
+   * An entry whose bullets may break across a page is not one block but a run of
+   * them: the headline bound to its first bullet, then each remaining bullet on
+   * its own. See `experience.tsx` for why it is split up that way.
+   *
+   * The spacing has to move with it. Those blocks are siblings in the section's
+   * list now, so a single `rowGap` on the list would space bullets as far apart as
+   * whole jobs — this list sets no gap at all and each block carries its own top
+   * margin instead.
+   */
+  splitEntryList: {
+    display: "flex",
+    flexDirection: "column",
+    paddingLeft: BODY_INDENT,
+    /* Every run opens with `entryHead`'s top margin, including the first one,
+       which should sit at the section's own 8pt. Pulling the list up by that
+       margin leaves the first entry where it was and every later one spaced. */
+    marginTop: `-${PARAGRAPH_SPACING}`,
+  },
+  /** Opens a run. The margin is the gap `entryList` used to put between entries. */
+  entryHead: {
+    display: "flex",
+    flexDirection: "column",
+    rowGap: pt(8),
+    marginTop: PARAGRAPH_SPACING,
+  },
+  /** Continues a run, at the gap `description` used to open between two bullets. */
+  entryBullet: {
+    display: "flex",
+    flexDirection: "row",
+    marginLeft: pt(16),
+    marginTop: pt(4),
+  },
+
+  /*
    * Two columns of skills. @react-pdf has no CSS grid, so the row wraps and each
    * item claims half of it.
    */

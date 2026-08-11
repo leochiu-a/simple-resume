@@ -6,11 +6,13 @@ import {
   downloadHtml,
   downloadMenu,
   downloadPdf,
+  entryBlockLayout,
   openAppearanceMenu,
   preview,
   readPdfFacts,
   selectTemplate,
 } from "./helpers";
+import { LONG_DESCRIPTIONS, seedResume } from "./seeds";
 
 /**
  * The Formal template is a single column under a centred serif header. These
@@ -70,6 +72,49 @@ test.describe("Formal template", () => {
     await expect(preview(page).getByText("Phone number:", { exact: true })).toBeHidden();
     await expect(preview(page).getByText("Address:", { exact: true })).toBeVisible();
     await expect(preview(page).getByText("Email address:", { exact: true })).toBeVisible();
+  });
+
+  /**
+   * A long role used to be one unbreakable block, so an entry that did not fit in
+   * what was left of a page moved onto the next one whole — on a ten-bullet job
+   * that left most of a page empty behind it.
+   *
+   * What has to hold instead is narrower: a headline may not be the last thing on
+   * its page, and no single bullet may be split. The page break belongs *between*
+   * two bullets, and the space before it should be used.
+   */
+  test("breaks a long role between its bullets, not before its headline", async ({ page }) => {
+    await seedResume(page, LONG_DESCRIPTIONS);
+    await page.goto("/resume-editor");
+    await selectFormal(page);
+
+    const layout = await entryBlockLayout(page, /Staff Frontend Engineer/);
+
+    // The seed is three long roles, so it has to spill.
+    expect(Math.max(...layout.blocks.map((b) => b.page))).toBeGreaterThan(0);
+
+    const heads = layout.blocks.filter((b) => b.isHead);
+    expect(heads).toHaveLength(3);
+
+    /* Each headline shares its unbreakable block with the company line and the
+       first bullet, which is what makes it impossible to strand: the block moves
+       as one, so wherever the headline goes that bullet goes too. The title and
+       its date are two runs, the company a third, the bullet's disc and text the
+       fourth and fifth. */
+    for (const head of heads) {
+      expect(head.runsInside).toBeGreaterThanOrEqual(5);
+    }
+
+    // And the bullets after it are separate blocks, so a run spans pages rather
+    // than moving whole.
+    const spanning = heads.filter((head) =>
+      layout.blocks.some((b) => !b.isHead && b.page > head.page && b.top > head.top),
+    );
+    expect(spanning.length).toBeGreaterThan(0);
+
+    // And a run is genuinely split rather than shunted: at least one page ends
+    // close to its limit instead of a long way short of it.
+    expect(Math.min(...layout.trailingGaps)).toBeLessThan(120);
   });
 
   test("exports a standalone HTML document", async ({ page }) => {
