@@ -3,6 +3,7 @@ import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 
 import {
+  closeAppearance,
   downloadHtml,
   downloadMenu,
   downloadPdf,
@@ -133,6 +134,67 @@ test.describe("template picker", () => {
 
     // Modern tints a light contact panel, so it starts from its own neutral.
     await expect.poll(sidebarColor).toBe("rgb(242, 242, 242)");
+  });
+
+  test("remembers the template and its colour across a reload", async ({ page }) => {
+    const sidebarColor = () =>
+      preview(page)
+        .locator('[style*="background-color"]')
+        .nth(1)
+        .evaluate((el) => getComputedStyle(el).backgroundColor);
+
+    await selectTemplate(page, "Modern");
+
+    // A colour the template does not default to, so the assertion cannot pass on
+    // the default being restored rather than the choice.
+    await openAppearanceMenu(page);
+    await page.getByRole("button", { name: "Navy" }).click();
+    await expect.poll(sidebarColor).toBe("rgb(46, 74, 107)");
+    await closeAppearance(page);
+
+    await page.reload();
+
+    // The sheet is the thing that has to come back right; the panel starts closed
+    // after a reload, so it is reopened to read which card is marked pressed.
+    await expect.poll(sidebarColor).toBe("rgb(46, 74, 107)");
+
+    await openAppearanceMenu(page);
+    await expect(templateCard(page, "Modern")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("falls back to the default when the stored template no longer exists", async ({ page }) => {
+    // A template can be dropped from the registry between releases. The stored
+    // colour was chosen for it, so honouring the colour while falling back on the
+    // template would leave a sheet tinted for something nobody can select.
+    await page.evaluate(() =>
+      window.localStorage.setItem(
+        "resume-appearance",
+        JSON.stringify({ templateId: "brutalist", backgroundColor: "#ff00ff" }),
+      ),
+    );
+    await page.reload();
+
+    await openAppearanceMenu(page);
+    await expect(templateCard(page, "Classic")).toHaveAttribute("aria-pressed", "true");
+    await closeAppearance(page);
+
+    await expect
+      .poll(() =>
+        preview(page)
+          .locator('[style*="background-color"]')
+          .nth(1)
+          .evaluate((el) => getComputedStyle(el).backgroundColor),
+      )
+      .toBe("rgb(9, 76, 66)");
+
+    // Picking a colour must not carry the rejected id back into storage: the sheet
+    // is showing Classic, so that is what the next write has to say it is.
+    await openAppearanceMenu(page);
+    await page.getByRole("button", { name: "Navy" }).click();
+
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem("resume-appearance")))
+      .toBe(JSON.stringify({ templateId: "classic", backgroundColor: "#2e4a6b" }));
   });
 
   test("exports the Modern template as a standalone document", async ({ page }) => {
