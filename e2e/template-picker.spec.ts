@@ -43,7 +43,7 @@ test.describe("template picker", () => {
   // Kept in the order they appear in the registry's TEMPLATES. Adding a template
   // means adding it here too — the assertion below is exact so a new one cannot
   // slip in unnoticed.
-  const EXPECTED_TEMPLATES = ["Classic", "Modern", "Formal", "Timeline"];
+  const EXPECTED_TEMPLATES = ["Classic", "Modern", "Formal", "Timeline", "Ledger"];
 
   test("starts on Classic and offers every registered template", async ({ page }) => {
     await openAppearanceMenu(page);
@@ -70,6 +70,58 @@ test.describe("template picker", () => {
       await expect(thumbnail.locator("page")).toBeVisible();
       await expect(thumbnail.getByText("Senior Engineer")).toBeVisible();
     }
+  });
+
+  /**
+   * The grid adds columns instead of stretching a fixed two of them.
+   *
+   * With `grid-cols-2` the cards were A4-proportioned boxes sharing whatever width
+   * the pane had, so on a wide monitor two of them grew enormous and the panel read
+   * as loose. `auto-fill` with a minimum card width fixes the card and varies the
+   * column count instead — which is only observable by measuring, so it is pinned
+   * here rather than left to the eye.
+   */
+  test("lays the template cards out in more columns as the pane widens", async ({ page }) => {
+    const columnCount = async () => {
+      await openAppearanceMenu(page);
+
+      return page.evaluate(() => {
+        const cards = [...document.querySelectorAll("[aria-pressed][title]")];
+        // One column per distinct left edge.
+        return new Set(cards.map((card) => Math.round(card.getBoundingClientRect().left))).size;
+      });
+    };
+
+    const wide = await columnCount();
+
+    await page.setViewportSize({ width: 1024, height: 900 });
+    const narrow = await columnCount();
+
+    expect(wide).toBeGreaterThan(narrow);
+
+    // And a card never gets so narrow that the sheet inside it is unreadable, nor
+    // so wide that the grid should have added another column.
+    const cardWidth = await page.evaluate(
+      () => document.querySelector("[aria-pressed][title]")!.getBoundingClientRect().width,
+    );
+    expect(cardWidth).toBeGreaterThan(180);
+    expect(cardWidth).toBeLessThan(420);
+
+    // The panel is centred in the pane rather than hugging its left edge, which is
+    // what made the empty space beside it read as slack.
+    const centring = await page.evaluate(() => {
+      const panel = document
+        .querySelector("[aria-pressed][title]")!
+        .closest("div.grid")!.parentElement!;
+      const box = panel.getBoundingClientRect();
+      const parent = panel.parentElement!.getBoundingClientRect();
+
+      return {
+        leftGap: box.left - parent.left,
+        rightGap: parent.right - box.right,
+      };
+    });
+    expect(Math.abs(centring.leftGap - centring.rightGap)).toBeLessThan(2);
   });
 
   test("switches the preview to the Modern layout", async ({ page }) => {

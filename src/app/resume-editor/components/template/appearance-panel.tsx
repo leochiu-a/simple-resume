@@ -58,11 +58,16 @@ const AppearancePanel = ({
   const isCurrentColor = (hex: string) => hex.toLowerCase() === backgroundColor.toLowerCase();
 
   return (
-    // Capped rather than filling the column. The thumbnails are A4-proportioned
-    // now, so an unbounded two-column grid makes each one taller than the pane on
-    // a wide monitor — you would scroll to compare two templates that are meant to
-    // be seen side by side.
-    <div className="mx-4 my-10 max-w-2xl lg:mx-12">
+    // Capped rather than filling the column, and centred once the cap is reached.
+    // The thumbnails are A4-proportioned, so an unbounded grid makes each one
+    // taller than the pane on a wide monitor — you would scroll to compare
+    // templates that are meant to be seen side by side.
+    //
+    // `max-w-5xl` rather than `2xl` because the grid below adds columns instead of
+    // stretching two: the extra room buys a third and fourth card, not four bigger
+    // ones. `mx-auto` is what stops the panel hugging the left edge of the preview
+    // dialog, which gives it the whole screen.
+    <div className="mx-4 my-10 max-w-5xl lg:mx-auto lg:px-12">
       <div className="mb-8 flex items-center justify-between">
         <h2 className="font-display text-2xl font-semibold tracking-[-0.02em]">Appearance</h2>
         <Button
@@ -126,7 +131,12 @@ const AppearancePanel = ({
       {/* Shown as pages rather than named in a list. A layout is a visual thing,
           and "Timeline: timeline entries, details in a right-hand rail" asks you
           to picture it; a thumbnail of your own resume in that layout does not. */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* `auto-fill` rather than a fixed two columns: the cards are A4-proportioned,
+          so two of them stretched across a wide pane become enormous and the grid
+          reads as loose. Given a minimum width instead, the extra room buys another
+          column and each card stays a size you can actually take in at a glance.
+          `1fr` as the max so the last row's cards still fill the width evenly. */}
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-x-4 gap-y-6">
         {TEMPLATES.map((entry) => {
           const isCurrent = entry.id === template.id;
 

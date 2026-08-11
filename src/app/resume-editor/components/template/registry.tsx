@@ -12,6 +12,8 @@ import FormalTemplate from "./formal/formal-template";
 import buildFormalResumeHtml from "./formal/build-formal-resume-html";
 import TimelineTemplate from "./timeline/timeline-template";
 import buildTimelineResumeHtml from "./timeline/build-timeline-resume-html";
+import LedgerTemplate from "./ledger/ledger-template";
+import buildLedgerResumeHtml from "./ledger/build-ledger-resume-html";
 
 /**
  * Every template the editor can render. A template owns both of its outputs — the
@@ -66,6 +68,14 @@ export const TEMPLATES: TemplateDefinition[] = [
     defaultColor: "#02061b",
     render: (props) => <TimelineTemplate {...props} />,
     buildHtml: buildTimelineResumeHtml,
+  },
+  {
+    id: "ledger",
+    label: "Ledger",
+    description: "Section titles in a left gutter, content beside them.",
+    defaultColor: "#7c2d3a",
+    render: (props) => <LedgerTemplate {...props} />,
+    buildHtml: buildLedgerResumeHtml,
   },
 ];
 
