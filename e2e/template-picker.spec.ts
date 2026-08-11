@@ -43,7 +43,7 @@ test.describe("template picker", () => {
   // Kept in the order they appear in the registry's TEMPLATES. Adding a template
   // means adding it here too — the assertion below is exact so a new one cannot
   // slip in unnoticed.
-  const EXPECTED_TEMPLATES = ["Classic", "Modern", "Formal", "Timeline"];
+  const EXPECTED_TEMPLATES = ["Classic", "Modern", "Formal", "Timeline", "Ledger"];
 
   test("starts on Classic and offers every registered template", async ({ page }) => {
     await openAppearanceMenu(page);
