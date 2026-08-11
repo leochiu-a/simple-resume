@@ -56,6 +56,22 @@ test.describe("Formal template", () => {
     }
   });
 
+  test("leaves out a contact detail that was never filled in", async ({ page }) => {
+    await selectFormal(page);
+
+    await expect(preview(page).getByText("Phone number:", { exact: true })).toBeVisible();
+
+    // By `name`, not by label: the form's labels are styled divs rather than
+    // <label> elements, so there is nothing for `getByLabel` to resolve.
+    await page.locator('input[name="phone"]').fill("");
+
+    // The label goes with the value: kept in, an empty phone number printed as a
+    // bare "Phone number:" trailed by a separator dot.
+    await expect(preview(page).getByText("Phone number:", { exact: true })).toBeHidden();
+    await expect(preview(page).getByText("Address:", { exact: true })).toBeVisible();
+    await expect(preview(page).getByText("Email address:", { exact: true })).toBeVisible();
+  });
+
   test("exports a standalone HTML document", async ({ page }) => {
     await selectFormal(page);
 

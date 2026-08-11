@@ -17,10 +17,18 @@ const CONTACT_LABELS = {
 } as const;
 
 const Header = ({ resume, nameColor }: { resume: Resume; nameColor: string }) => {
-  const contacts = (["city", "email", "phone"] as const).map((field) => ({
-    label: CONTACT_LABELS[field],
-    value: resume[field],
-  }));
+  /*
+   * A detail that was never filled in is left out entirely, label and all. Kept
+   * in, an empty phone number printed as a bare "Phone number:" followed by
+   * nothing — and took a separator dot with it, so the header advertised a gap
+   * rather than hiding one.
+   */
+  const contacts = (["city", "email", "phone"] as const)
+    .map((field) => ({
+      label: CONTACT_LABELS[field],
+      value: resume[field].trim(),
+    }))
+    .filter(({ value }) => value !== "");
 
   return (
     <View style={styles.header}>

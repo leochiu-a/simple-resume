@@ -229,12 +229,15 @@ const styles = (nameColor: string) => `
 `;
 
 const header = (resume: Resume) => {
+  // A detail left blank is dropped with its label, matching the PDF header — see
+  // `header.tsx` for why an empty one is worse than a missing one.
   const contacts = [
     { label: "Address:", value: resume.city },
     { label: "Email address:", value: resume.email },
     { label: "Phone number:", value: resume.phone },
   ]
-    .map(({ label, value }) => `<li><strong>${label}</strong> ${escapeHtml(value)}</li>`)
+    .filter(({ value }) => value.trim() !== "")
+    .map(({ label, value }) => `<li><strong>${label}</strong> ${escapeHtml(value.trim())}</li>`)
     .join("");
 
   return `
