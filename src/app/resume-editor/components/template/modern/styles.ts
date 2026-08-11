@@ -73,11 +73,21 @@ export const styles = StyleSheet.create({
    * and a background painted on the padded column would stop at that padding —
    * leaving a white band across the top and bottom of a panel whose whole point
    * is to run edge to edge. Taken out of the flow it can be pushed back over the
-   * padding and given the full height of the page. It is the sidebar's first
-   * child, so the contents paint over it.
+   * padding and given the full height of the page.
+   *
+   * Being the sidebar's first child is not enough to put it *behind* the contents.
+   * The preview renders these styles as CSS, where a positioned box paints above
+   * its static siblings whatever the document order — so left alone the tint
+   * covered the whole sidebar and the name, contact details, links and skills
+   * vanished behind a blank panel. `sidebarLayer` is what lifts them back over it.
+   *
+   * A negative `zIndex` would be the shorter fix and the wrong one: it drops the
+   * panel behind the *page* as well, so on any dark colour the tint disappeared
+   * and the panel's white text was left on white paper.
    */
   sidebarPanel: {
     position: "absolute",
+    zIndex: 0,
     top: `-${PAGE_PADDING_Y}`,
     bottom: `-${PAGE_PADDING_Y}`,
     left: 0,
@@ -88,6 +98,16 @@ export const styles = StyleSheet.create({
     // is as tall as the whole run rather than as tall as a page.
     minHeight: PAGE_MIN_HEIGHT,
   },
+
+  /**
+   * Carried by every block sitting on the panel, to place it in front of the tint
+   * rather than under it. Positioning is what makes `zIndex` apply at all.
+   */
+  sidebarLayer: {
+    position: "relative",
+    zIndex: 1,
+  },
+
   content: {
     display: "flex",
     flexDirection: "column",

@@ -30,12 +30,12 @@ const Sidebar = ({ resume, panel }: { resume: Resume; panel: PanelColors }) => {
     <View style={{ ...styles.sidebar, color: panel.text }}>
       <View style={{ ...styles.sidebarPanel, backgroundColor: panel.background }} />
 
-      <View style={styles.identity}>
+      <View style={{ ...styles.identity, ...styles.sidebarLayer }}>
         <Text style={styles.name}>{resume.name}</Text>
         <Text style={styles.jobTitle}>{resume.wantedJob}</Text>
       </View>
 
-      <Section title="Details" color={panel.text}>
+      <Section title="Details" color={panel.text} style={styles.sidebarLayer}>
         <View style={styles.detailList}>
           <DetailRow icon={<MailIcon {...icon} />}>{resume.email}</DetailRow>
           <DetailRow icon={<PhoneIcon {...icon} />}>{resume.phone}</DetailRow>
@@ -44,7 +44,7 @@ const Sidebar = ({ resume, panel }: { resume: Resume; panel: PanelColors }) => {
       </Section>
 
       {visibility.socialLinks && (
-        <Section title="Links" color={panel.text}>
+        <Section title="Links" color={panel.text} style={styles.sidebarLayer}>
           <View style={styles.bulletList}>
             {resume.socialLinks.map((link, index) => (
               <View style={styles.bulletRow} key={index}>
@@ -64,7 +64,7 @@ const Sidebar = ({ resume, panel }: { resume: Resume; panel: PanelColors }) => {
       )}
 
       {visibility.skills && (
-        <Section title="Skills" color={panel.text}>
+        <Section title="Skills" color={panel.text} style={styles.sidebarLayer}>
           <View style={styles.bulletList}>
             {resume.skills.map((skill, index) => (
               <Bullet key={index}>{skill.name}</Bullet>

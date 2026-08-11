@@ -82,6 +82,41 @@ test.describe("template picker", () => {
     await expect(preview(page).getByText("Employment History")).toBeHidden();
   });
 
+  /**
+   * The sidebar's tint is an absolutely positioned layer rather than the column's
+   * own background, so that it can run past the page padding to the trim. In the
+   * preview those styles are applied as CSS, where a positioned box paints over
+   * its static siblings whatever the document order — so the tint covered the
+   * whole sidebar and its contents disappeared behind a blank panel.
+   *
+   * `toBeVisible` does not catch this: it asks about CSS and geometry, not paint,
+   * and the text stayed laid out exactly where it was while being drawn under an
+   * opaque box. Hit-testing the sidebar's own ink is what tells the two apart.
+   */
+  test("keeps the Modern sidebar's contents in front of its tint", async ({ page }) => {
+    await selectTemplate(page, "Modern");
+
+    const name = preview(page).getByText("My Name", { exact: true });
+    await expect(name).toBeVisible();
+
+    const topmostIsTheText = await page
+      .frameLocator('iframe[title="Resume preview"]')
+      .locator("body")
+      .evaluate((body) => {
+        const target = [...body.querySelectorAll("text")].find(
+          (el) => el.textContent?.trim() === "My Name",
+        );
+        if (!target) return false;
+
+        const { left, top, width, height } = target.getBoundingClientRect();
+        const hit = body.ownerDocument.elementFromPoint(left + width / 2, top + height / 2);
+
+        return hit === target || target.contains(hit);
+      });
+
+    expect(topmostIsTheText).toBe(true);
+  });
+
   test("resets the colour to the template's own default", async ({ page }) => {
     // The page itself is white, so the tinted panel is the second background in
     // the preview — the same handle the colour-picker test uses.
