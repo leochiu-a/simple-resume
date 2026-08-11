@@ -107,18 +107,24 @@ test.describe("Ledger template", () => {
      * And a run is genuinely split rather than shunted: no page is left with room
      * for another whole bullet.
      *
-     * The bound is the tallest bullet rather than a fixed number of pixels. The
-     * label gutter narrows the text column, so a bullet here wraps to more lines
-     * than the same text does in Formal — about 136px against 116px — and a
-     * literal threshold copied from that template fails on a break that is
-     * actually correct. What matters is not how many pixels are left but whether
-     * anything could have filled them.
+     * The bound is measured rather than a fixed number of pixels. The label gutter
+     * narrows the text column, so a bullet here wraps to more lines than the same
+     * text does in Formal — about 155px against 136px — and a literal threshold
+     * copied from that template fails on a break that is actually correct. What
+     * matters is not how many pixels are left but whether anything could have
+     * filled them.
+     *
+     * And what a bullet costs is its height *plus* the gap it carries above it.
+     * That term is what makes this exact rather than nearly right: the worst
+     * trailing gap here is 158.1px against a 155.4px bullet, so comparing against
+     * the height alone reports a defect on a page where a bullet genuinely does not
+     * fit once its 4.3px of spacing is counted.
      */
-    const bulletHeights = layout.blocks
-      .filter((block) => !block.isHead)
-      .map((block) => block.bottom - block.top);
+    const bullets = layout.blocks.filter((block) => !block.isHead);
+    const tallestBullet = Math.max(...bullets.map((block) => block.bottom - block.top));
+    const spacingAboveBullet = bullets.length > 1 ? bullets[1].top - bullets[0].bottom : 0;
 
-    expect(Math.max(...layout.trailingGaps)).toBeLessThan(Math.max(...bulletHeights));
+    expect(Math.max(...layout.trailingGaps)).toBeLessThan(tallestBullet + spacingAboveBullet);
   });
 
   test("exports a standalone HTML document", async ({ page }) => {
