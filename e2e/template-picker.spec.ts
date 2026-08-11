@@ -7,12 +7,14 @@ import {
   downloadHtml,
   downloadMenu,
   downloadPdf,
+  entryBlockLayout,
   openAppearanceMenu,
   openColorPicker,
   preview,
   readPdfFacts,
   selectTemplate,
 } from "./helpers";
+import { LONG_DESCRIPTIONS, seedResume } from "./seeds";
 
 /**
  * The editor ships two templates and renders whichever is selected to all three
@@ -134,6 +136,45 @@ test.describe("template picker", () => {
 
     // Modern tints a light contact panel, so it starts from its own neutral.
     await expect.poll(sidebarColor).toBe("rgb(242, 242, 242)");
+  });
+
+  /**
+   * The same rule the Formal template is held to, for the same reason: a job used
+   * to be one unbreakable block, so an entry too tall for what was left of a page
+   * jumped to the next one and left a hole behind it. Classic already wrapped each
+   * bullet in its own `AvoidBreak`, but the outer block was resolved first and
+   * moved the lot, so those never got to matter.
+   */
+  test("breaks a long Classic role between its bullets, not before its headline", async ({
+    page,
+  }) => {
+    /* `seedResume` installs an init script, so it only takes effect on the next
+       navigation — and the describe's `beforeEach` has already loaded the editor by
+       the time this runs. The reload is what puts the seeded resume on screen. */
+    await seedResume(page, LONG_DESCRIPTIONS);
+    await page.reload();
+
+    const layout = await entryBlockLayout(page, /Staff Frontend Engineer/);
+
+    expect(Math.max(...layout.blocks.map((b) => b.page))).toBeGreaterThan(0);
+
+    const heads = layout.blocks.filter((b) => b.isHead);
+    expect(heads).toHaveLength(3);
+
+    // The headline block carries the first bullet with it: the title and company
+    // are one run, the dates a second, the bullet's disc and text a third and
+    // fourth.
+    for (const head of heads) {
+      expect(head.runsInside).toBeGreaterThanOrEqual(4);
+    }
+
+    // A run spans pages rather than moving whole, and the space before the break
+    // is used rather than abandoned.
+    const spanning = heads.filter((head) =>
+      layout.blocks.some((b) => !b.isHead && b.page > head.page && b.top > head.top),
+    );
+    expect(spanning.length).toBeGreaterThan(0);
+    expect(Math.min(...layout.trailingGaps)).toBeLessThan(120);
   });
 
   test("remembers the template and its colour across a reload", async ({ page }) => {

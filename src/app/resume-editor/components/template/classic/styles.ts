@@ -39,3 +39,38 @@ export const styles = StyleSheet.create({
     flexShrink: 0,
   },
 });
+
+/**
+ * The gap this template puts between two entries in a section.
+ *
+ * It used to be the entry list's own `gap`. An entry is a run of separately
+ * unbreakable blocks now (see `employment-history.tsx`), and a gap on the list
+ * would space every bullet as far apart as two whole jobs — so it is carried by
+ * whichever block opens a run instead.
+ */
+const ENTRY_SPACING = "12pt";
+
+/**
+ * A list of entries whose bullets may break across a page.
+ *
+ * No `gap`: the blocks inside carry their own spacing. The negative top margin
+ * cancels the one on the first `entryHead`, which would otherwise push the first
+ * entry away from the section title.
+ */
+export const splitEntryList = {
+  ...styles.flexCol,
+  marginTop: `-${ENTRY_SPACING}`,
+};
+
+/** Opens a run: the headline, its dates, and the first bullet, bound together. */
+export const entryHead = {
+  ...styles.flexCol,
+  marginTop: ENTRY_SPACING,
+};
+
+/** Continues a run — one bullet, free to start a new page. */
+export const entryBullet = {
+  ...styles.flexRow,
+  gap: "4pt",
+  paddingLeft: "12px",
+};
