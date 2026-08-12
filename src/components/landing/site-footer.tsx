@@ -1,52 +1,88 @@
 import Link from "next/link";
 
+/**
+ * Quiet on purpose.
+ *
+ * The closing band above it already makes the ask, so the footer's only job is to be
+ * a sitemap and get out of the way — the old one carried a second oversized headline
+ * and a second primary button, which meant the page ended by asking twice.
+ */
+const LINKS = [
+  { label: "Editor", href: "/resume-editor" },
+  { label: "Templates", href: "/#templates" },
+  { label: "How AI works", href: "/ai" },
+  { label: "Privacy", href: "/#privacy" },
+];
+
+const EXTERNAL = [
+  { label: "GitHub", href: "https://github.com/leochiu-a/simple-resume" },
+  {
+    label: "WebMCP tools",
+    href: "https://github.com/leochiu-a/simple-resume/blob/main/docs/webmcp.md",
+  },
+];
+
+/** `block` with vertical padding rather than a bare inline link: at 14px the text box
+ *  is only 17px tall, which is not a tap target. The padding carries the list's rhythm
+ *  too, so there is no `space-y` on the lists themselves. */
+const LINK_CLASS =
+  "block rounded py-3 text-[0.875rem] text-[var(--graphite-soft)] transition-colors duration-200 hover:text-[var(--graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
+
 const SiteFooter = () => (
-  <footer>
-    <div className="mx-auto w-full max-w-[1280px] px-6 py-20 lg:px-10 lg:py-28">
-      <div className="grid grid-cols-1 items-end gap-x-14 gap-y-12 lg:grid-cols-12">
-        <div className="lg:col-span-7">
-          <p className="font-display text-[clamp(2.1rem,4.2vw,3.4rem)] font-semibold leading-[1.03] tracking-[-0.025em]">
-            Start with a blank page<span className="text-[var(--accent)]">.</span>
-          </p>
+  <footer className="mt-4 border-t border-[var(--rule)]">
+    <div className="mx-auto w-full max-w-[1120px] px-6 py-14">
+      <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
+        <div>
           <Link
-            href="/resume-editor"
-            className="group mt-9 inline-flex items-center gap-3 bg-[var(--accent)] px-7 py-3.5 text-[0.95rem] font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5"
+            href="/"
+            className="inline-flex items-center gap-2.5 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
-            Create resume
             <span
               aria-hidden
-              className="transition-transform duration-200 group-hover:translate-x-1"
+              className="grid size-6 place-items-center rounded-[8px] bg-[image:var(--gradient)]"
             >
-              →
+              <span className="block size-2 rounded-[2px] bg-white/95" />
+            </span>
+            <span className="font-display text-[0.9375rem] font-semibold tracking-[-0.015em]">
+              Simple Resume
             </span>
           </Link>
+          <p className="mt-4 max-w-[36ch] text-[0.875rem] leading-[1.6] text-[var(--graphite-soft)]">
+            A local-first resume builder. The source is public and short enough to read in an
+            evening.
+          </p>
         </div>
 
-        <div className="lg:col-span-5">
-          <p className="text-[0.95rem] leading-[1.72] text-[var(--graphite-soft)]">
-            The source is public and short enough to read in an evening.
-          </p>
+        <div className="flex gap-14">
+          <nav>
+            <p className="font-mono text-[0.625rem] uppercase tracking-[0.18em] text-[var(--graphite-soft)]">
+              Product
+            </p>
+            <ul className="mt-2">
+              {LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className={LINK_CLASS}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-          <ul className="mt-8 flex flex-wrap gap-x-7 gap-y-3 border-t border-[var(--rule)] pt-6 font-mono text-[11px] uppercase tracking-[0.18em]">
-            <li>
-              <Link
-                href="https://github.com/leochiu-a/simple-resume"
-                target="_blank"
-                className="transition-colors duration-200 hover:text-[var(--accent)]"
-              >
-                GitHub
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="https://github.com/leochiu-a/simple-resume/blob/main/docs/webmcp.md"
-                target="_blank"
-                className="transition-colors duration-200 hover:text-[var(--accent)]"
-              >
-                WebMCP tools
-              </Link>
-            </li>
-          </ul>
+          <nav>
+            <p className="font-mono text-[0.625rem] uppercase tracking-[0.18em] text-[var(--graphite-soft)]">
+              Source
+            </p>
+            <ul className="mt-2">
+              {EXTERNAL.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} target="_blank" className={LINK_CLASS}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </div>
     </div>

@@ -50,35 +50,34 @@ const GROUPS = [
 ];
 
 const ToolTable = () => (
-  <div className="border-t border-[var(--rule)]">
+  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
     {GROUPS.map((group) => (
-      <div key={group.kind} className="border-b border-[var(--rule)] py-7">
-        <div className="grid grid-cols-1 gap-y-5 lg:grid-cols-12 lg:gap-x-10">
-          <div className="lg:col-span-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--accent)]">
-              {group.kind}
-            </p>
-            <p className="mt-2 max-w-[24ch] text-[0.82rem] leading-[1.6] text-[var(--graphite-soft)]">
-              {group.note}
-            </p>
-          </div>
+      <div
+        key={group.kind}
+        className="rounded-[var(--r-lg)] border border-[var(--rule)] bg-[var(--paper-raised)] p-6 shadow-[var(--shadow-sm),var(--highlight)]"
+      >
+        <p className="font-mono text-[0.625rem] uppercase tracking-[0.18em] text-[var(--accent)]">
+          {group.kind}
+        </p>
+        <p className="mt-2 text-[0.875rem] leading-[1.55] text-[var(--graphite-soft)]">
+          {group.note}
+        </p>
 
-          <dl className="lg:col-span-9">
-            {group.tools.map(([name, description]) => (
-              <div
-                key={name}
-                className="flex flex-col gap-1 border-b border-dashed border-[var(--rule)] py-2.5 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-6"
-              >
-                <dt className="shrink-0 font-mono text-[0.8rem] text-[var(--graphite)] sm:w-[13.5rem]">
-                  {name}
-                </dt>
-                <dd className="text-[0.88rem] leading-[1.6] text-[var(--graphite-soft)]">
-                  {description}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
+        <dl className="mt-5 space-y-0">
+          {group.tools.map(([name, description]) => (
+            <div
+              key={name}
+              className="border-t border-[var(--rule)] py-3 last:pb-0 sm:flex sm:items-baseline sm:gap-4"
+            >
+              <dt className="shrink-0 font-mono text-[0.8125rem] text-[var(--graphite)] sm:w-[11.5rem]">
+                {name}
+              </dt>
+              <dd className="mt-1 text-[0.875rem] leading-[1.55] text-[var(--graphite-soft)] sm:mt-0">
+                {description}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
     ))}
   </div>
