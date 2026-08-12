@@ -6,6 +6,7 @@ import AccentProvider from "@/components/landing/accent";
 import SiteFooter from "@/components/landing/site-footer";
 import SiteNav from "@/components/landing/site-nav";
 import CopyablePrompt from "@/components/landing/ai/copyable-prompt";
+import { AFTER_REPORT, BEFORE_REPORT } from "@/components/landing/ai/score-fixtures";
 import ScoreStoryboard from "@/components/landing/ai/score-storyboard";
 import ToolTable from "@/components/landing/ai/tool-table";
 
@@ -258,10 +259,10 @@ const Ai = () => (
               </dl>
             </div>
 
-            {/* Full width, not a side column: these are crops of a real panel and the
-                number in them is the whole argument, so they have to be big enough to
-                read. Squeezed into half a row they were 226px wide and illegible —
-                which was the exact failing of the screen recording they replaced. */}
+            {/* Full width, not a side column: the number in the panel is the whole
+                argument, so it has to be big enough to read. Squeezed into half a row
+                the panels were 226px wide and illegible — which was the exact failing
+                of the screen recording they replaced. */}
             <div className="lg:col-span-12">
               <ScoreStoryboard
                 caption={
@@ -270,12 +271,18 @@ const Ai = () => (
                       Fig. 1 — the score panel, before and after
                     </span>
                     <span className="mt-1.5 block">
-                      Two crops of the same panel from a real run against the editor: the agent
-                      called <code className="font-mono">get-resume</code>, rewrote the weak
-                      bullets, and called <code className="font-mono">score-resume</code> again to
-                      check it — moving the score from{" "}
-                      <span className="font-medium text-[var(--graphite)]">59</span> to{" "}
-                      <span className="font-medium text-[var(--graphite)]">91</span>.
+                      The agent called <code className="font-mono">get-resume</code>, rewrote the
+                      weak bullets, and called <code className="font-mono">score-resume</code> again
+                      to check it — moving the score from{" "}
+                      <span className="font-medium text-[var(--graphite)]">
+                        {BEFORE_REPORT.score}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium text-[var(--graphite)]">
+                        {AFTER_REPORT.score}
+                      </span>
+                      . Both panels above are the editor&rsquo;s own component, scoring the two
+                      drafts in this browser as you read — not screenshots.
                     </span>
                   </>
                 }
