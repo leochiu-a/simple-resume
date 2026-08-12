@@ -99,9 +99,13 @@ const Hero = () => {
           </dl>
         </div>
 
-        {/* The product shot, on a plate that lifts it off the ambient field. */}
+        {/* The product shot, on a plate that lifts it off the ambient field.
+            One frame, not two: the plate carries the wash itself, so the paper-white
+            sheet reads against it directly instead of sitting in a second box with a
+            second radius. The whole page shows — a resume that stops halfway down is
+            the one thing this shot must not suggest. */}
         <figure style={rise(2)} className="landing-rise m-0 lg:col-span-6">
-          <div className="rounded-[var(--r-xl)] border border-[var(--rule)] bg-[var(--paper-raised)] p-3 shadow-[var(--shadow-lg),var(--highlight)] sm:p-4">
+          <div className="overflow-hidden rounded-[var(--r-xl)] border border-[var(--rule)] bg-[var(--wash)] p-3 shadow-[var(--shadow-lg),var(--highlight)] sm:p-5">
             <div className="mb-3 flex items-center justify-between gap-4 px-1">
               <span className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-[var(--graphite-soft)]">
                 Live preview
@@ -121,7 +125,7 @@ const Hero = () => {
                     <span
                       className={`size-3.5 rounded-full transition-transform duration-200 group-hover:scale-125 motion-reduce:transition-none ${
                         entry.value === color
-                          ? "ring-2 ring-[var(--graphite)] ring-offset-2 ring-offset-[var(--paper-raised)]"
+                          ? "ring-2 ring-[var(--graphite)] ring-offset-2 ring-offset-[var(--wash)]"
                           : ""
                       }`}
                       style={{ backgroundColor: entry.value }}
@@ -131,9 +135,7 @@ const Hero = () => {
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-[var(--r-md)] bg-[var(--wash)] p-3 sm:p-5">
-              <TemplateSheet templateId={templateId} color={color} />
-            </div>
+            <TemplateSheet templateId={templateId} color={color} />
           </div>
         </figure>
       </div>
