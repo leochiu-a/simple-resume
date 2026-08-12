@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { ChevronLeftIcon } from "@/components/icons/chevron-left";
 import { ChevronRightIcon } from "@/components/icons/chevron-right";
 import { CalendarDaysIcon } from "@/components/icons/calendar-days";
+import { useIconHover } from "@/components/icons/use-icon-hover";
 
 function getStartOfCurrentMonth() {
   return startOfMonth(startOfToday());
@@ -137,6 +138,7 @@ const MonthPicker: FC<MonthPickerProps> = ({
   className,
 }) => {
   const [date, setDate] = useState<Date | null | undefined>(null);
+  const { registerIcon, startIcons, stopIcons } = useIconHover();
 
   const handleMonthChange = (newMonth: Date) => {
     setDate(newMonth);
@@ -150,15 +152,21 @@ const MonthPicker: FC<MonthPickerProps> = ({
   return (
     <Popover>
       <PopoverTrigger asChild>
+        {/* The button is up to 280px wide and the glyph is 16 of them, so the trigger
+            drives the animation rather than the icon waiting to be hovered itself. */}
         <Button
           variant={"outline"}
+          onMouseEnter={startIcons}
+          onMouseLeave={stopIcons}
+          onFocus={startIcons}
+          onBlur={stopIcons}
           className={cn(
             "md:w-[280px] justify-start text-left font-normal",
             !date && "text-muted-foreground",
             className,
           )}
         >
-          <CalendarDaysIcon className="mr-2 size-4" />
+          <CalendarDaysIcon ref={registerIcon} className="mr-2 size-4" />
           {date ? format(date, "yyyy-MMM") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>

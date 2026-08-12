@@ -58,7 +58,7 @@ const CopyIcon = forwardRef<CopyIconHandle, CopyIconProps>(
     );
     return (
       <span
-        className={cn("inline-flex size-7 [&>svg]:!size-full", className)}
+        className={cn("inline-flex size-4 [&>svg]:!size-full", className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         {...props}

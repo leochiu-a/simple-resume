@@ -2,6 +2,8 @@
 
 import { FC, useState } from "react";
 
+import { SparklesIcon } from "@/components/icons/sparkles";
+import { useIconHover } from "@/components/icons/use-icon-hover";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { LoadingSpinner } from "@/components/ui/spinner";
@@ -53,6 +55,8 @@ const OnDeviceAiButton: FC<OnDeviceAiButtonProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const translator = useTranslatorCapability(pair);
+  /* Above the early return below, where a hook cannot go. */
+  const { registerIcon, startIcons, stopIcons } = useIconHover();
 
   // Both still probing: a control that appears and then changes its mind reads
   // worse than one that arrives a moment late. Matches the old badge's behaviour.
@@ -71,36 +75,26 @@ const OnDeviceAiButton: FC<OnDeviceAiButtonProps> = ({
       ? "On-device AI — not available in this browser"
       : "On-device AI";
 
-  /* Noto's animated sparkles, self-hosted from `public/`.
+  /* Was Noto's animated sparkles: a 24KB WebP self-hosted from `public/`, played on a
+     loop, with a still SVG behind a `prefers-reduced-motion` source.
 
-     Not the fonts.gstatic.com URL it ships as: this page promises the resume never
-     leaves the browser, the fonts are already self-hosted by next/font, and an
-     icon fetched from a third party would be the only outbound request the editor
-     makes. The file is also rebuilt at 64px and half the frame rate — 24KB rather
-     than the 188KB original, for a mark that renders at sixteen pixels.
+     Now the same mark from the same icon set as the rest of the editor. It gives up the
+     loop — this plays on hover or focus instead — which is the trade: a mark that
+     animates on demand asks for attention rather than holding it. It also drops two image
+     assets and one raster-only compromise, since an SVG takes `currentColor` and the
+     "nothing here works" dimming no longer needs a filter to fake it.
 
-     A raster cannot take `currentColor`, so the dimming that says "nothing here
-     works" is done with a filter instead.
+     Reduced motion is Motion's job now, not a `<source media>` — see `MotionProvider`.
 
      The spinner takes its place rather than joining it, the same swap the download
      button makes. */
   const mark = downloading ? (
     <LoadingSpinner className="size-3.5" />
   ) : (
-    <picture>
-      {/* No JS needed to respect the setting: <source media> takes any media
-          query, and the still frame is the same artwork. */}
-      <source srcSet="/sparkles.svg" media="(prefers-reduced-motion: reduce)" />
-      {/* eslint-disable-next-line @next/next/no-img-element -- an animated WebP
-          inside <picture>; next/image cannot serve either. */}
-      <img
-        src="/sparkles.webp"
-        alt=""
-        width={16}
-        height={16}
-        className={cn("size-4", allUnavailable && "opacity-40 grayscale")}
-      />
-    </picture>
+    <SparklesIcon
+      ref={registerIcon}
+      className={cn("size-4", allUnavailable && "opacity-40 grayscale")}
+    />
   );
 
   const iconTrigger = (
@@ -111,6 +105,10 @@ const OnDeviceAiButton: FC<OnDeviceAiButtonProps> = ({
         size="icon"
         aria-busy={downloading}
         aria-label="On-device AI"
+        onMouseEnter={startIcons}
+        onMouseLeave={stopIcons}
+        onFocus={startIcons}
+        onBlur={stopIcons}
         className={cn(allUnavailable && "text-muted-foreground")}
       >
         {mark}
