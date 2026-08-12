@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRightIcon } from "@/components/icons/arrow-right";
 
 import { SWATCHES, useAccent } from "./accent";
 import TemplateSheet from "./template-sheet";
@@ -69,7 +69,7 @@ const Hero = () => {
               className="group inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient)] px-6 py-3 text-[0.9375rem] font-medium text-white shadow-[0_6px_20px_-6px_hsl(184_80%_40%/0.55)] transition-[transform,box-shadow] duration-200 hover:-translate-y-px hover:shadow-[0_10px_28px_-6px_hsl(184_80%_40%/0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] motion-reduce:transition-none"
             >
               Create your resume
-              <ArrowRight
+              <ArrowRightIcon
                 aria-hidden
                 className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
               />

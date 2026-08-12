@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
-import { FaPlus, FaTrash } from "react-icons/fa6";
+import { FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import { Resume } from "@/types/resume";
@@ -13,6 +13,7 @@ import { LabeledBulletTextAreaField } from "./labeled-bullet-textarea-field";
 import RewritePopover from "./rewrite-popover";
 import VisibleSwitch from "./visible-switch";
 import { Section, SectionBody, SectionTitle } from "./section";
+import { PlusIcon } from "@/components/icons/plus";
 
 const EmploymentHistory: FC = () => {
   const { control, watch, getValues } = useFormContext<Resume>();
@@ -129,7 +130,7 @@ const EmploymentHistory: FC = () => {
         ))}
 
         <Button variant="outline" onClick={handleAdd} type="button">
-          <FaPlus className="mr-2 size-4" />
+          <PlusIcon className="mr-2 size-4" />
           Add
         </Button>
       </SectionBody>

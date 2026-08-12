@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState } from "react";
-import { Gauge } from "lucide-react";
+import { GaugeIcon } from "@/components/icons/gauge";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -54,7 +54,7 @@ const ScoreButton: FC<ScoreButtonProps> = ({ report, resume, review, onClearRevi
     <Sheet onOpenChange={(open) => open && setOpenedAt(Date.now())}>
       <SheetTrigger asChild>
         <Button variant="outline" type="button" className="gap-2" aria-label="Resume score">
-          <Gauge className="size-4" />
+          <GaugeIcon className="size-4" />
           <span className="flex items-center gap-1.5">
             <span className={cn("size-1.5 rounded-full", BAND_DOT[band])} />
             <span className="font-mono text-xs tabular-nums">{report.score}</span>

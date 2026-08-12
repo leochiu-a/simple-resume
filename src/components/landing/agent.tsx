@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Terminal } from "lucide-react";
+import { ArrowRightIcon } from "@/components/icons/arrow-right";
+import { TerminalIcon } from "@/components/icons/terminal";
 
 /**
  * The WebMCP section, as a terminal-ish transcript.
@@ -27,7 +28,7 @@ const Agent = () => (
         {/* Transcript first on desktop — the evidence leads, the explanation follows. */}
         <div className="lg:col-span-6 lg:order-2">
           <p className="inline-flex items-center gap-2 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--graphite-soft)]">
-            <Terminal aria-hidden className="size-3.5 text-[var(--accent)]" />
+            <TerminalIcon aria-hidden className="size-3.5 text-[var(--accent)]" />
             Claude Code · WebMCP
           </p>
           <h2 className="mt-3 max-w-[22ch] font-display text-[clamp(1.9rem,3.4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.028em]">
@@ -45,7 +46,7 @@ const Agent = () => (
             className="group mt-8 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
             The 17 tools
-            <ArrowRight
+            <ArrowRightIcon
               aria-hidden
               className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
             />

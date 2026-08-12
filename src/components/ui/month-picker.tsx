@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { FaChevronLeft, FaChevronRight, FaCalendar } from "react-icons/fa6";
+import { FaCalendar } from "react-icons/fa6";
 import {
   add,
   eachMonthOfInterval,
@@ -15,6 +15,8 @@ import {
 import { Button, buttonVariants } from "./button";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { cn } from "@/lib/utils";
+import { ChevronLeftIcon } from "@/components/icons/chevron-left";
+import { ChevronRightIcon } from "@/components/icons/chevron-right";
 
 function getStartOfCurrentMonth() {
   return startOfMonth(startOfToday());
@@ -69,7 +71,7 @@ const MonthCalendar: FC<MonthCalendarProps> = ({ currentMonth = new Date(), onMo
                 type="button"
                 onClick={previousYear}
               >
-                <FaChevronLeft className="size-4" />
+                <ChevronLeftIcon className="size-4" />
               </button>
               <button
                 name="next-year"
@@ -83,7 +85,7 @@ const MonthCalendar: FC<MonthCalendarProps> = ({ currentMonth = new Date(), onMo
                 disabled={isFuture(add(firstDayCurrentYear, { years: 1 }))}
                 onClick={nextYear}
               >
-                <FaChevronRight className="size-4" />
+                <ChevronRightIcon className="size-4" />
               </button>
             </div>
           </div>

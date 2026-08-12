@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRightIcon } from "@/components/icons/arrow-right";
 
 /**
  * The closing band, and the last place the signature ramp appears.
@@ -42,7 +42,7 @@ const Closing = () => (
           className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-7 py-3.5 text-[0.9375rem] font-semibold text-[var(--graphite-fixed)] shadow-[0_8px_24px_-8px_rgb(0_0_0/0.35)] transition-transform duration-200 hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white motion-reduce:transition-none"
         >
           Create your resume
-          <ArrowRight
+          <ArrowRightIcon
             aria-hidden
             className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
           />

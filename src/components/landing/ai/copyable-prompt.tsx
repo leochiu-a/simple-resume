@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, Copy } from "lucide-react";
+import { CheckIcon } from "@/components/icons/check";
+import { CopyIcon } from "@/components/icons/copy";
 import { useEffect, useState } from "react";
 
 import { SITE_URL } from "@/constants/site";
@@ -68,9 +69,9 @@ const CopyablePrompt = ({ label, prompt }: { label: string; prompt: string }) =>
           className="ml-auto inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:border-white/35 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60"
         >
           {copied ? (
-            <Check aria-hidden className="size-3 text-[var(--g1)]" />
+            <CheckIcon aria-hidden className="size-3 text-[var(--g1)]" />
           ) : (
-            <Copy aria-hidden className="size-3" />
+            <CopyIcon aria-hidden className="size-3" />
           )}
           {copied ? "Copied" : "Copy"}
         </button>

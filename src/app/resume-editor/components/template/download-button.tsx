@@ -1,5 +1,7 @@
 import { usePDF } from "@react-pdf/renderer";
-import { Check, ChevronDown, Share } from "lucide-react";
+import { Share } from "lucide-react";
+import { CheckIcon } from "@/components/icons/check";
+import { ChevronDownIcon } from "@/components/icons/chevron-down";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
@@ -63,7 +65,7 @@ const CopyItem = ({
           !copied && "opacity-0",
         )}
       >
-        <Check className="size-4" />
+        <CheckIcon className="size-4" />
         Copied
       </span>
     </span>
@@ -181,7 +183,7 @@ const DownloadButton = ({
                 button that briefly turns into an unlabelled box reads as broken. */}
             {instance.loading ? <LoadingSpinner /> : <Share className="size-4" />}
             <span className="ml-2">Share</span>
-            <ChevronDown className="ml-1 size-3 opacity-60" />
+            <ChevronDownIcon className="ml-1 size-3 opacity-60" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

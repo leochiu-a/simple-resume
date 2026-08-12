@@ -1,6 +1,6 @@
 import { FC, Fragment } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
-import { FaPlus, FaTrash } from "react-icons/fa6";
+import { FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import VisibleSwitch from "./visible-switch";
 import { Section, SectionBody, SectionTitle } from "./section";
+import { PlusIcon } from "@/components/icons/plus";
 
 const Skills: FC = () => {
   const { control, watch } = useFormContext<Resume>();
@@ -55,7 +56,7 @@ const Skills: FC = () => {
         ))}
 
         <Button variant="outline" onClick={handleAdd} type="button">
-          <FaPlus className="mr-2 size-4" />
+          <PlusIcon className="mr-2 size-4" />
           Add
         </Button>
       </SectionBody>

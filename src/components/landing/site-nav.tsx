@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { MouseEvent, useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
-import { SiGithub } from "react-icons/si";
+import { MoonIcon } from "@/components/icons/moon";
+import { SunIcon } from "@/components/icons/sun";
 import { useTheme } from "next-themes";
 
 import { applyTheme } from "@/lib/theme-transition";
+import { GithubIcon } from "@/components/icons/github";
 
 /**
  * The landing page's own toggle rather than the editor's `ModeToggle`: this one is
@@ -31,9 +32,9 @@ const ThemeToggle = () => {
       className="flex size-8 items-center justify-center rounded-full text-[var(--graphite-soft)] transition-colors duration-200 hover:bg-[var(--wash)] hover:text-[var(--graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
     >
       {mounted && resolvedTheme === "dark" ? (
-        <Moon className="size-4" />
+        <MoonIcon className="size-4" />
       ) : (
-        <Sun className="size-4" />
+        <SunIcon className="size-4" />
       )}
     </button>
   );
@@ -108,7 +109,7 @@ const SiteNav = () => {
             aria-label="Source on GitHub"
             className="flex size-8 items-center justify-center rounded-full text-[var(--graphite-soft)] transition-colors duration-200 hover:bg-[var(--wash)] hover:text-[var(--graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
-            <SiGithub className="size-4" />
+            <GithubIcon className="size-4" />
           </Link>
           <ThemeToggle />
           <Link

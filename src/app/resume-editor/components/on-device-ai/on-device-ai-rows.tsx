@@ -1,13 +1,13 @@
 "use client";
 
 import { FC } from "react";
-import { FaRobot } from "react-icons/fa6";
-import { Languages } from "lucide-react";
+import { LanguagesIcon } from "@/components/icons/languages";
 
 import { LangPair, TranslatorStatus } from "@/lib/translator";
 import { WebMcpStatus } from "@/lib/webmcp";
 import { useTranslatorCapability } from "../../hooks/useTranslatorCapability";
 import CapabilityRow, { CapabilityState } from "./capability-row";
+import { BotIcon } from "@/components/icons/bot";
 
 interface OnDeviceAiRowsProps {
   mcpStatus: WebMcpStatus;
@@ -114,14 +114,14 @@ const OnDeviceAiRows: FC<OnDeviceAiRowsProps> = ({ mcpStatus, mcpToolCount, pair
     <div>
       <div className="divide-y">
         <CapabilityRow
-          icon={<FaRobot className="size-3.5" />}
+          icon={<BotIcon className="size-3.5" />}
           title="Browser agent"
           state={mcpRowState(mcpStatus)}
           detail={mcpDetail(mcpStatus, mcpToolCount)}
         />
 
         <CapabilityRow
-          icon={<Languages className="size-3.5" />}
+          icon={<LanguagesIcon className="size-3.5" />}
           title="Translation"
           state={TRANSLATOR_ROW_STATE[translator.state]}
           detail={translationDetail(translator, pairLabel, !!pair)}

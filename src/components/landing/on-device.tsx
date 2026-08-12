@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRightIcon } from "@/components/icons/arrow-right";
+import { SparklesIcon } from "@/components/icons/sparkles";
 
 /**
  * The built-in model, as a code/result pair.
@@ -24,7 +25,7 @@ const OnDevice = () => (
       <div className="grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <p className="inline-flex items-center gap-2 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--graphite-soft)]">
-            <Sparkles aria-hidden className="size-3.5 text-[var(--accent)]" />
+            <SparklesIcon aria-hidden className="size-3.5 text-[var(--accent)]" />
             On-device AI
           </p>
           <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.028em]">
@@ -54,7 +55,7 @@ const OnDevice = () => (
             className="group mt-8 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
             How it works
-            <ArrowRight
+            <ArrowRightIcon
               aria-hidden
               className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
             />
@@ -79,7 +80,7 @@ const OnDevice = () => (
               aria-hidden
               className="grid size-8 place-items-center rounded-full bg-[image:var(--gradient)] text-white shadow-[0_4px_14px_-4px_hsl(184_80%_40%/0.6)]"
             >
-              <Sparkles className="size-4" />
+              <SparklesIcon className="size-4" />
             </span>
           </div>
 

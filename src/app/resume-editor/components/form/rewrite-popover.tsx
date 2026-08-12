@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FaWandMagicSparkles } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,6 +15,7 @@ import {
 } from "@/lib/rewrite";
 import { cn } from "@/lib/utils";
 import { useLanguageModelCapability } from "../../hooks/useLanguageModelCapability";
+import { SparklesIcon } from "@/components/icons/sparkles";
 
 interface RewritePopoverProps {
   section: RewriteSection;
@@ -141,7 +141,7 @@ const RewritePopover = ({ section, getValue, onApply, className }: RewritePopove
             className,
           )}
         >
-          <FaWandMagicSparkles className="size-3" />
+          <SparklesIcon className="size-3" />
           Improve
         </button>
       </PopoverTrigger>

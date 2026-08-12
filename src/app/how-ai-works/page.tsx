@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Ban, Sparkles, Terminal } from "lucide-react";
+import { ArrowRightIcon } from "@/components/icons/arrow-right";
+import { BanIcon } from "@/components/icons/ban";
+import { SparklesIcon } from "@/components/icons/sparkles";
+import { TerminalIcon } from "@/components/icons/terminal";
 
 import AccentProvider from "@/components/landing/accent";
 import SiteFooter from "@/components/landing/site-footer";
@@ -148,7 +151,7 @@ const Ai = () => (
           <div className="grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <p className={SECTION_LABEL}>
-                <Sparkles aria-hidden className="size-3.5 text-[var(--accent)]" />
+                <SparklesIcon aria-hidden className="size-3.5 text-[var(--accent)]" />
                 Built-in AI
               </p>
               <h2 className={SECTION_TITLE}>The browser brought its own model.</h2>
@@ -221,7 +224,7 @@ const Ai = () => (
           <div className="grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12">
             <div className="lg:col-span-12">
               <p className={SECTION_LABEL}>
-                <Terminal aria-hidden className="size-3.5 text-[var(--accent)]" />
+                <TerminalIcon aria-hidden className="size-3.5 text-[var(--accent)]" />
                 Claude Code · WebMCP
               </p>
               <h2 className={SECTION_TITLE}>Or hand the whole editor to an agent.</h2>
@@ -317,7 +320,7 @@ const Ai = () => (
                 className="group mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--graphite)] px-5 py-2.5 text-[0.9375rem] font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] motion-reduce:transition-none"
               >
                 Open the editor
-                <ArrowRight
+                <ArrowRightIcon
                   aria-hidden
                   className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
                 />
@@ -350,7 +353,7 @@ const Ai = () => (
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="rounded-[var(--r-lg)] border border-[var(--rule)] bg-[var(--paper-raised)] p-6 shadow-[var(--shadow-sm),var(--highlight)]">
               <p className="inline-flex items-center gap-2 font-mono text-[0.625rem] uppercase tracking-[0.18em] text-[var(--graphite-soft)]">
-                <Ban aria-hidden className="size-3.5" />
+                <BanIcon aria-hidden className="size-3.5" />
                 What an agent cannot do
               </p>
               <dl className="mt-5">
@@ -385,7 +388,7 @@ const Ai = () => (
                 className="mt-5 inline-flex w-fit items-center gap-2 font-mono text-[0.8125rem] font-medium text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
               >
                 docs/webmcp.md
-                <ArrowRight aria-hidden className="size-3.5" />
+                <ArrowRightIcon aria-hidden className="size-3.5" />
               </Link>
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, X } from "lucide-react";
+import { CheckIcon } from "@/components/icons/check";
+import { XIcon } from "@/components/icons/x";
 import { Sketch as SketchPicker } from "@uiw/react-color";
 
 import { Button } from "@/components/ui/button";
@@ -77,7 +78,7 @@ const AppearancePanel = ({
           onClick={onClose}
           aria-label="Close appearance"
         >
-          <X className="size-4" />
+          <XIcon className="size-4" />
         </Button>
       </div>
 
@@ -171,7 +172,9 @@ const AppearancePanel = ({
                 />
               </div>
               <span className="flex items-center gap-1.5 text-sm font-medium">
-                <Check className={cn("size-3.5 shrink-0 text-brand", !isCurrent && "opacity-0")} />
+                <CheckIcon
+                  className={cn("size-3.5 shrink-0 text-brand", !isCurrent && "opacity-0")}
+                />
                 {entry.label}
               </span>
             </button>

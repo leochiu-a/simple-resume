@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { CheckIcon } from "@/components/icons/check";
 
 import { TEMPLATES } from "@/app/resume-editor/components/template/registry";
 
@@ -77,7 +77,7 @@ const Templates = () => {
                     >
                       {active ? (
                         <>
-                          <Check aria-hidden className="size-3" />
+                          <CheckIcon aria-hidden className="size-3" />
                           Previewing
                         </>
                       ) : (

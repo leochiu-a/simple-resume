@@ -1,6 +1,7 @@
 import React from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { Tooltip } from "@/components/ui/tooltip";
+import { EyeIcon } from "@/components/icons/eye";
+import { EyeOffIcon } from "@/components/icons/eye-off";
 
 const VisibleSwitch = ({
   value: visible,
@@ -22,7 +23,7 @@ const VisibleSwitch = ({
     // rewrite trigger now sharing the heading.
     <Tooltip title={label}>
       <button onClick={handleChange} type="button" aria-label={label}>
-        {visible ? <FaEye /> : <FaEyeSlash />}
+        {visible ? <EyeIcon className="size-4" /> : <EyeOffIcon className="size-4" />}
       </button>
     </Tooltip>
   );

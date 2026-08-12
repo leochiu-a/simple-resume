@@ -1,5 +1,6 @@
 import { FC } from "react";
-import { Bot, X } from "lucide-react";
+import { BotIcon } from "@/components/icons/bot";
+import { XIcon } from "@/components/icons/x";
 
 import { Button } from "@/components/ui/button";
 import { AgentReview, ReviewNote } from "@/lib/resume-score/review";
@@ -56,7 +57,7 @@ const ReviewSection: FC<ReviewSectionProps> = ({ review, resume, now, onClear })
   <section className="space-y-2">
     <div className="flex items-center justify-between gap-2">
       <h3 className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-        <Bot className="size-3.5" />
+        <BotIcon className="size-3.5" />
         From your assistant
       </h3>
       <Button
@@ -66,7 +67,7 @@ const ReviewSection: FC<ReviewSectionProps> = ({ review, resume, now, onClear })
         onClick={onClear}
         className="h-6 px-1.5 text-muted-foreground"
       >
-        <X className="size-3.5" />
+        <XIcon className="size-3.5" />
         <span className="sr-only">Dismiss review</span>
       </Button>
     </div>

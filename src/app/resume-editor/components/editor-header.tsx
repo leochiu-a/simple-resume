@@ -4,7 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { FC } from "react";
 import { useTheme } from "next-themes";
-import { Monitor, MoreHorizontal, Moon, Sun } from "lucide-react";
+import { Monitor, MoreHorizontal } from "lucide-react";
+import { MoonIcon } from "@/components/icons/moon";
+import { SunIcon } from "@/components/icons/sun";
 
 import {
   DropdownMenu,
@@ -177,11 +179,11 @@ const EditorHeader: FC<EditorHeaderProps> = ({
                   glyph, so an item with an icon starts its text 32px in and one
                   without starts at 8px. Mixed, the menu reads as two lists. */}
               <DropdownMenuItem onClick={(e) => applyTheme(e, () => setTheme("light"))}>
-                <Sun />
+                <SunIcon />
                 Light
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => applyTheme(e, () => setTheme("dark"))}>
-                <Moon />
+                <MoonIcon />
                 Dark
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => applyTheme(e, () => setTheme("system"))}>

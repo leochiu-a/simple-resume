@@ -1,8 +1,10 @@
 "use client";
 
 import { FC, useState } from "react";
-import { Check, ChevronDown, CircleAlert, CircleX, ShieldCheck } from "lucide-react";
+import { Check, CircleAlert, CircleX } from "lucide-react";
 
+import { ChevronDownIcon } from "@/components/icons/chevron-down";
+import { ShieldCheckIcon } from "@/components/icons/shield-check";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AgentReview } from "@/lib/resume-score/review";
 import { CheckResult, potentialGain, ScoreReport } from "@/lib/resume-score/rules";
@@ -18,6 +20,11 @@ const BAND_HEADLINE: Record<ReturnType<typeof scoreBand>, string> = {
   strong: "Interview ready",
 };
 
+/* Stays on `lucide-react`, all three of it. `circle-alert` and `circle-x` have no
+   animated counterpart in the registry, and a table of icon components can only have
+   one call signature — the animated ones take `HTMLAttributes<HTMLDivElement>` where
+   these take SVG props. Swapping only `pass` would also animate one row of a status
+   list and leave its neighbours still. */
 const STATUS_ICON = {
   fail: CircleX,
   warn: CircleAlert,
@@ -77,7 +84,7 @@ const CheckRow: FC<CheckRowProps> = ({ check, applicableWeight }) => {
           </span>
         )}
         {hasDetail && (
-          <ChevronDown
+          <ChevronDownIcon
             className={cn(
               "size-3.5 shrink-0 text-muted-foreground transition-transform",
               open && "rotate-180",
@@ -162,7 +169,7 @@ const ScorePanel: FC<ScorePanelProps> = ({ report, resume, review, onClearReview
       {/* The claim that distinguishes this from every hosted scorer, stated where
           it is relevant rather than in marketing copy. */}
       <p className="flex items-start gap-2 rounded-sm border border-dashed px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-        <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
+        <ShieldCheckIcon className="mt-0.5 size-3.5 shrink-0" />
         <span>
           Scored entirely in this browser. Your resume is never uploaded, and this panel makes no
           network requests.
