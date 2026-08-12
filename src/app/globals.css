@@ -334,6 +334,40 @@
   }
 
   /**
+   * A progress bar with no percentage to show — a segment that travels the track.
+   *
+   * This used to be `animate-pulse`, which fades the whole bar's opacity in and out.
+   * That is the skeleton-placeholder idiom, and on a solid segment it reads as a
+   * flickering bar rather than as work in progress. Travel is the convention for
+   * indeterminate progress because it says the same thing the percentage would —
+   * something is still happening — without claiming to know how much is left.
+   *
+   * `translateX` rather than animating a position, so this stays on the compositor:
+   * the download it reports on is competing for the same main thread.
+   */
+  @keyframes progress-travel {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(300%);
+    }
+  }
+
+  .progress-travel {
+    width: 33%;
+    animation: progress-travel 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  /* Still a third of a track, just not moving: the label beside it carries the
+     meaning on its own, so there is nothing to replace the motion with. */
+  @media (prefers-reduced-motion: reduce) {
+    .progress-travel {
+      animation: none;
+    }
+  }
+
+  /**
    * `isolation` gives the page a stacking context of its own so the hero's ambient
    * field can sit at `z-index: -1` — above this element's background, below every
    * piece of content — without escaping to the root.
