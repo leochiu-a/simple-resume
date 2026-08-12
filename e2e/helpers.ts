@@ -167,9 +167,22 @@ export const languageButton = (page: Page, label: string): Locator =>
  */
 export const preview = (page: Page) => page.frameLocator('iframe[title="Resume preview"]');
 
-/** The landing page's hero sheet, which is a third iframe-hosted sheet — the same
- *  rendering as the editor's preview, addressed by its own title. */
-export const landingSheet = (page: Page) => page.frameLocator('iframe[title="Template preview"]');
+/**
+ * The landing page's hero sheet, which is a third iframe-hosted sheet — the same
+ * rendering as the editor's preview, addressed by its own title.
+ *
+ * `.first()` is required, not defensive: the template gallery renders all five
+ * templates live, so this title now matches six frames and `frameLocator` is strict.
+ * The hero's sheet is first in the DOM, which is what makes the index meaningful
+ * rather than arbitrary.
+ */
+export const landingSheet = (page: Page) =>
+  page.frameLocator('iframe[title="Template preview"]').first();
+
+/** One gallery card's sheet, by the template's position in `TEMPLATES`. Offset by one
+ *  to step over the hero's copy. */
+export const gallerySheet = (page: Page, index: number) =>
+  page.frameLocator('iframe[title="Template preview"]').nth(index + 1);
 
 export interface PdfFacts {
   bytes: number;
