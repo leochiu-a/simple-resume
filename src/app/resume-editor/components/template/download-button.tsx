@@ -1,7 +1,8 @@
 import { usePDF } from "@react-pdf/renderer";
-import { Share } from "lucide-react";
 import { CheckIcon } from "@/components/icons/check";
 import { ChevronDownIcon } from "@/components/icons/chevron-down";
+import { UploadIcon } from "@/components/icons/upload";
+import { useIconHover } from "@/components/icons/use-icon-hover";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
@@ -106,6 +107,7 @@ const DownloadButton = ({
     document: template.render({ resume, backgroundColor }),
   });
   const [startDownload, setStartDownload] = useState(false);
+  const { registerIcon, startIcons, stopIcons } = useIconHover();
   /* Which item last confirmed a copy, rather than a boolean per item: only one
      tick can be showing at a time, and a new copy must clear the other's. */
   const [copied, setCopied] = useState<"markdown" | "link" | null>(null);
@@ -178,10 +180,29 @@ const DownloadButton = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button type="button" aria-label="Share">
+          {/* `upload` rather than a `share` that the registry does not have. The two
+              glyphs are the same drawing — lucide's share is a tray, an arrowhead and a
+              stem, and so is this — which is why the swap does not change what the
+              button looks like or says. Its animation lifts the arrow out of the tray,
+              which is the one thing every item in this menu does.
+
+              Driven from the button: the pointer is on the word far more often than on
+              the 16px glyph. */}
+          <Button
+            type="button"
+            aria-label="Share"
+            onMouseEnter={startIcons}
+            onMouseLeave={stopIcons}
+            onFocus={startIcons}
+            onBlur={stopIcons}
+          >
             {/* The spinner takes the icon's place rather than the whole label: a
                 button that briefly turns into an unlabelled box reads as broken. */}
-            {instance.loading ? <LoadingSpinner /> : <Share className="size-4" />}
+            {instance.loading ? (
+              <LoadingSpinner />
+            ) : (
+              <UploadIcon ref={registerIcon} className="size-4" />
+            )}
             <span className="ml-2">Share</span>
             <ChevronDownIcon className="ml-1 size-3 opacity-60" />
           </Button>

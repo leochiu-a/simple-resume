@@ -1,31 +1,33 @@
 "use client";
 
-import type { Transition, Variants } from "motion/react";
+import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
-export interface DeleteIconHandle {
+export interface UploadIconHandle {
   startAnimation: () => void;
   stopAnimation: () => void;
 }
 
-type DeleteIconProps = HTMLAttributes<HTMLSpanElement>;
+type UploadIconProps = HTMLAttributes<HTMLSpanElement>;
 
-const LID_VARIANTS: Variants = {
+const ARROW_VARIANTS: Variants = {
   normal: { y: 0 },
-  animate: { y: -1.1 },
+  animate: {
+    y: -2,
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 10,
+      mass: 1,
+    },
+  },
 };
 
-const SPRING_TRANSITION: Transition = {
-  type: "spring",
-  stiffness: 500,
-  damping: 30,
-};
-
-const DeleteIcon = forwardRef<DeleteIconHandle, DeleteIconProps>(
+const UploadIcon = forwardRef<UploadIconHandle, UploadIconProps>(
   ({ onMouseEnter, onMouseLeave, className, ...props }, ref) => {
     const controls = useAnimation();
     const isControlledRef = useRef(false);
@@ -77,49 +79,17 @@ const DeleteIcon = forwardRef<DeleteIconHandle, DeleteIconProps>(
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <motion.g animate={controls} transition={SPRING_TRANSITION} variants={LID_VARIANTS}>
-            <path d="M3 6h18" />
-            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <motion.g animate={controls} variants={ARROW_VARIANTS}>
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" x2="12" y1="3" y2="15" />
           </motion.g>
-          <motion.path
-            animate={controls}
-            d="M19 8v12c0 1-1 2-2 2H7c-1 0-2-1-2-2V8"
-            transition={SPRING_TRANSITION}
-            variants={{
-              normal: { d: "M19 8v12c0 1-1 2-2 2H7c-1 0-2-1-2-2V8" },
-              animate: { d: "M19 9v12c0 1-1 2-2 2H7c-1 0-2-1-2-2V9" },
-            }}
-          />
-          <motion.line
-            animate={controls}
-            transition={SPRING_TRANSITION}
-            variants={{
-              normal: { y1: 11, y2: 17 },
-              animate: { y1: 11.5, y2: 17.5 },
-            }}
-            x1="10"
-            x2="10"
-            y1="11"
-            y2="17"
-          />
-          <motion.line
-            animate={controls}
-            transition={SPRING_TRANSITION}
-            variants={{
-              normal: { y1: 11, y2: 17 },
-              animate: { y1: 11.5, y2: 17.5 },
-            }}
-            x1="14"
-            x2="14"
-            y1="11"
-            y2="17"
-          />
         </svg>
       </span>
     );
   },
 );
 
-DeleteIcon.displayName = "DeleteIcon";
+UploadIcon.displayName = "UploadIcon";
 
-export { DeleteIcon };
+export { UploadIcon };
