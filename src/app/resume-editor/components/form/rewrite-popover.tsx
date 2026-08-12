@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguageModelCapability } from "../../hooks/useLanguageModelCapability";
 import { SparklesIcon } from "@/components/icons/sparkles";
+import { useIconHover } from "@/components/icons/use-icon-hover";
 
 interface RewritePopoverProps {
   section: RewriteSection;
@@ -40,6 +41,7 @@ interface RewritePopoverProps {
 const RewritePopover = ({ section, getValue, onApply, className }: RewritePopoverProps) => {
   const guide = SECTION_GUIDES[section];
   const model = useLanguageModelCapability();
+  const { registerIcon, startIcons, stopIcons } = useIconHover();
 
   const [open, setOpen] = useState(false);
   const [running, setRunning] = useState<RewriteAction | null>(null);
@@ -133,15 +135,23 @@ const RewritePopover = ({ section, getValue, onApply, className }: RewritePopove
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
+        {/* The pointer is over the word far more often than over the 12px glyph, so the
+            whole trigger drives the animation. Writing the handlers on the element is
+            safe under `asChild`: Radix's Slot chains its own onto these rather than
+            replacing them. */}
         <button
           type="button"
           aria-label={`${guide.title} — suggestions`}
+          onMouseEnter={startIcons}
+          onMouseLeave={stopIcons}
+          onFocus={startIcons}
+          onBlur={stopIcons}
           className={cn(
             "inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground",
             className,
           )}
         >
-          <SparklesIcon className="size-3" />
+          <SparklesIcon ref={registerIcon} className="size-3" />
           Improve
         </button>
       </PopoverTrigger>

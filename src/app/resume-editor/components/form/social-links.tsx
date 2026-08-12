@@ -1,8 +1,6 @@
 import { FC, Fragment } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
-import { FaTrash } from "react-icons/fa6";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -11,6 +9,8 @@ import { cn } from "@/lib/utils";
 import VisibleSwitch from "./visible-switch";
 import { Section, SectionBody, SectionTitle } from "./section";
 import { PlusIcon } from "@/components/icons/plus";
+import { IconButton } from "@/components/ui/icon-button";
+import { DeleteIcon } from "@/components/icons/delete";
 
 const SocialLinksSection: FC = () => {
   const { control, watch } = useFormContext<Resume>();
@@ -54,17 +54,16 @@ const SocialLinksSection: FC = () => {
                   onClick={() => remove(index)}
                   className="text-muted-foreground transition-colors hover:text-destructive"
                 >
-                  <FaTrash />
+                  <DeleteIcon className="size-4" />
                 </button>
               </Tooltip>
             </div>
           </Fragment>
         ))}
 
-        <Button variant="outline" onClick={handleAdd} type="button">
-          <PlusIcon className="mr-2 size-4" />
+        <IconButton variant="outline" onClick={handleAdd} type="button" icon={PlusIcon}>
           Add
-        </Button>
+        </IconButton>
       </SectionBody>
     </Section>
   );

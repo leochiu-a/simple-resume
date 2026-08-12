@@ -2,6 +2,7 @@
 
 import { FC, useState } from "react";
 import { GaugeIcon } from "@/components/icons/gauge";
+import { useIconHover } from "@/components/icons/use-icon-hover";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +45,7 @@ interface ScoreButtonProps {
  */
 const ScoreButton: FC<ScoreButtonProps> = ({ report, resume, review, onClearReview }) => {
   const band = scoreBand(report.score);
+  const { registerIcon, startIcons, stopIcons } = useIconHover();
   /* Stamped when the drawer opens rather than read during render, so the review's
      "4 minutes ago" is fixed for as long as you are reading it — and so nothing
      here calls `Date.now()` during the server pass, which would not match the
@@ -53,8 +55,17 @@ const ScoreButton: FC<ScoreButtonProps> = ({ report, resume, review, onClearRevi
   return (
     <Sheet onOpenChange={(open) => open && setOpenedAt(Date.now())}>
       <SheetTrigger asChild>
-        <Button variant="outline" type="button" className="gap-2" aria-label="Resume score">
-          <GaugeIcon className="size-4" />
+        <Button
+          variant="outline"
+          type="button"
+          className="gap-2"
+          aria-label="Resume score"
+          onMouseEnter={startIcons}
+          onMouseLeave={stopIcons}
+          onFocus={startIcons}
+          onBlur={stopIcons}
+        >
+          <GaugeIcon ref={registerIcon} className="size-4" />
           <span className="flex items-center gap-1.5">
             <span className={cn("size-1.5 rounded-full", BAND_DOT[band])} />
             <span className="font-mono text-xs tabular-nums">{report.score}</span>

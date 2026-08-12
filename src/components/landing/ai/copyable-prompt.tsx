@@ -2,6 +2,7 @@
 
 import { CheckIcon } from "@/components/icons/check";
 import { CopyIcon } from "@/components/icons/copy";
+import { useIconHover } from "@/components/icons/use-icon-hover";
 import { useEffect, useState } from "react";
 
 import { SITE_URL } from "@/constants/site";
@@ -27,6 +28,7 @@ const ORIGIN_TOKEN = "{{origin}}";
  */
 const CopyablePrompt = ({ label, prompt }: { label: string; prompt: string }) => {
   const [copied, setCopied] = useState(false);
+  const { registerIcon, startIcons, stopIcons } = useIconHover();
   /* The canonical origin is only what the server-rendered pass shows, and what
      anything reading the HTML without running it gets. A visitor's browser replaces
      it with their own origin in the effect below. */
@@ -66,12 +68,16 @@ const CopyablePrompt = ({ label, prompt }: { label: string; prompt: string }) =>
         <button
           type="button"
           onClick={copy}
+          onMouseEnter={startIcons}
+          onMouseLeave={stopIcons}
+          onFocus={startIcons}
+          onBlur={stopIcons}
           className="ml-auto inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:border-white/35 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60"
         >
           {copied ? (
-            <CheckIcon aria-hidden className="size-3 text-[var(--g1)]" />
+            <CheckIcon ref={registerIcon} aria-hidden className="size-3 text-[var(--g1)]" />
           ) : (
-            <CopyIcon aria-hidden className="size-3" />
+            <CopyIcon ref={registerIcon} aria-hidden className="size-3" />
           )}
           {copied ? "Copied" : "Copy"}
         </button>

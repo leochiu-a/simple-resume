@@ -1,8 +1,6 @@
 import { FC, useState } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
-import { FaTrash } from "react-icons/fa6";
 
-import { Button } from "@/components/ui/button";
 import { Resume } from "@/types/resume";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -13,6 +11,8 @@ import RewritePopover from "./rewrite-popover";
 import VisibleSwitch from "./visible-switch";
 import { Section, SectionBody, SectionTitle } from "./section";
 import { PlusIcon } from "@/components/icons/plus";
+import { DeleteIcon } from "@/components/icons/delete";
+import { IconButton } from "@/components/ui/icon-button";
 
 const Projects: FC = () => {
   const { control, watch, getValues } = useFormContext<Resume>();
@@ -93,22 +93,22 @@ const Projects: FC = () => {
               />
             </div>
             <Tooltip title="Delete">
-              <Button
+              <IconButton
                 variant="outline"
                 type="button"
                 onClick={() => remove(index)}
                 className="mt-4"
+                icon={DeleteIcon}
               >
-                <FaTrash className="mr-2 size-4" /> Delete
-              </Button>
+                Delete
+              </IconButton>
             </Tooltip>
           </div>
         ))}
 
-        <Button variant="outline" onClick={handleAdd} type="button">
-          <PlusIcon className="mr-2 size-4" />
+        <IconButton variant="outline" onClick={handleAdd} type="button" icon={PlusIcon}>
           Add
-        </Button>
+        </IconButton>
       </SectionBody>
     </Section>
   );

@@ -1,5 +1,4 @@
 import { FC, useEffect, useState } from "react";
-import { FaCalendar } from "react-icons/fa6";
 import {
   add,
   eachMonthOfInterval,
@@ -17,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { cn } from "@/lib/utils";
 import { ChevronLeftIcon } from "@/components/icons/chevron-left";
 import { ChevronRightIcon } from "@/components/icons/chevron-right";
+import { CalendarDaysIcon } from "@/components/icons/calendar-days";
 
 function getStartOfCurrentMonth() {
   return startOfMonth(startOfToday());
@@ -158,7 +158,7 @@ const MonthPicker: FC<MonthPickerProps> = ({
             className,
           )}
         >
-          <FaCalendar className="mr-2 size-4" />
+          <CalendarDaysIcon className="mr-2 size-4" />
           {date ? format(date, "yyyy-MMM") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>

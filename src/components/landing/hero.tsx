@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRightIcon } from "@/components/icons/arrow-right";
+import { useIconHover } from "@/components/icons/use-icon-hover";
 
 import { SWATCHES, useAccent } from "./accent";
 import TemplateSheet from "./template-sheet";
@@ -25,6 +26,7 @@ const rise = (step: number) => ({ animationDelay: `${0.05 + step * 0.07}s` });
  */
 const Hero = () => {
   const { templateId, color, setColor } = useAccent();
+  const { registerIcon, startIcons, stopIcons } = useIconHover();
 
   return (
     <section className="relative overflow-hidden">
@@ -66,13 +68,16 @@ const Hero = () => {
           <div style={rise(3)} className="landing-rise mt-9 flex flex-wrap items-center gap-3">
             <Link
               href="/resume-editor"
+              onMouseEnter={startIcons}
+              onMouseLeave={stopIcons}
+              onFocus={startIcons}
+              onBlur={stopIcons}
               className="group inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient)] px-6 py-3 text-[0.9375rem] font-medium text-white shadow-[0_6px_20px_-6px_hsl(184_80%_40%/0.55)] transition-[transform,box-shadow] duration-200 hover:-translate-y-px hover:shadow-[0_10px_28px_-6px_hsl(184_80%_40%/0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] motion-reduce:transition-none"
             >
               Create your resume
-              <ArrowRightIcon
-                aria-hidden
-                className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
-              />
+              {/* The icon's own animation replaces the CSS nudge this used to have —
+                  two things moving the same arrow on the same hover is one too many. */}
+              <ArrowRightIcon ref={registerIcon} aria-hidden className="size-4" />
             </Link>
             <Link
               href="/#templates"
