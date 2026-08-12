@@ -29,7 +29,7 @@ const LINK_CLASS =
   "block rounded py-3 text-[0.875rem] text-[var(--graphite-soft)] transition-colors duration-200 hover:text-[var(--graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
 
 const SiteFooter = () => (
-  <footer className="mt-4 border-t border-[var(--rule)]">
+  <footer className="border-t border-[var(--rule)]">
     <div className="mx-auto w-full max-w-[1120px] px-6 py-14">
       <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
         <div>
