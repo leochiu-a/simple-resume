@@ -88,16 +88,20 @@ const SiteNav = () => {
           </span>
         </Link>
 
-        {/* Named after what the page explains rather than after the technology in it:
-            "AI" on its own labels a topic and promises nothing, which is why it read as
-            unclear. This is the same shape as the "How it works" every product nav has. */}
-        <nav className="ml-auto flex items-center gap-0.5 sm:gap-1">
+        {/* Beside the wordmark, which is where this kind of nav puts its destinations —
+            the right-hand group is controls and one CTA, and a link sitting among them
+            reads as a fourth button rather than as somewhere to go.
+
+            Named after what the page explains rather than after the technology in it:
+            "AI" on its own labels a topic and promises nothing. Same shape as the
+            "How it works" every product nav already has. */}
+        <nav className="flex items-center gap-0.5 sm:gap-1">
           <Link href="/how-ai-works" className={NAV_LINK}>
             How AI works
           </Link>
         </nav>
 
-        <div className="flex items-center gap-0.5 sm:gap-1">
+        <div className="ml-auto flex items-center gap-0.5 sm:gap-1">
           <Link
             href="https://github.com/leochiu-a/simple-resume"
             target="_blank"
