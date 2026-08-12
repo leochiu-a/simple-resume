@@ -1,9 +1,14 @@
+import Link from "next/link";
+
 import SectionHeading from "./section-heading";
 
 /**
  * The WebMCP section. Everything claimed here is checked against the editor: the
  * tool count is the number registered in `webmcp/resume-tools.ts`, and the prompt
  * is the one in the README, which is the one the tools were designed around.
+ *
+ * This is the summary; `/ai` is the same argument at length, with a recording of
+ * an actual run and the tools named one by one.
  */
 const Agent = () => (
   <section className="border-b border-[var(--rule)]">
@@ -23,14 +28,14 @@ const Agent = () => (
         <div className="lg:col-span-4 lg:col-start-4">
           <p className="max-w-[46ch] text-[1.0625rem] leading-[1.72] text-[var(--graphite-soft)]">
             The editor registers itself as a set of{" "}
-            <span className="text-[var(--graphite)]">WebMCP tools</span> — twelve of them, covering
-            reading the resume and writing every section of it. A browser AI agent can see what is
-            there and fill in the rest, while you watch the sheet update.
+            <span className="text-[var(--graphite)]">WebMCP tools</span> — seventeen of them,
+            covering reading the resume and writing every section of it. A browser AI agent can see
+            what is there and fill in the rest, while you watch the sheet update.
           </p>
 
           <dl className="mt-10 border-t border-[var(--rule)] font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--graphite-soft)]">
             {[
-              ["Tools", "12 · read and write, per section"],
+              ["Tools", "17 · read and write, per section"],
               ["Browsers", "Edge 147+ · Chrome behind a flag"],
               ["Status", "W3C community draft, still moving"],
             ].map(([term, value]) => (
@@ -49,7 +54,7 @@ const Agent = () => (
                 aria-hidden
                 className="inline-block size-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"
               />
-              Agent ready · 12 tools
+              Agent ready · 17 tools
             </p>
 
             <blockquote className="mt-6 font-display text-[1.35rem] italic leading-[1.5] tracking-[-0.01em] lg:text-[1.5rem]">
@@ -66,6 +71,14 @@ const Agent = () => (
               badge. Where WebMCP is missing it says so, and everything else works exactly as
               before.
             </p>
+
+            <Link
+              href="/ai"
+              className="mt-6 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--graphite)] transition-colors duration-200 hover:text-[var(--accent)]"
+            >
+              See it run
+              <span aria-hidden>→</span>
+            </Link>
           </div>
         </div>
       </div>

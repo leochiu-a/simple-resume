@@ -52,6 +52,12 @@ const SiteNav = () => (
 
       <div className="ml-auto flex items-center gap-3">
         <Link
+          href="/ai"
+          className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--graphite-soft)] transition-colors duration-200 hover:text-[var(--accent)] sm:inline"
+        >
+          AI
+        </Link>
+        <Link
           href="https://github.com/leochiu-a/simple-resume"
           target="_blank"
           aria-label="Source on GitHub"
