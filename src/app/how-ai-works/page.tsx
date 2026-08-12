@@ -9,16 +9,25 @@ import CopyablePrompt from "@/components/landing/ai/copyable-prompt";
 import { AFTER_REPORT, BEFORE_REPORT } from "@/components/landing/ai/score-fixtures";
 import ScoreStoryboard from "@/components/landing/ai/score-storyboard";
 import ToolTable from "@/components/landing/ai/tool-table";
+import { SITE_URL } from "@/constants/site";
 
 const DESCRIPTION =
   "Simple Resume runs the browser's own AI model to rewrite and translate a resume, and registers itself as 17 WebMCP tools so an agent like Claude Code can read, score, and edit it. Nothing is uploaded either way.";
 
+const TITLE = "AI in Simple Resume — on-device rewriting and a WebMCP agent";
+
 export const metadata: Metadata = {
-  title: "AI in Simple Resume — on-device rewriting and a WebMCP agent",
+  title: TITLE,
   description: DESCRIPTION,
   openGraph: {
-    title: "AI in Simple Resume — on-device rewriting and a WebMCP agent",
+    title: TITLE,
     description: DESCRIPTION,
+    url: `${SITE_URL}/how-ai-works`,
+    /* Stated even though the root layout has it. A child's `openGraph` replaces the
+       parent's object rather than merging into it, so declaring one here without
+       `images` dropped the root `opengraph-image.png` and this page shared with no
+       image at all. */
+    images: ["/opengraph-image.png"],
   },
 };
 

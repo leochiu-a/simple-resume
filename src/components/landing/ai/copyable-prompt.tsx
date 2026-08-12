@@ -3,13 +3,7 @@
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
 
-/**
- * Where the editor is, when the page cannot ask the browser.
- *
- * Only used for the server-rendered pass and for anything that reads the HTML
- * without running it. A visitor's browser replaces it with their own origin below.
- */
-const CANONICAL_ORIGIN = "https://simple-resume-nu.vercel.app";
+import { SITE_URL } from "@/constants/site";
 
 /** The token `prompt` uses to stand in for the site's own origin. */
 const ORIGIN_TOKEN = "{{origin}}";
@@ -32,7 +26,10 @@ const ORIGIN_TOKEN = "{{origin}}";
  */
 const CopyablePrompt = ({ label, prompt }: { label: string; prompt: string }) => {
   const [copied, setCopied] = useState(false);
-  const [origin, setOrigin] = useState(CANONICAL_ORIGIN);
+  /* The canonical origin is only what the server-rendered pass shows, and what
+     anything reading the HTML without running it gets. A visitor's browser replaces
+     it with their own origin in the effect below. */
+  const [origin, setOrigin] = useState(SITE_URL);
 
   // Deliberately after mount rather than during render: `location` does not exist
   // on the server, and reading it inline would make the first client render

@@ -4,6 +4,7 @@ import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/react";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { SITE_URL } from "@/constants/site";
 
 import "./globals.css";
 
@@ -43,11 +44,30 @@ const mono = IBM_Plex_Mono({
 const DESCRIPTION =
   "Write a resume in the browser and export it as a PDF or a single self-contained HTML file. No account, no upload — it is saved in your browser's storage and nowhere else.";
 
+const TITLE = "Simple Resume — a resume that never leaves your browser";
+
 export const metadata: Metadata = {
-  title: "Simple Resume — a resume that never leaves your browser",
+  /* Without this, `opengraph-image.png` is emitted against `http://localhost:3000`,
+     which is the address of the machine that built the page and of nothing a crawler
+     can fetch — so every share renders with no image. It is the base every relative
+     metadata URL resolves against, not a canonical-URL declaration. */
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
   description: DESCRIPTION,
   openGraph: {
-    title: "Simple Resume — a resume that never leaves your browser",
+    title: TITLE,
+    description: DESCRIPTION,
+    /* Both stated explicitly: Open Graph consumers key off `url` for the canonical
+       destination, and `type` defaults to nothing, which some scrapers treat as
+       unshareable. */
+    url: SITE_URL,
+    siteName: "Simple Resume",
+    type: "website",
+  },
+  twitter: {
+    /* The card format the existing 1200×630 image is already the right shape for. */
+    card: "summary_large_image",
+    title: TITLE,
     description: DESCRIPTION,
   },
 };
