@@ -1,10 +1,12 @@
 import AccentProvider from "@/components/landing/accent";
 import SiteNav from "@/components/landing/site-nav";
 import Hero from "@/components/landing/hero";
+import Templates from "@/components/landing/templates";
 import Outputs from "@/components/landing/outputs";
 import OnDevice from "@/components/landing/on-device";
 import Agent from "@/components/landing/agent";
 import Privacy from "@/components/landing/privacy";
+import Closing from "@/components/landing/closing";
 import SiteFooter from "@/components/landing/site-footer";
 
 /**
@@ -26,10 +28,12 @@ export default function Home() {
       <SiteNav />
       <main>
         <Hero />
+        <Templates />
         <Outputs />
         <OnDevice />
         <Agent />
         <Privacy />
+        <Closing />
       </main>
       <SiteFooter />
     </AccentProvider>

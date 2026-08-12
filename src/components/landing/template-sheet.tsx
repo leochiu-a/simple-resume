@@ -8,8 +8,6 @@ import { A4_HEIGHT_PX, A4_WIDTH_PX } from "@/app/resume-editor/components/templa
 import { SHEET_DOCUMENT } from "@/app/resume-editor/components/template/sheet-document";
 import { getTemplate } from "@/app/resume-editor/components/template/registry";
 
-import CropMarks from "@/components/crop-marks";
-
 import { SHOWCASE_RESUME } from "./showcase-resume";
 
 /**
@@ -52,8 +50,6 @@ const TemplateSheet = ({ templateId, color }: { templateId: string; color: strin
 
   return (
     <div className="relative">
-      <CropMarks className="border-[var(--accent)] opacity-50" />
-
       <div ref={ref} className="w-full" style={{ height: `${A4_HEIGHT_PX * scale}px` }}>
         {/* Scaling leaves the element occupying its unscaled box, so the wrapper
             above is given the scaled height to reclaim the difference. */}
@@ -63,9 +59,10 @@ const TemplateSheet = ({ templateId, color }: { templateId: string; color: strin
             height: `${A4_HEIGHT_PX}px`,
             transform: `scale(${scale})`,
           }}
-          // A cast shadow on light paper; on dark stock a black shadow does
-          // nothing, so it becomes the glow a lit sheet actually throws.
-          className="origin-top-left bg-white shadow-[0_24px_60px_-24px_rgba(23,21,15,0.45)] dark:shadow-[0_28px_90px_-30px_rgba(255,244,222,0.18)]"
+          // The sheet is always paper-white, so it needs its own shadow rather than
+          // the token set's: on dark surfaces a black shadow under a white rectangle
+          // does nothing, and the sheet has to read as lit instead.
+          className="origin-top-left bg-white shadow-[0_24px_60px_-24px_rgb(9_11_28/0.28)] dark:shadow-[0_28px_90px_-30px_rgb(255_255_255/0.16)]"
         >
           <Frame
             title={SHEET_FRAME_TITLE}

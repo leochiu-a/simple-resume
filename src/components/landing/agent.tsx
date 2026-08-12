@@ -1,72 +1,91 @@
-import SectionHeading from "./section-heading";
+import Link from "next/link";
+import { ArrowRight, Terminal } from "lucide-react";
 
 /**
- * The WebMCP section. Everything claimed here is checked against the editor: the
- * tool count is the number registered in `webmcp/resume-tools.ts`, and the prompt
- * is the one in the README, which is the one the tools were designed around.
+ * The WebMCP section, as a terminal-ish transcript.
+ *
+ * Everything claimed here is checked against the editor: the tool count is the number
+ * registered in `webmcp/resume-tools.ts`, and the calls listed are real tool names.
+ * This is the summary; `/how-ai-works` is the same argument at length, with the score panel
+ * before and after a real run and the tools named one by one.
+ *
+ * The transcript is the third distinct section shape on this page — bento, then a
+ * result pair, now a log — which is what keeps the scroll from feeling like one
+ * template repeated.
  */
-const Agent = () => (
-  <section className="border-b border-[var(--rule)]">
-    <div className="mx-auto w-full max-w-[1280px] px-6 py-20 lg:px-10 lg:py-28">
-      <SectionHeading
-        index="03"
-        label="Agent · Experimental"
-        title={
-          <>
-            Or don&rsquo;t type it <br />
-            at all<span className="text-[var(--accent)]">.</span>
-          </>
-        }
-      />
+const CALLS = [
+  ["get-resume", "read the whole sheet"],
+  ["score-resume", "59 · four rules failing"],
+  ["update-employment", "rewrote two weak bullets"],
+  ["score-resume", "91 · interview ready"],
+];
 
-      <div className="mt-16 grid grid-cols-1 gap-x-14 gap-y-12 lg:grid-cols-12">
-        <div className="lg:col-span-4 lg:col-start-4">
-          <p className="max-w-[46ch] text-[1.0625rem] leading-[1.72] text-[var(--graphite-soft)]">
-            The editor registers itself as a set of{" "}
-            <span className="text-[var(--graphite)]">WebMCP tools</span> — twelve of them, covering
-            reading the resume and writing every section of it. A browser AI agent can see what is
-            there and fill in the rest, while you watch the sheet update.
+const Agent = () => (
+  <section className="border-t border-[var(--rule)]">
+    <div className="mx-auto w-full max-w-[1120px] px-6 py-24 lg:py-32">
+      <div className="grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12">
+        {/* Transcript first on desktop — the evidence leads, the explanation follows. */}
+        <div className="lg:col-span-6 lg:order-2">
+          <p className="inline-flex items-center gap-2 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--graphite-soft)]">
+            <Terminal aria-hidden className="size-3.5 text-[var(--accent)]" />
+            Claude Code · WebMCP
+          </p>
+          <h2 className="mt-3 max-w-[22ch] font-display text-[clamp(1.9rem,3.4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.028em]">
+            Or hand the whole editor to an agent.
+          </h2>
+          <p className="mt-5 max-w-[46ch] text-[1rem] leading-[1.65] text-[var(--graphite-soft)]">
+            The editor registers itself as{" "}
+            <span className="font-medium text-[var(--graphite)]">seventeen WebMCP tools</span> — two
+            that read the resume, fourteen that write to it, one that publishes a review. An agent
+            calls functions instead of guessing where to click, and never touches the DOM.
           </p>
 
-          <dl className="mt-10 border-t border-[var(--rule)] font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--graphite-soft)]">
-            {[
-              ["Tools", "12 · read and write, per section"],
-              ["Browsers", "Edge 147+ · Chrome behind a flag"],
-              ["Status", "W3C community draft, still moving"],
-            ].map(([term, value]) => (
-              <div key={term} className="flex flex-col gap-1.5 border-b border-[var(--rule)] py-4">
-                <dt className="text-[10px] tracking-[0.22em] text-[var(--accent)]">{term}</dt>
-                <dd className="text-[var(--graphite)]">{value}</dd>
-              </div>
-            ))}
-          </dl>
+          <Link
+            href="/how-ai-works"
+            className="group mt-8 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          >
+            The 17 tools
+            <ArrowRight
+              aria-hidden
+              className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
+            />
+          </Link>
         </div>
 
-        <div className="lg:col-span-5 lg:col-start-8">
-          <div className="border border-[var(--rule)] bg-[var(--paper-raised)] p-7 lg:p-9">
-            <p className="flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--graphite-soft)]">
-              <span
-                aria-hidden
-                className="inline-block size-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"
-              />
-              Agent ready · 12 tools
-            </p>
+        <div className="lg:col-span-6 lg:order-1">
+          <div className="overflow-hidden rounded-[var(--r-lg)] border border-[var(--rule)] bg-[var(--graphite)] shadow-[var(--shadow-lg)]">
+            <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3">
+              <span aria-hidden className="size-2 rounded-full bg-[var(--g1)]" />
+              <span className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-white/55">
+                Agent ready · 17 tools
+              </span>
+            </div>
 
-            <blockquote className="mt-6 font-display text-[1.35rem] italic leading-[1.5] tracking-[-0.01em] lg:text-[1.5rem]">
-              &ldquo;Read my resume, then rewrite the profile summary for a staff frontend role and
-              add my job at Northsail from March 2021 to now.&rdquo;
-            </blockquote>
+            <ol className="divide-y divide-white/[0.07]">
+              {CALLS.map(([tool, result], index) => (
+                <li key={`${tool}-${index}`} className="flex items-baseline gap-3 px-5 py-3.5">
+                  <span className="font-mono text-[0.6875rem] text-white/35 tabular-nums">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <code className="font-mono text-[0.8125rem] text-white/95">{tool}</code>
+                  <span className="ml-auto text-right font-mono text-[0.6875rem] text-white/50">
+                    {result}
+                  </span>
+                </li>
+              ))}
+            </ol>
 
-            <p className="mt-7 border-t border-[var(--rule)] pt-5 text-[0.9rem] leading-[1.65] text-[var(--graphite-soft)]">
-              Turn the flag on at{" "}
-              <code className="font-mono text-[0.82rem] text-[var(--graphite)]">
-                chrome://flags/#enable-webmcp-testing
-              </code>{" "}
-              and the nav shows an <span className="text-[var(--graphite)]">Agent ready</span>{" "}
-              badge. Where WebMCP is missing it says so, and everything else works exactly as
-              before.
+            <p className="border-t border-white/10 px-5 py-4 text-[0.8125rem] leading-[1.55] text-white/55">
+              A real run. The score moved because the agent re-scored its own work, not because
+              anything here is staged.
             </p>
           </div>
+
+          <p className="mt-4 text-[0.8125rem] leading-[1.55] text-[var(--graphite-soft)]">
+            Edge 147+ today, Chrome behind{" "}
+            <code className="font-mono text-[0.75rem]">#enable-webmcp-testing</code>. Where WebMCP
+            is missing the editor says so and works exactly as before.
+          </p>
         </div>
       </div>
     </div>

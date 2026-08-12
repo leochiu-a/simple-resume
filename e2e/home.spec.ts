@@ -8,15 +8,18 @@ test.describe("home page", () => {
     await page.goto("/");
 
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Your resume never leaves your browser",
+      "A resume builder that never uploads your resume.",
     );
 
-    // Two of them: one in the nav, one in the hero. Both must reach the editor.
-    const ctas = page.getByRole("link", { name: "Create resume" });
-    await expect(ctas.first()).toBeVisible();
-    for (const cta of await ctas.all()) {
-      await expect(cta).toHaveAttribute("href", "/resume-editor");
-    }
+    /**
+     * Asserted by destination rather than by label. There are four ways to the
+     * editor now — the nav's "Create resume", the hero and closing band's "Create
+     * your resume", and the gallery's "Open the editor" — and the thing that must
+     * hold is that every one of them arrives, not that they are worded alike.
+     */
+    const toEditor = page.locator('a[href="/resume-editor"]');
+    await expect(toEditor.first()).toBeVisible();
+    expect(await toEditor.count()).toBeGreaterThanOrEqual(3);
 
     expect(errors).toEqual([]);
   });
@@ -29,8 +32,8 @@ test.describe("home page", () => {
   test("states where the resume is kept, and discloses what is not local", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByText("This browser only")).toBeVisible();
-    await expect(page.getByText(/page views are counted with Vercel Analytics/)).toBeVisible();
+    await expect(page.getByText("Stored in this browser")).toBeVisible();
+    await expect(page.getByText(/page views are counted with Vercel Analytics/i)).toBeVisible();
   });
 
   /**
@@ -41,26 +44,31 @@ test.describe("home page", () => {
   test("the pitch is in the server HTML", async ({ request }) => {
     const html = await (await request.get("/")).text();
 
-    expect(html).toContain("never leaves");
-    expect(html).toContain("Create resume");
+    expect(html).toContain("never uploads");
+    expect(html).toContain("Create your resume");
   });
 
-  test("the sheet renders the selected template, and both controls drive it", async ({ page }) => {
+  test("the gallery drives the hero's sheet, and the tint drives it too", async ({ page }) => {
     await page.goto("/");
 
     const sheet = landingSheet(page);
     await expect(sheet.getByText("Iris Halloran")).toBeVisible();
 
-    const caption = page.locator("figcaption");
-    await expect(caption).toContainText("Classic, Pine");
+    // Classic is the default, so its card is the one already previewing.
+    const classic = page.getByRole("button", { name: "Classic" });
+    await expect(classic).toContainText("Previewing");
 
-    await page.getByRole("button", { name: "Timeline", exact: true }).click();
-    await expect(caption).toContainText("Timeline");
+    const timeline = page.getByRole("button", { name: "Timeline" });
+    await timeline.click();
+    await expect(timeline).toContainText("Previewing");
+    await expect(classic).not.toContainText("Previewing");
+
     // Every template renders the same resume, so the name survives the switch.
     await expect(sheet.getByText("Iris Halloran")).toBeVisible();
 
+    // The tint is the hero's own control and applies to whatever is showing.
     await page.getByRole("button", { name: "Tint Ochre" }).click();
-    await expect(caption).toContainText("Timeline, Ochre");
+    await expect(sheet.locator('[style*="rgb(138, 90, 18)"]').first()).toBeVisible();
   });
 
   /**
@@ -77,10 +85,10 @@ test.describe("home page", () => {
         .evaluate((element) => getComputedStyle(element).getPropertyValue("--accent").trim());
 
     const before = await accent();
-    // Pine. Resolved from the shared `--c-accent` HSL triple now rather than
-    // written as a hex literal here — the editor's `--brand` reads the same token,
-    // so the two surfaces cannot drift apart.
-    expect(before).toBe("hsl(172 79% 17%)");
+    // The solid pulled out of the signature ramp. Resolved from the shared
+    // `--c-accent` HSL triple rather than written as a literal here — the editor's
+    // `--brand` reads the same token, so the two surfaces cannot drift apart.
+    expect(before).toBe("hsl(166 84% 27%)");
 
     await page.getByRole("button", { name: "Tint Indigo" }).click();
 

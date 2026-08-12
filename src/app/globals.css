@@ -8,128 +8,88 @@
  * `--c-*` below are the only colour values in the app. They are HSL triples so
  * shadcn's tokens can keep wrapping them in `hsl()`, and everything else — the
  * editor's primitives and the landing page's paper — is an alias of them. Retuning
- * a colour here moves both surfaces at once, which is the point: the editor is the
- * same printed page as the landing, just with the tools out.
+ * a colour here moves both surfaces at once, which is the point: the marketing pages
+ * and the tool are one product, and a palette that exists twice becomes two.
  *
  * The sheet itself is inside an iframe carrying its own document, so none of this
  * reaches it. It stays paper-white in either theme, as the PDF will be.
  */
 @layer base {
   /**
-   * Light mode is the working default, and it was retuned to be brighter without
-   * giving up the warmth.
+   * Light mode is the working default.
    *
-   * The paper was `40 37% 95%` — a properly saturated cream. Read on its own it is
-   * a lovely stock, but this app always shows it next to something else: the sheet
-   * in the preview is a separate document inside an iframe, and it is pure white.
-   * Cream at L95 against white at L100 is a five-point step the eye reads as the
-   * interface being slightly dirty rather than the sheet being bright.
+   * The base is a near-white with a trace of blue in it rather than the cream this
+   * palette used to be. The reason is the same one that drove the old cream to be
+   * lifted twice: this app always shows its chrome next to the sheet, which lives in
+   * an iframe and is pure white because it is going to be a PDF. A warm stock beside
+   * pure white reads as the interface being slightly dirty rather than the sheet being
+   * bright, and every step taken to fix that was a step toward white anyway.
    *
-   * So the paper is lifted to L97 and the saturation cut to S24. Both moves point
-   * the same way: less of a colour, more of a light. The hue stays at 40 — the
-   * warmth is the identity here, and a resume builder that goes cold white is
-   * every other resume builder.
-   *
-   * The rule went the other way, and that is the part that matters most. Hairlines
-   * are the whole letterpress idea in this app — crop marks, section rules, field
-   * borders — and at `40 27% 82%` on L95 paper they ran at roughly 1.2:1. That is
-   * not a quiet line, it is an absent one, which is why the old build read as soft
-   * and undivided. Dropping the rule to L74 puts it near 1.6:1: still a hairline,
-   * now actually a line.
+   * So the surfaces now run near-white → white instead of cream → white: `--c-paper`
+   * at L99 for the page, `--c-paper-raised` at pure white for anything lifted off it.
+   * That inverts the old problem — the fields used to be the brightest thing in the
+   * column and are now level with it — which is why cards carry a hairline and a
+   * shadow rather than relying on a lightness step to separate them.
    */
   :root {
-    /*
-      The stock sits at L95, not the L97 the note above first reached for.
-
-      L97 made the page brighter and the *fields* invisible: inputs are
-      `bg-card`, card is pure white, and white on L97 paper is a six-value step —
-      no edge at all, so every field collapsed into the page and only its border
-      held it together. The fix is not to darken the fields (they should be the
-      brightest thing in the column, since they are where the writing happens) but
-      to give the paper somewhere to sit beneath them. L95 restores a step you can
-      actually see while staying well clear of the old cream.
-    */
-    --c-paper: 40 22% 95%;
-    --c-paper-raised: 40 40% 100%;
+    --c-paper: 250 30% 99%;
+    --c-paper-raised: 0 0% 100%;
     /* Hover fills and quiet backgrounds: one step off the paper. */
-    --c-wash: 40 20% 91%;
-    --c-graphite: 45 22% 11%;
-    --c-graphite-soft: 39 9% 44%;
-    --c-rule: 40 18% 74%;
-    --c-danger: 4 48% 46%;
+    --c-wash: 250 20% 96.5%;
+    --c-graphite: 230 26% 8%;
+    /* The muted body colour, and the single most common place this kind of palette
+       fails contrast. Pinned to a value that clears 4.5:1 on every surface above
+       rather than picked by eye. */
+    --c-graphite-soft: 240 6% 42%;
+    --c-rule: 240 14% 90%;
+    --c-danger: 0 72% 45%;
     /* The interface's own accent, shared with the landing page. Used for the one
        thing on screen that is a live state rather than a surface: the active
        language tab, focus rings, the appearance panel's current selection. The
-       sheet's tint is a separate axis and is never this. */
-    --c-accent: 172 79% 17%;
-    --c-accent-foreground: 40 40% 100%;
+       sheet's tint is a separate axis and is never this.
+
+       This is the solid pulled out of the landing page's gradient ramp, so the two
+       surfaces agree without the site having to repeat the value. */
+    --c-accent: 166 84% 27%;
+    --c-accent-foreground: 0 0% 100%;
+
+    /* The signature ramp's stops. Declared at the root because the landing page
+       composes them into `--gradient` and the editor borrows the first one for its
+       "agent ready" dot — an accent that exists twice eventually becomes two
+       different greens. */
+    --c-g1: 160 84% 39%;
+    --c-g2: 184 80% 40%;
+    --c-g3: 243 75% 59%;
   }
 
   /**
-   * Dark mode used to read as flat, and the fix turned out not to be lightness.
+   * Dark mode is a separate set of values, not an inversion of the light one.
    *
-   * The paper was `40 11% 6%`. Surveying the warm near-blacks people actually
-   * favour — the most-liked one on Color Hunt is #1a120b, `28 41% 7%`, and its
-   * neighbours cluster around L 5–14 — the lightness was already right. What was
-   * missing was chroma: at S 11 this was a faintly warm grey, which is a void,
-   * where the liked ones are unmistakably a material.
+   * Surfaces lift with lightness as they come nearer the light — L7 for the page, L11
+   * for a card, L15 for a hover fill — because on a dark ground a shadow cannot make
+   * anything look raised; only being lighter can. The hue holds at 240 across all
+   * three so the greys stay a family instead of drifting warm as they lighten.
    *
-   * The same conclusion falls out of this file. Light mode's paper is
-   * `40 37% 95%` — S 37, a properly saturated cream card. Dark mode dropped the
-   * same sheet of paper to S 11. That is the inconsistency: one theme had a
-   * stock and the other had an absence of light.
-   *
-   * So: the lightness is left where it was and the saturation is roughly
-   * trebled. Not all the way to the 41 of the most-liked swatch, which at this
-   * lightness goes frankly brown and starts competing with the sheet — in this
-   * app the only thing allowed to be colourful is the resume. S 28 is a
-   * material; S 41 is a colour.
-   *
-   * The rule moved for a separate, measured reason: at L16 on L6 paper the
-   * hairlines ran at 1.34:1, which is invisible, and hairlines are the whole
-   * letterpress idea — crop marks, section rules, field borders.
+   * The accent and the ramp are retuned rather than reused. Emerald at L27 is a
+   * material on white and mud on near-black, so both are lifted and desaturated here;
+   * this is the one thing dark mode genuinely cannot inherit.
    */
   .dark {
-    /**
-     * Retuned alongside light mode, for a reason specific to this app rather than
-     * for symmetry.
-     *
-     * The note above is still right that the fix was chroma and not lightness —
-     * but it was reasoning about the paper in isolation. In the editor the paper
-     * is never alone: the sheet sits on it, inside an iframe, and it is pure white
-     * in both themes because it is going to be a PDF. L7 paper next to L100 paper
-     * is a 14:1 step. The eye adapts to the brightest thing on screen, so at that
-     * ratio the sheet is not bright, it is a hole cut in the screen, and the
-     * chrome around it goes to mud.
-     *
-     * Lifting the stock to L11 and the raised surface to L15 closes the step to
-     * something the eye can hold both ends of. The saturation stays where the
-     * previous retune put it — S26 is a material, and that finding does not change
-     * just because the room got lighter.
-     *
-     * The rule keeps climbing for the reason it climbed last time: at L22 on L7 it
-     * ran about 1.34:1, and on lighter stock it would be worse, not better. L28
-     * holds it near 1.5:1.
-     *
-     * Saturation comes down as lightness goes up, and the two are not independent.
-     * The earlier note settled on S28 at L7 by surveying warm near-blacks, and at
-     * that lightness it is right — S28 on near-black is a material. Carried
-     * unchanged to L11 the same S28 is chocolate: hue 36 stops reading as warm
-     * grey and starts reading as brown, which is a colour, and the one rule this
-     * palette has is that the only colourful thing on screen is the resume. S14 at
-     * L11 is the same *perceived* warmth the old S28 had at L7.
-     */
-    --c-paper: 36 14% 11%;
-    --c-paper-raised: 34 13% 15%;
-    --c-wash: 36 12% 19%;
-    --c-graphite: 40 24% 95%;
-    --c-graphite-soft: 38 10% 67%;
-    --c-rule: 36 11% 28%;
-    --c-danger: 4 46% 60%;
-    /* Pine at S79 L17 is nearly black on dark stock. Lifted and desaturated to
-       stay legible as a state colour rather than reading as another surface. */
-    --c-accent: 168 42% 58%;
-    --c-accent-foreground: 36 26% 11%;
+    --c-paper: 240 10% 7%;
+    --c-paper-raised: 240 8% 11%;
+    --c-wash: 240 7% 15%;
+    --c-graphite: 240 20% 98%;
+    --c-graphite-soft: 240 8% 68%;
+    --c-rule: 240 8% 20%;
+    --c-danger: 0 72% 62%;
+    /* The light-mode emerald is a material on white and mud on near-black, so the
+       accent and every ramp stop is lifted and desaturated here rather than reused. */
+    --c-accent: 163 72% 45%;
+    --c-accent-foreground: 240 10% 7%;
+
+    --c-g1: 158 72% 52%;
+    --c-g2: 184 70% 54%;
+    --c-g3: 245 85% 72%;
   }
 
   /**
@@ -165,8 +125,16 @@
     /* Focus rings in the accent rather than grey: the one place a live state
        should be unmistakable. */
     --ring: var(--c-accent);
-    /* Nearly square. Printed matter has corners. */
-    --radius: 0.25rem;
+    /**
+     * The app used to be printed matter, and printed matter has corners — `--radius`
+     * was 0.25rem, which made Tailwind's `rounded-sm` (`calc(--radius - 4px)`)
+     * compute to exactly 0 and every shadcn surface square.
+     *
+     * It is a product UI now. At 0.625rem the scale lands on 10 / 8 / 6px for
+     * lg / md / sm, so `rounded-sm` is finally a radius instead of a no-op and cards,
+     * inputs and popovers pick up the same softness as the marketing pages.
+     */
+    --radius: 0.625rem;
   }
 }
 
@@ -233,38 +201,94 @@
 }
 
 /**
- * The landing page names the palette in paper terms rather than in shadcn's, since
- * it is a printed page and not an application surface. These are aliases of the
- * same `--c-*` values the editor's tokens use — the words differ, the colours
- * cannot.
+ * The landing page's names for the shared palette.
+ *
+ * Aliases, not a second palette. Every value here resolves to a `--c-*` above, which
+ * is what keeps the marketing pages and the editor from drifting into two products —
+ * the site says `--paper` and the app says `--background`, and both land on the same
+ * colour. Because the aliases resolve where they are used, `.dark` needs no copy of
+ * any of this.
+ *
+ * Read the names as base surface / ink / hairline rather than as stock and pencil;
+ * they are older than the current design and outlasted the printed-page direction
+ * they were named for.
  */
 @layer components {
   [data-landing] {
+    /* Surfaces: near-white base, pure-white cards so a card reads as lifted off the
+       page rather than drawn onto it. */
     --paper: hsl(var(--c-paper));
     --paper-raised: hsl(var(--c-paper-raised));
+    --wash: hsl(var(--c-wash));
+
     --graphite: hsl(var(--c-graphite));
     --graphite-soft: hsl(var(--c-graphite-soft));
+
+    /* `--rule` is decorative — the edge of a card that already reads as a card.
+       `--rule-strong` is for boundaries that carry meaning on their own and so has to
+       stay visible rather than merely present; it is the one value with no `--c-*`
+       equivalent, since the editor draws its emphasis with fills instead. */
     --rule: hsl(var(--c-rule));
+    --rule-strong: color-mix(in oklab, hsl(var(--c-rule)) 55%, hsl(var(--c-graphite-soft)));
 
     /**
-     * The page's own accent — the buttons, the section numbers, the full stops,
-     * the crop marks.
+     * The signature ramp, composed here from the root's three stops.
      *
-     * Fixed, and deliberately *not* the colour the visitor picks for the sheet.
-     * That swatch tints the paper and nothing else: choosing Oxblood should not
-     * repaint the site around it, and a page whose identity changes every time
-     * someone tries a template has no identity. Pine, which is also the sheet's
-     * default — see SWATCHES in components/landing/accent.tsx.
+     * Reused as a system — the nav mark, the badge, one highlighted word in the
+     * headline, the active gallery card's edge and the closing band all pull from it.
+     * That reuse is the difference between a brand gradient and the undesigned purple
+     * wash this look is usually accused of: a defined three-stop ramp doing a job in
+     * several places, never a blob.
      *
-     * This used to be a literal `#094c42` with a `color-mix` lightening it for
-     * dark mode. It is now the same `--c-accent` the editor's `--brand` points at,
-     * which is the whole premise of this file: the landing page and the editor are
-     * one printed object, and an accent that exists twice is an accent that will
-     * eventually be two different greens. The dark-mode lift is no longer computed
-     * here either — `.dark` sets `--c-accent` directly, so both surfaces get the
-     * lifted value from one place.
+     * It starts at emerald because the product's old accent was pine, and a redesign
+     * that keeps a thread back to the thing it replaced reads as the same product in
+     * new clothes rather than an unrelated site.
      */
+    --g1: hsl(var(--c-g1));
+    --g2: hsl(var(--c-g2));
+    --g3: hsl(var(--c-g3));
+    --gradient: linear-gradient(100deg, var(--g1), var(--g2) 46%, var(--g3));
+
+    /* The solid pulled out of the ramp, for anything that needs one flat fill:
+       buttons, links, focus rings. White type clears 4.5:1 on it. */
     --accent: hsl(var(--c-accent));
+
+    /* A wider radius scale than the app's. The editor's `--radius` drives dense
+       controls — inputs, menu rows — where 10px is already generous; the marketing
+       pages are made of large plates and want more. Same family, one octave up. */
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 22px;
+
+    /**
+     * Layered, tinted with the ink hue, never a raw black drop shadow. The inset
+     * top highlight is the part that matters: it is what makes a card read as a
+     * physical object catching light from above instead of a flat rectangle.
+     */
+    --shadow-sm: 0 1px 2px hsl(var(--c-graphite) / 0.04), 0 1px 1px hsl(var(--c-graphite) / 0.03);
+    --shadow-md:
+      0 1px 2px hsl(var(--c-graphite) / 0.04), 0 8px 24px -8px hsl(var(--c-graphite) / 0.1);
+    --shadow-lg:
+      0 1px 2px hsl(var(--c-graphite) / 0.05), 0 24px 48px -16px hsl(var(--c-graphite) / 0.16);
+    --highlight: inset 0 1px 0 hsl(0 0% 100% / 0.9);
+  }
+
+  /**
+   * Dark mode only has to restate the shadows.
+   *
+   * Every colour above resolves through `--c-*`, which `.dark` has already retuned, so
+   * repeating them here would just be a second copy waiting to fall out of step. What
+   * cannot be inherited is depth: on near-black a 4%-alpha black shadow is invisible,
+   * and the inset white highlight that makes a card read as lit has to drop from 90%
+   * to 6% or every plate gets a chalk line across its top edge. Surfaces still lift
+   * with lightness rather than with white shadows — that is `--c-paper-raised`'s job.
+   */
+  .dark [data-landing] {
+    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.5), 0 1px 1px hsl(0 0% 0% / 0.4);
+    --shadow-md: 0 1px 2px hsl(0 0% 0% / 0.5), 0 8px 24px -8px hsl(0 0% 0% / 0.7);
+    --shadow-lg: 0 1px 2px hsl(0 0% 0% / 0.5), 0 24px 48px -16px hsl(0 0% 0% / 0.8);
+    --highlight: inset 0 1px 0 hsl(0 0% 100% / 0.06);
   }
 
   /**
@@ -294,62 +318,52 @@
     }
   }
 
-  /* Print grain. Fixed, so it sits still while the page scrolls under it. */
-  [data-landing]::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    pointer-events: none;
-    opacity: 0.04;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  /* Dark stock has visible tooth, and 4% of noise on near-black was not it. */
-  .dark [data-landing]::before {
-    opacity: 0.06;
-  }
-
   /**
-   * The light in the room.
+   * `isolation` gives the page a stacking context of its own so the hero's ambient
+   * field can sit at `z-index: -1` — above this element's background, below every
+   * piece of content — without escaping to the root.
    *
-   * A flat field with one blazing white sheet on it is why dark mode read as a
-   * void: the eye adapts to the brightest thing on screen and everything else
-   * collapses behind it. Two very soft, very wide warm lights — a key over where
-   * the sheet sits and a fill in the opposite corner — supply the mid-tones that
-   * were missing and, more usefully, give the sheet a reason to be bright.
-   *
-   * `isolation` rather than `position: relative` alone: the layer sits at
-   * z-index -1 so it paints above this element's own background and below every
-   * piece of content, which needs a stacking context here to resolve against.
-   * Deliberately not `transform`, `filter` or `backdrop-filter` — all three would
-   * make this a containing block for fixed positioning, and the layer below is a
-   * `position: fixed` `::after`. It would then size itself to the page rather
-   * than the viewport, and the lights would scroll away with it.
+   * Deliberately not `transform`, `filter` or `backdrop-filter`: all three would
+   * make this a containing block for fixed positioning, and the sticky nav above
+   * would then resolve against the page rather than the viewport.
    */
   [data-landing] {
     isolation: isolate;
   }
 
-  .dark [data-landing]::after {
-    content: "";
-    position: fixed;
+  /**
+   * The ambient field behind the hero.
+   *
+   * Pulled from the same three stops as `--gradient`, blurred wide and low-alpha, so
+   * the top of the page has depth without anything reading as a decorative blob. It
+   * is masked to fade out well before the hero's content ends — the rule this look
+   * usually breaks is running a gradient under body text, which costs contrast for
+   * nothing.
+   */
+  .landing-ambient {
+    position: absolute;
     inset: 0;
     z-index: -1;
     pointer-events: none;
+    overflow: hidden;
     background:
-      radial-gradient(70rem 55rem at 76% 12%, hsl(41 34% 62% / 0.1), transparent 62%),
-      radial-gradient(48rem 42rem at 8% 92%, hsl(38 28% 55% / 0.05), transparent 65%);
+      radial-gradient(60rem 40rem at 78% -6%, hsl(var(--c-g2) / 0.13), transparent 60%),
+      radial-gradient(48rem 34rem at 18% -12%, hsl(var(--c-g1) / 0.11), transparent 62%),
+      radial-gradient(52rem 38rem at 96% 30%, hsl(var(--c-g3) / 0.09), transparent 64%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 42%, transparent 88%);
+    mask-image: linear-gradient(to bottom, black 0%, black 42%, transparent 88%);
+  }
+
+  /* On near-black the same stops need more room and less alpha, or they band. */
+  .dark .landing-ambient {
+    background:
+      radial-gradient(64rem 44rem at 78% -6%, hsl(var(--c-g2) / 0.1), transparent 62%),
+      radial-gradient(52rem 38rem at 18% -12%, hsl(var(--c-g1) / 0.08), transparent 64%),
+      radial-gradient(56rem 40rem at 96% 30%, hsl(var(--c-g3) / 0.08), transparent 66%);
   }
 
   @media print {
-    .dark [data-landing]::after {
-      display: none;
-    }
-  }
-
-  @media print {
-    [data-landing]::before {
+    .landing-ambient {
       display: none;
     }
   }

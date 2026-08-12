@@ -1,55 +1,85 @@
-import SectionHeading from "./section-heading";
+import { Code2, Eye, FileDown, Languages, Share2, Undo2 } from "lucide-react";
 
-const OUTPUTS = [
+/**
+ * The bento grid.
+ *
+ * Tiles are deliberately unequal — two wide ones carrying the claims that need a
+ * paragraph, four narrow ones for the facts that need a line. A bento where every
+ * tile is the same size is a table with rounded corners, and it reads as one.
+ *
+ * The copy here used to be set as a numbered colophon (`i`, `ii`, `iii`) in the
+ * voice of a printer's specimen book. It says the same things now without
+ * cataloguing them, because a product page's job is to be understood on one pass.
+ */
+const TILES = [
   {
-    index: "i",
-    title: "Live preview",
-    body: "The preview is not a picture of the PDF — it is the same element tree the PDF is built from, rendered into an iframe. What you are looking at is what prints.",
+    icon: Eye,
+    title: "The preview is the PDF",
+    body: "Not a picture of it — the same element tree the export is built from, rendered into an iframe. What you are looking at is what prints.",
+    span: "sm:col-span-2",
   },
   {
-    index: "ii",
-    title: "PDF",
-    body: "A4, with the fonts embedded, the text selectable and the links live. Long resumes paginate on whole entries, so a job never opens on one page and finishes on the next.",
+    icon: FileDown,
+    title: "PDF, properly",
+    body: "A4 with the fonts embedded, text selectable and links live. Long resumes paginate on whole entries, so a job never opens on one page and finishes on the next.",
+    span: "sm:col-span-2",
   },
   {
-    index: "iii",
+    icon: Code2,
     title: "Single-file HTML",
-    body: "One document, every style inlined, nothing to ship alongside it. Host it as your personal page, paste it into an email, or keep it in git as text — and printing it gives the PDF back.",
+    body: "One document, every style inlined. Host it, email it, or keep it in git as text.",
+    span: "",
+  },
+  {
+    icon: Languages,
+    title: "中文 ⇄ English",
+    body: "Translate the whole sheet in place, with the layout holding either way.",
+    span: "",
+  },
+  {
+    icon: Share2,
+    title: "Share as a link",
+    body: "The resume travels inside the URL itself — still nothing stored on a server.",
+    span: "",
+  },
+  {
+    icon: Undo2,
+    title: "Nothing to lose",
+    body: "Saved to this browser as you type. No account to forget the password to.",
+    span: "",
   },
 ];
 
 const Outputs = () => (
-  <section className="border-b border-[var(--rule)]">
-    <div className="mx-auto w-full max-w-[1280px] px-6 py-20 lg:px-10 lg:py-28">
-      <SectionHeading
-        index="01"
-        label="Outputs"
-        title={
-          <>
-            One resume, <br />
-            three ways out<span className="text-[var(--accent)]">.</span>
-          </>
-        }
-      />
+  <section id="outputs" className="scroll-mt-24 border-t border-[var(--rule)]">
+    <div className="mx-auto w-full max-w-[1120px] px-6 py-24 lg:py-32">
+      <p className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--graphite-soft)]">
+        What you get
+      </p>
+      <h2 className="mt-3 max-w-[30ch] font-display text-[clamp(1.9rem,3.4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.028em]">
+        One resume in, three ways out.
+      </h2>
 
-      {/* Held to the same columns the heading starts in, so the section reads as one
-          block with its number alone out in the margin. */}
-      <div className="mt-16 lg:grid lg:grid-cols-12 lg:gap-x-14">
-        <div className="grid grid-cols-1 gap-x-14 gap-y-12 md:grid-cols-3 lg:col-span-9 lg:col-start-4">
-          {OUTPUTS.map(({ index, title, body }) => (
-            <article key={title} className="border-t border-[var(--graphite)] pt-5">
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--accent)]">
-                {index}
-              </p>
-              <h3 className="mt-4 font-display text-2xl font-semibold tracking-[-0.02em]">
-                {title}
-              </h3>
-              <p className="mt-3 text-[0.975rem] leading-[1.72] text-[var(--graphite-soft)]">
-                {body}
-              </p>
-            </article>
-          ))}
-        </div>
+      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-4">
+        {TILES.map(({ icon: Icon, title, body, span }) => (
+          <div
+            key={title}
+            className={`rounded-[var(--r-lg)] border border-[var(--rule)] bg-[var(--paper-raised)] p-6 shadow-[var(--shadow-sm),var(--highlight)] transition-shadow duration-200 hover:shadow-[var(--shadow-md),var(--highlight)] motion-reduce:transition-none ${span}`}
+          >
+            <span
+              aria-hidden
+              className="grid size-9 place-items-center rounded-[10px] bg-[var(--wash)] text-[var(--accent)]"
+            >
+              <Icon className="size-[1.05rem]" />
+            </span>
+            <h3 className="mt-4 font-display text-[1.0625rem] font-semibold tracking-[-0.012em]">
+              {title}
+            </h3>
+            <p className="mt-2 max-w-[46ch] text-[0.9375rem] leading-[1.6] text-[var(--graphite-soft)]">
+              {body}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
