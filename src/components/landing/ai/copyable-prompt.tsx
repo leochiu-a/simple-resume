@@ -4,6 +4,17 @@ import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
 
 /**
+ * Where the editor is, when the page cannot ask the browser.
+ *
+ * Only used for the server-rendered pass and for anything that reads the HTML
+ * without running it. A visitor's browser replaces it with their own origin below.
+ */
+const CANONICAL_ORIGIN = "https://simple-resume-nu.vercel.app";
+
+/** The token `prompt` uses to stand in for the site's own origin. */
+const ORIGIN_TOKEN = "{{origin}}";
+
+/**
  * A prompt the visitor is meant to run, not just read, so the copy button is the
  * point rather than a convenience — retyping a twelve-line prompt by hand is the
  * difference between trying this and not.
@@ -11,9 +22,24 @@ import { useEffect, useState } from "react";
  * The prompt is passed as a string rather than as children: it has to reach the
  * clipboard verbatim, and JSX children would arrive as a React tree that has to
  * be flattened back into text.
+ *
+ * It names the editor's URL, and that URL has to be the one the reader is looking
+ * at — this prompt used to say `localhost:3000`, which is the address of the
+ * machine it was written on and of nothing a visitor has running. So the caller
+ * writes `{{origin}}` and this resolves it against the live page, which keeps the
+ * copied text correct on the deployed site, on a preview deployment, and in
+ * development without any of the three being special-cased.
  */
 const CopyablePrompt = ({ label, prompt }: { label: string; prompt: string }) => {
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState(CANONICAL_ORIGIN);
+
+  // Deliberately after mount rather than during render: `location` does not exist
+  // on the server, and reading it inline would make the first client render
+  // disagree with the HTML it is hydrating.
+  useEffect(() => setOrigin(window.location.origin), []);
+
+  const resolved = prompt.replaceAll(ORIGIN_TOKEN, origin);
 
   // A confirmation that never resets reads as a permanent state change rather
   // than as an acknowledgement.
@@ -25,7 +51,7 @@ const CopyablePrompt = ({ label, prompt }: { label: string; prompt: string }) =>
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(prompt);
+      await navigator.clipboard.writeText(resolved);
       setCopied(true);
     } catch {
       // A denied clipboard permission is not worth an error state — the text is
@@ -54,7 +80,7 @@ const CopyablePrompt = ({ label, prompt }: { label: string; prompt: string }) =>
       </figcaption>
 
       <pre className="overflow-x-auto px-5 py-5 font-mono text-[0.8rem] leading-[1.75] text-white/90">
-        {prompt}
+        {resolved}
       </pre>
     </figure>
   );

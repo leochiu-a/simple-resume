@@ -35,8 +35,10 @@ export const metadata: Metadata = {
  * two scores in the storyboard are what `score-resume` actually returned.
  */
 
-/** The prompt from the run in the storyboard, as a visitor would paste it. */
-const AGENT_PROMPT = `Open http://localhost:3000/resume-editor and use the page's
+/** The prompt from the run in the storyboard, as a visitor would paste it.
+ *  `{{origin}}` is resolved against the live page by `CopyablePrompt` — the URL a
+ *  reader needs is the site they are on, not the one this was written on. */
+const AGENT_PROMPT = `Open {{origin}}/resume-editor and use the page's
 WebMCP tools to improve my resume.
 
 1. Call get-resume to see what is there, then score-resume
