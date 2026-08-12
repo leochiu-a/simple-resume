@@ -224,6 +224,21 @@
     --graphite: hsl(var(--c-graphite));
     --graphite-soft: hsl(var(--c-graphite-soft));
 
+    /**
+     * Graphite that does not track the theme, for the places where only one side of a
+     * pair can invert.
+     *
+     * Two of those exist. The closing band's pill stays white because it sits on the
+     * saturated gradient, so its ink cannot follow `--graphite` — which inverts to
+     * near-white and disappears. The terminal slabs (the agent's call list, the copyable
+     * prompt) are the mirror image: every value on them is a hardcoded `white/xx`, so the
+     * surface has to stay dark or the text vanishes into it.
+     *
+     * Both used `--graphite` and both were invisible in dark mode. Deliberately a literal
+     * rather than a derivation of `--c-graphite`: not tracking the theme is the feature.
+     */
+    --graphite-fixed: hsl(230 26% 8%);
+
     /* `--rule` is decorative — the edge of a card that already reads as a card.
        `--rule-strong` is for boundaries that carry meaning on their own and so has to
        stay visible rather than merely present; it is the one value with no `--c-*`

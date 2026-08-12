@@ -53,7 +53,7 @@ const Agent = () => (
         </div>
 
         <div className="lg:col-span-6 lg:order-1">
-          <div className="overflow-hidden rounded-[var(--r-lg)] border border-[var(--rule)] bg-[var(--graphite)] shadow-[var(--shadow-lg)]">
+          <div className="overflow-hidden rounded-[var(--r-lg)] border border-[var(--rule)] bg-[var(--graphite-fixed)] shadow-[var(--shadow-lg)]">
             <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3">
               <span aria-hidden className="size-2 rounded-full bg-[var(--g1)]" />
               <span className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-white/55">

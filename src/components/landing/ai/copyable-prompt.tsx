@@ -60,7 +60,7 @@ const CopyablePrompt = ({ label, prompt }: { label: string; prompt: string }) =>
   };
 
   return (
-    <figure className="m-0 overflow-hidden rounded-[var(--r-lg)] border border-[var(--rule)] bg-[var(--graphite)] shadow-[var(--shadow-md)]">
+    <figure className="m-0 overflow-hidden rounded-[var(--r-lg)] border border-[var(--rule)] bg-[var(--graphite-fixed)] shadow-[var(--shadow-md)]">
       <figcaption className="flex items-center gap-3 border-b border-white/10 px-5 py-3">
         <span className="font-mono text-[0.625rem] uppercase tracking-[0.18em] text-white/55">
           {label}
