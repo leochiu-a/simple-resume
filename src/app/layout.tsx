@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Instrument_Sans, Schibsted_Grotesk } from "next/font/goo
 import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/react";
 
+import MotionProvider from "@/components/motion-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SITE_URL } from "@/constants/site";
 
@@ -91,7 +92,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <MotionProvider>{children}</MotionProvider>
         </ThemeProvider>
         <Analytics />
       </body>
