@@ -10,7 +10,7 @@ const LabeledInputField = forwardRef<HTMLInputElement, LabeledInputFieldProps>(
   ({ label, ...props }, ref) => {
     return (
       <div className="space-y-2">
-        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="flex h-5 items-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           {label}
         </div>
         <Input {...props} ref={ref} />
