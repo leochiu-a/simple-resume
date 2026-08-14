@@ -35,8 +35,8 @@ Online site: https://simple-resume-nu.vercel.app
 
 ## Local Development
 
-1. Download the repo git clone `gh repo clone leochiu-a/simple-resume`
-2. Change the directory cd `simple-resume`
+1. Download the repo git clone `gh repo clone leochiu-a/open-resume`
+2. Change the directory cd `open-resume`
 3. Install the dependency `pnpm i`
 4. Start a development server `pnpm dev`
 5. Open your browser and visit http://localhost:3000 — the editor itself is at

@@ -383,7 +383,7 @@ const Ai = () => (
                 experimental.
               </p>
               <Link
-                href="https://github.com/leochiu-a/simple-resume/blob/main/docs/webmcp.md"
+                href="https://github.com/leochiu-a/open-resume/blob/main/docs/webmcp.md"
                 target="_blank"
                 className="mt-5 inline-flex w-fit items-center gap-2 font-mono text-[0.8125rem] font-medium text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
               >

@@ -104,7 +104,7 @@ const SiteNav = () => {
 
         <div className="ml-auto flex items-center gap-0.5 sm:gap-1">
           <Link
-            href="https://github.com/leochiu-a/simple-resume"
+            href="https://github.com/leochiu-a/open-resume"
             target="_blank"
             aria-label="Source on GitHub"
             className="flex size-8 items-center justify-center rounded-full text-[var(--graphite-soft)] transition-colors duration-200 hover:bg-[var(--wash)] hover:text-[var(--graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"

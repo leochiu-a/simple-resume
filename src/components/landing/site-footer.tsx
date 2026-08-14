@@ -15,10 +15,10 @@ const LINKS = [
 ];
 
 const EXTERNAL = [
-  { label: "GitHub", href: "https://github.com/leochiu-a/simple-resume" },
+  { label: "GitHub", href: "https://github.com/leochiu-a/open-resume" },
   {
     label: "WebMCP tools",
-    href: "https://github.com/leochiu-a/simple-resume/blob/main/docs/webmcp.md",
+    href: "https://github.com/leochiu-a/open-resume/blob/main/docs/webmcp.md",
   },
 ];
 

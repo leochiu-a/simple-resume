@@ -194,7 +194,7 @@ const EditorHeader: FC<EditorHeaderProps> = ({
               <DropdownMenuSeparator />
 
               <DropdownMenuItem asChild>
-                <Link href="https://github.com/leochiu-a/simple-resume" target="_blank">
+                <Link href="https://github.com/leochiu-a/open-resume" target="_blank">
                   {/* 16px to match the lucide glyphs above it, which is what the
                       shared axis is measured from. */}
                   <Image
