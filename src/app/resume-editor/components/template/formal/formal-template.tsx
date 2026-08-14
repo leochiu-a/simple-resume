@@ -3,6 +3,7 @@
 import { Page, View, Document } from "@react-pdf/renderer";
 
 import { Resume } from "@/types/resume";
+import { filledProjects } from "@/lib/resume-projects";
 
 import { styles } from "./styles";
 import Header from "./header";
@@ -46,7 +47,7 @@ const FormalTemplate = ({
             <Experience employmentHistory={resume.employmentHistory} />
           )}
 
-          {visibility.projects && <Projects projects={resume.projects ?? []} />}
+          {visibility.projects && <Projects projects={filledProjects(resume.projects)} />}
 
           {visibility.educations && <Education educations={resume.educations} />}
 

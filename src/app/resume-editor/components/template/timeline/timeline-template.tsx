@@ -3,6 +3,7 @@
 import { Page, View, Text, Document } from "@react-pdf/renderer";
 
 import { Resume } from "@/types/resume";
+import { filledProjects } from "@/lib/resume-projects";
 
 import { styles } from "./styles";
 import Section from "./section";
@@ -48,7 +49,7 @@ const TimelineTemplate = ({
             )}
 
             {resume.visibility.projects && (
-              <Projects projects={resume.projects ?? []} accent={backgroundColor} />
+              <Projects projects={filledProjects(resume.projects)} accent={backgroundColor} />
             )}
 
             {resume.visibility.educations && <Education educations={resume.educations} />}

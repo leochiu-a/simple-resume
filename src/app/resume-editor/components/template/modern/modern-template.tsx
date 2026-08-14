@@ -3,6 +3,7 @@
 import { Page, View, Document } from "@react-pdf/renderer";
 
 import { Resume } from "@/types/resume";
+import { filledProjects } from "@/lib/resume-projects";
 
 import { styles, CONTENT_COLOR } from "./styles";
 import panelColors from "./panel-color";
@@ -42,7 +43,7 @@ const ModernTemplate = ({
             <Experience employmentHistory={resume.employmentHistory} />
           )}
 
-          {resume.visibility.projects && <Projects projects={resume.projects ?? []} />}
+          {resume.visibility.projects && <Projects projects={filledProjects(resume.projects)} />}
 
           {resume.visibility.educations && <Education educations={resume.educations} />}
         </View>

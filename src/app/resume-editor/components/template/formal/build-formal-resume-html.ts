@@ -1,6 +1,7 @@
 import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { Resume } from "@/types/resume";
+import { filledProjects } from "@/lib/resume-projects";
 
 import { escapeHtml, paragraphsHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
 
@@ -287,8 +288,7 @@ const experienceSection = (resume: Resume) => {
 };
 
 const projectsSection = (resume: Resume) => {
-  const entries = (resume.projects ?? [])
-    .filter(({ name, description }) => name.trim() !== "" || description.trim() !== "")
+  const entries = filledProjects(resume.projects)
     .map(({ name, url, description }) => {
       const bullets = description
         .split(SPLIT_TEXT)

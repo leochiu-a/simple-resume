@@ -3,6 +3,7 @@
 import { Page, View, Document } from "@react-pdf/renderer";
 
 import { Resume } from "@/types/resume";
+import { filledProjects } from "@/lib/resume-projects";
 
 import { styles } from "./styles";
 import Header from "./header";
@@ -48,7 +49,7 @@ const LedgerTemplate = ({
           )}
 
           {visibility.projects && (
-            <Projects projects={resume.projects ?? []} titleColor={backgroundColor} />
+            <Projects projects={filledProjects(resume.projects)} titleColor={backgroundColor} />
           )}
 
           {visibility.educations && (
