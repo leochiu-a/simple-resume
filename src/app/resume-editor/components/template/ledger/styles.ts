@@ -28,7 +28,7 @@ const LABEL_LINE_HEIGHT = 1.15;
 /** The ink the whole sheet is set in; the rule and the titles take the colour. */
 export const INK = "rgb(2, 6, 27)";
 /** Sublines and dates, which sit back from the text they annotate. */
-const MUTED = "#5b6070";
+export const MUTED = "#5b6070";
 
 export const SECTION_SPACING = pt(22);
 /** The gap between entries, and between a summary's paragraphs. */

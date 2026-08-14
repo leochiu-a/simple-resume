@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
   link: {
     display: "flex",
     textDecoration: "underline",
+    /** The sidebar, where links started out — see the colour note in Typography. */
     color: "#fff",
   },
 });
@@ -63,9 +64,15 @@ const Typography = ({
   const textStyle: Style = { fontWeight: bold ? "bold" : "normal", ...style };
 
   if (as === "link") {
+    // A PDF link carries its own colour rather than inheriting one, so the text
+    // style's colour has to be handed down explicitly — otherwise a link in the
+    // white content column comes out in the sidebar's white and disappears.
     return (
       <PDFText style={textStyle}>
-        <PDFLink href={href} style={styles.link}>
+        <PDFLink
+          href={href}
+          style={{ ...styles.link, color: textStyle.color ?? styles.link.color }}
+        >
           {children}
         </PDFLink>
       </PDFText>

@@ -191,6 +191,9 @@ export interface PdfFacts {
   pages: number;
   embeddedFonts: string[];
   linkAnnotations: number;
+  /** Where those annotations point, in document order — a count alone cannot tell
+   *  a missing link from one that landed on the wrong url. */
+  linkTargets: string[];
 }
 
 /**
@@ -213,6 +216,7 @@ export function readPdfFacts(path: string): PdfFacts {
     pages: (raw.match(/\/Type\s*\/Page[^s]/g) ?? []).length,
     embeddedFonts: fonts,
     linkAnnotations: (raw.match(/\/Type\s*\/Annot/g) ?? []).length,
+    linkTargets: [...raw.matchAll(/\/URI\s*\(([^)]*)\)/g)].map((m) => m[1]),
   };
 }
 

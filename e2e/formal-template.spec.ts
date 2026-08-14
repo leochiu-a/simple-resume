@@ -199,7 +199,9 @@ test.describe("Formal template", () => {
       expect(pdf.embeddedFonts.some((f) => f.endsWith(family))).toBe(true);
     }
 
-    // Github / Medium / Threads stay clickable in the Links section.
-    expect(pdf.linkAnnotations).toBe(3);
+    // Github / Medium / Threads stay clickable in the Links section, and the
+    // project's url is clickable where it sits under the project name.
+    expect(pdf.linkAnnotations).toBe(4);
+    expect(pdf.linkTargets).toContain("https://github.com/simple-resume");
   });
 });

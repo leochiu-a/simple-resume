@@ -26,7 +26,11 @@ const Projects = ({ projects }: { projects: Project[] }) => {
               <AvoidBreak style={entryHead}>
                 <View style={{ ...styles.flexCol, marginBottom: 8 }}>
                   <Text bold>{name}</Text>
-                  {url && <SubText>{url}</SubText>}
+                  {url && (
+                    <SubText as="link" href={url}>
+                      {url}
+                    </SubText>
+                  )}
                 </View>
 
                 {firstBullet !== undefined && (

@@ -1,4 +1,4 @@
-import { View, Text } from "@react-pdf/renderer";
+import { View, Text, Link } from "@react-pdf/renderer";
 import { Fragment } from "react";
 
 import { Project } from "@/types/resume";
@@ -31,7 +31,16 @@ const Projects = ({ projects }: { projects: Project[] }) => {
               <AvoidBreak style={styles.entryHead}>
                 <Text style={styles.entryHeadline}>{name}</Text>
 
-                {url && <Text style={styles.entrySubline}>{url}</Text>}
+                {/* The url has to sit inside a Text: the preview renders this
+                    tree as DOM, where a bare <LINK> is treated as a void
+                    element and drops its children. Same as `links.tsx`. */}
+                {url && (
+                  <Text style={styles.entrySubline}>
+                    <Link src={url} style={styles.link}>
+                      {url}
+                    </Link>
+                  </Text>
+                )}
 
                 {firstBullet !== undefined && (
                   <View style={styles.descriptionRow}>
