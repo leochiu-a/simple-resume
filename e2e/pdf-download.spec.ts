@@ -34,8 +34,17 @@ test.describe("PDF download", () => {
       expect(pdf.embeddedFonts.some((f) => f.endsWith(family))).toBe(true);
     }
 
-    // Github / Medium / Threads render as clickable link annotations.
-    expect(pdf.linkAnnotations).toBe(3);
+    // Github / Medium / Threads, plus the project's own url — all four render as
+    // clickable link annotations pointing where they say they do.
+    expect(pdf.linkAnnotations).toBe(4);
+    expect(pdf.linkTargets).toEqual(
+      expect.arrayContaining([
+        "https://github.com",
+        "https://medium.com",
+        "https://threads.net",
+        "https://github.com/simple-resume",
+      ]),
+    );
   });
 
   test("regenerates the PDF after the resume changes", async ({ page }) => {

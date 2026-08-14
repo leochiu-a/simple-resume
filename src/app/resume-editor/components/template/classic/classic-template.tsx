@@ -10,6 +10,7 @@ import Education from "./education";
 import Info from "./info";
 import { A4_HEIGHT_PT } from "../constants";
 import { Resume } from "@/types/resume";
+import { filledProjects } from "@/lib/resume-projects";
 
 const ClassicTemplate = ({
   resume,
@@ -62,7 +63,7 @@ const ClassicTemplate = ({
             {resume.visibility.employmentHistory && (
               <EmploymentHistory employmentHistory={resume.employmentHistory} />
             )}
-            {resume.visibility.projects && <Projects projects={resume.projects ?? []} />}
+            {resume.visibility.projects && <Projects projects={filledProjects(resume.projects)} />}
             {resume.visibility.educations && <Education educations={resume.educations} />}
           </View>
         </View>

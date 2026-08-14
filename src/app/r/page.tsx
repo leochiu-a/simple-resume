@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { decodeSharePayload, SharePayload } from "@/lib/share-link";
 import { getTemplate } from "@/app/resume-editor/components/template/registry";
-import ResumeIframeCSR from "@/app/resume-editor/components/template/resume-iframe";
+import ResumeSheetsCSR from "@/app/resume-editor/components/template/resume-sheets";
 
 /**
  * The read-only end of a share link.
@@ -15,13 +15,16 @@ import ResumeIframeCSR from "@/app/resume-editor/components/template/resume-ifra
  * `window.location.hash` after mount — which is also why there is a loading
  * state at all for a page with no network calls.
  *
- * The sheet is the editor's own preview — `ResumeIframe` around
- * `template.render(...)` — not a second renderer built for this page. It already
- * scales A4 to the space it is given, paginates with the same rules the PDF uses,
- * and comes with its page pager, so a shared resume breaks across pages exactly
- * where the downloaded PDF does. The alternative, dropping the HTML export into an
- * iframe, cannot page: that document is one continuous column that only becomes
- * sheets under `@media print`.
+ * The sheets are the editor's own rendering — `ResumeSheets` around
+ * `template.render(...)` — not a second renderer built for this page. It scales A4
+ * to the space it is given and paginates with the same rules the PDF uses, so a
+ * shared resume breaks across pages exactly where the downloaded PDF does. What
+ * differs from the editor is the arrangement: every page is laid out down the
+ * screen rather than reached through a pager, because a reader scrolls a document
+ * they were sent instead of hunting for the button that admits there is a page two.
+ * The alternative, dropping the HTML export into an iframe, has no pages at all:
+ * that document is one continuous column that only becomes sheets under
+ * `@media print`.
  */
 
 type State =
@@ -105,23 +108,23 @@ const SharedResumePage = () => {
 
   return (
     /*
-      The same wash the editor's preview pane uses, so the sheet reads as paper on a
+      The same wash the editor's preview pane uses, so the sheets read as paper on a
       desk rather than white on white.
 
-      The padding is on top of the preview's own `py-6`. Inside the editor that 24px
+      The padding is on top of the stack's own `py-6`. Inside the editor that 24px
       is enough because the preview sits in a pane with a header above it; here the
-      sheet is the only thing on the page, and since the crop marks are drawn
+      sheets are the only thing on the page, and since the crop marks are drawn
       *outside* the trim, 24px alone put the top mark almost on the viewport edge —
       which reads as a sheet clipped by the window rather than one placed on a desk.
     */
     <main className="min-h-dvh bg-muted/40 py-4 sm:py-8">
-      {/* `px-6` is CROP_MARK_GUTTER: the preview draws crop marks outside the trim,
-          and this box clips. The sheet sizes itself to whatever room it is given,
+      {/* `px-6` is CROP_MARK_GUTTER: the sheets draw crop marks outside the trim,
+          and this box clips. A sheet sizes itself to whatever room it is given,
           so the width cap is what keeps it from growing past 1:1 on a wide screen. */}
       <div className="mx-auto w-full max-w-[860px] px-6">
-        <ResumeIframeCSR>
+        <ResumeSheetsCSR>
           {getTemplate(templateId).render({ resume, backgroundColor })}
-        </ResumeIframeCSR>
+        </ResumeSheetsCSR>
       </div>
     </main>
   );

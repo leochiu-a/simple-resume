@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { collectConsoleErrors, copyShareLink, preview } from "./helpers";
+import { collectConsoleErrors, copyShareLink } from "./helpers";
 
 /**
  * The share link is the one export that has to survive a round trip through
@@ -17,13 +17,17 @@ import { collectConsoleErrors, copyShareLink, preview } from "./helpers";
 const readClipboard = (page: Page) => page.evaluate(() => navigator.clipboard.readText());
 
 /**
- * The sheet on the shared page.
+ * A page of the shared resume, numbered from 1.
  *
- * It is the editor's own preview, so it answers to the same title the editor's
- * does — `preview()` in helpers.ts finds it the same way. Shared deliberately
- * rather than duplicated: if the preview's title changes, both move together.
+ * The shared page lays every page out down the screen rather than paging through
+ * one sheet, so each is its own frame and the number is how they are told apart —
+ * unlike the editor's single "Resume preview".
  */
-const sharedSheet = preview;
+const sharedSheet = (page: Page, pageNumber = 1) =>
+  page.frameLocator(`iframe[title="Resume page ${pageNumber}"]`);
+
+/** Every sheet on the shared page, for counting them. */
+const sharedSheets = (page: Page) => page.locator('iframe[title^="Resume page "]');
 
 /**
  * Copies the link and waits for the item to confirm it before reading the
@@ -113,30 +117,32 @@ test.describe("Share link", () => {
     await expect(sharedSheet(page).getByText("My Name")).toBeVisible();
 
     /*
-      The shared page reuses the editor's preview rather than dropping the HTML
-      export into an iframe. That is what makes a resume look like a resume here:
-      the export is one continuous column that only becomes sheets under
-      `@media print`, so an iframe around it has no page to show, no way to offer a
-      second one, and — sized to its content — no A4 shape either.
+      The shared page renders real sheets rather than dropping the HTML export into
+      an iframe. That is what makes a resume look like a resume here: the export is
+      one continuous column that only becomes sheets under `@media print`, so an
+      iframe around it has no page to show, no second page to lay out below the
+      first, and — sized to its content — no A4 shape either.
 
       Asserted on the frame's proportions rather than a pixel height, because the
-      preview scales the sheet to whatever room it is given. A4 is 595:842pt.
+      sheet scales to whatever room it is given. A4 is 595:842pt.
     */
-    const ratio = await page.locator('iframe[title="Resume preview"]').evaluate((el) => {
-      const rect = el.getBoundingClientRect();
+    const ratio = await sharedSheets(page)
+      .first()
+      .evaluate((el) => {
+        const rect = el.getBoundingClientRect();
 
-      return rect.width / rect.height;
-    });
+        return rect.width / rect.height;
+      });
 
     expect(ratio).toBeCloseTo(595 / 842, 2);
 
-    // One page of content, so the pager stays out of the way entirely.
-    await expect(page.getByRole("button", { name: "Page 2" })).toHaveCount(0);
+    // One page of content, so there is exactly one sheet to scroll.
+    await expect(sharedSheets(page)).toHaveCount(1);
   });
 
-  test("pages through a resume that runs onto a second sheet", async ({ page }) => {
+  test("lays out every sheet of a resume that runs onto a second page", async ({ page }) => {
     // A resume long enough to need more than one page, encoded directly: what is
-    // under test is the paging, not how the text got typed.
+    // under test is the pagination, not how the text got typed.
     await page.goto("/r#r=placeholder");
     const link = await page.evaluate(async () => {
       const bullets = (count: number) =>
@@ -191,24 +197,27 @@ test.describe("Share link", () => {
 
     await page.goto(link);
 
-    const sheet = sharedSheet(page);
-    await expect(sheet.getByText("Ada Lovelace")).toBeVisible();
+    await expect(sharedSheet(page).getByText("Ada Lovelace")).toBeVisible();
 
-    const window = sheet.locator("[data-resume-page]");
-    await expect(window).toHaveAttribute("data-resume-page", "1");
-
-    await page.getByRole("button", { name: "Page 2" }).click();
-    await expect(window).toHaveAttribute("data-resume-page", "2");
+    // The second page is on screen without anything being clicked: a reader who
+    // was sent this link scrolls to it, and nothing is hidden behind a pager.
+    await expect(sharedSheets(page)).toHaveCount(2);
+    await expect(sharedSheet(page, 2).locator("[data-resume-page]")).toHaveAttribute(
+      "data-resume-page",
+      "2",
+    );
 
     /*
-      Paging must move the content by a whole page. It is one copy of the resume
-      behind an A4 window, so a partial offset would show the seam between two
-      pages at once rather than a page.
+      Each sheet shows its own page of one copy of the resume, offset by a whole
+      page — a partial offset would show the seam between two pages rather than a
+      page.
     */
-    const offset = await sheet.locator("[data-resume-page] > div").evaluate((el) => ({
-      top: parseFloat(getComputedStyle(el).top),
-      windowHeight: (el.parentElement as HTMLElement).getBoundingClientRect().height,
-    }));
+    const offset = await sharedSheet(page, 2)
+      .locator("[data-resume-page] > div")
+      .evaluate((el) => ({
+        top: parseFloat(getComputedStyle(el).top),
+        windowHeight: (el.parentElement as HTMLElement).getBoundingClientRect().height,
+      }));
 
     expect(Math.abs(offset.top)).toBeCloseTo(offset.windowHeight, 0);
   });

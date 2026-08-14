@@ -27,7 +27,22 @@ interface StubOptions {
   failCreate?: boolean;
   /** Never settles — a Chromium with the API but no model service behind it. */
   hangAvailability?: boolean;
+  /**
+   * Hold the download open once its progress has run, until the test calls
+   * `finishDownload`.
+   *
+   * A stubbed download takes a few hundred milliseconds, and a test that wants to
+   * assert on the busy state has to get an assertion in before it ends —
+   * a race it loses under a loaded machine, where a round trip to the page costs
+   * more than the whole download. Holding it open removes the clock from the
+   * test entirely: the download is busy until the test says otherwise.
+   */
+  hold?: boolean;
 }
+
+/** Releases a `hold`ing download, which then resolves as it otherwise would. */
+const finishDownload = (page: Page) =>
+  page.evaluate(() => (window as unknown as { finishDownload: () => void }).finishDownload());
 
 const installTranslatorStub = async (page: Page, options: StubOptions = {}) => {
   await page.addInitScript((opts: StubOptions) => {
@@ -36,6 +51,7 @@ const installTranslatorStub = async (page: Page, options: StubOptions = {}) => {
       steps = 4,
       failCreate = false,
       hangAvailability = false,
+      hold = false,
     } = opts;
 
     const translator = {
@@ -52,6 +68,13 @@ const installTranslatorStub = async (page: Page, options: StubOptions = {}) => {
         createOptions.monitor?.({
           addEventListener: (_type, listener) => listeners.push(listener),
         });
+
+        // Resolved by the test through `window.finishDownload`; already resolved
+        // when nothing is holding the download, so the tick below settles as soon
+        // as it has sent its last progress event.
+        let release = () => {};
+        const held = hold ? new Promise<void>((resolve) => (release = resolve)) : Promise.resolve();
+        (window as unknown as { finishDownload: () => void }).finishDownload = () => release();
 
         return new Promise((resolve, reject) => {
           let sent = 0;
@@ -71,14 +94,16 @@ const installTranslatorStub = async (page: Page, options: StubOptions = {}) => {
               return;
             }
 
-            resolve({
-              // Deliberately not a real translation: the tests care that each
-              // field went through the translator and came back changed, and a
-              // marker makes "which fields moved" readable in an assertion.
-              translate: (input: string) =>
-                Promise.resolve(`[${createOptions.targetLanguage}] ${input}`),
-              destroy: () => {},
-            });
+            void held.then(() =>
+              resolve({
+                // Deliberately not a real translation: the tests care that each
+                // field went through the translator and came back changed, and a
+                // marker makes "which fields moved" readable in an assertion.
+                translate: (input: string) =>
+                  Promise.resolve(`[${createOptions.targetLanguage}] ${input}`),
+                destroy: () => {},
+              }),
+            );
           };
 
           setTimeout(tick, 20);
@@ -141,7 +166,10 @@ test.describe("On-device AI panel", () => {
   test("offers the download, runs it, and keeps going while the panel is shut", async ({
     page,
   }) => {
-    await installTranslatorStub(page, { availability: "downloadable", steps: 6 });
+    // Held open: the busy state below is asserted across several round trips to
+    // the page, and a download that ends on its own clock would sometimes be over
+    // before the first of them lands.
+    await installTranslatorStub(page, { availability: "downloadable", steps: 6, hold: true });
     await page.goto("/resume-editor");
 
     await openOnDeviceAiPanel(page);
@@ -167,16 +195,16 @@ test.describe("On-device AI panel", () => {
     await expect(page.getByRole("progressbar")).toBeHidden();
 
     /*
-      Reopen and confirm the download ran to completion while nothing was on
-      screen to hold it.
+      Let it finish with the panel still shut, then reopen and confirm it ran to
+      completion while nothing was on screen holding it.
 
-      Deliberately not asserting a mid-flight state on the way past. The rows are
-      only in the DOM while the panel is open, so catching one means reopening it
-      fast enough to beat a stubbed download that takes six ticks — a race the
-      test would lose intermittently, and the thing being guarded is not "is it
-      busy right now" but "did closing the panel cancel it". Arriving at `ready`
-      having never touched the download again proves that.
+      Deliberately not asserting a mid-flight state on the way past: the rows are
+      only in the DOM while the panel is open, and the thing being guarded is not
+      "is it busy right now" but "did closing the panel cancel it". Arriving at
+      `ready` having only ever released it from outside proves that.
     */
+    await finishDownload(page);
+
     await openOnDeviceAiPanel(page);
     await expect(page.getByText("ready to translate")).toBeVisible();
   });

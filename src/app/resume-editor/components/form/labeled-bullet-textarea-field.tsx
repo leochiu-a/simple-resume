@@ -30,7 +30,7 @@ const LabeledBulletTextAreaField = ({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex items-center gap-3">
+      <div className="flex h-5 items-center gap-3">
         <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           {label}
         </div>

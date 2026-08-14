@@ -1,11 +1,11 @@
-import { View, Text } from "@react-pdf/renderer";
+import { View, Text, Link } from "@react-pdf/renderer";
 import { Fragment } from "react";
 
 import { Project } from "@/types/resume";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
 import Section from "./section";
-import { styles } from "./styles";
+import { styles, MUTED } from "./styles";
 import AvoidBreak from "../avoid-break";
 
 /**
@@ -31,7 +31,18 @@ const Projects = ({ projects, titleColor }: { projects: Project[]; titleColor: s
               <AvoidBreak style={styles.entryHead}>
                 <View style={styles.entryHeadline}>
                   <Text style={styles.entryTitle}>{name}</Text>
-                  {url !== "" && <Text style={styles.entryDate}>{url}</Text>}
+                  {/* The url has to sit inside a Text: the preview renders this
+                      tree as DOM, where a bare <LINK> is treated as a void
+                      element and drops its children. Same as `links.tsx`. The
+                      link keeps the date column's muted ink rather than the
+                      full-strength ink `styles.link` carries. */}
+                  {url !== "" && (
+                    <Text style={styles.entryDate}>
+                      <Link src={url} style={{ ...styles.link, color: MUTED }}>
+                        {url}
+                      </Link>
+                    </Text>
+                  )}
                 </View>
 
                 {firstBullet !== undefined && (

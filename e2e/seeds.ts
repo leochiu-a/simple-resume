@@ -44,7 +44,7 @@ export interface SeedResume {
     timeline: { from: string; to: string };
     description: string;
   }[];
-  projects: { name: string; description: string }[];
+  projects: { name: string; url?: string; description: string }[];
   visibility: Record<string, boolean>;
 }
 
@@ -188,6 +188,25 @@ export const PROJECTS_AND_STUDY: SeedResume = {
     major: "Computer Science and Information Engineering",
     timeline: { from: `${2010 + i}-09-01`, to: `${2012 + i}-07-01` },
   })),
+};
+
+/**
+ * One finished project and one the user has only just added.
+ *
+ * Pressing Add appends a blank entry, so this is the state every resume passes
+ * through on the way to its next project — and the state it sits in if the user
+ * presses Add and then exports without typing anything.
+ */
+export const HALF_FILLED_PROJECTS: SeedResume = {
+  ...BASE,
+  projects: [
+    {
+      name: "Tideline",
+      url: "https://github.com/tideline",
+      description: "An offline-first tide chart|Renders a year of predictions client-side",
+    },
+    { name: "", url: "", description: "" },
+  ],
 };
 
 /**
