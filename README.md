@@ -1,6 +1,6 @@
 # Open RESUME
 
-![The Open Resume landing page: a template rendered live on the right, with the template and colour pickers above it](docs/screenshot.webp)
+![The Open Resume landing page: the headline and call to action on the left, and a template rendered live on the right under a row of colour swatches](docs/screenshot.webp)
 
 An online tool to create a resume — with no account, and nothing uploaded anywhere.
 
