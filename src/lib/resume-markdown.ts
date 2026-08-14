@@ -14,6 +14,9 @@ import { Education, EmploymentHistory, Project, Resume, Timeline } from "@/types
  *
  * It follows the preview: hidden sections are left out, and empty fields never
  * become empty headings.
+ *
+ * Deliberately independent of the templates: there is one Markdown rendering,
+ * not one per template. Adding a template does not add a builder here.
  */
 
 /** Templates render dates as month + year; nothing finer is ever entered. */
