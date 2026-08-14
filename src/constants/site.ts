@@ -10,4 +10,4 @@
  * at the canonical site whoever is looking at it, and the prompt is a thing people
  * copy elsewhere. The client replaces it with the live origin where that matters.
  */
-export const SITE_URL = "https://simple-resume-nu.vercel.app";
+export const SITE_URL = "https://open-resume-dev.vercel.app";

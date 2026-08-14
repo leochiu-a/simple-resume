@@ -6,7 +6,7 @@ A resume builder that never uploads your resume. There is no account to make and
 to — the resume lives in this browser's storage, and the AI that translates and rewrites it runs on
 the device too, so that stays true with it switched on.
 
-**Live at [simple-resume-nu.vercel.app](https://simple-resume-nu.vercel.app)** — nothing to install.
+**Live at [open-resume-dev.vercel.app](https://open-resume-dev.vercel.app)** — nothing to install.
 
 ## What you can do
 
