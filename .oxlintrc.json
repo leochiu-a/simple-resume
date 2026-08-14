@@ -17,7 +17,9 @@
     // oxlint's jsx-a11y correctness set is wider than the subset
     // eslint-config-next/core-web-vitals used to enable, so these three started
     // firing on pre-existing markup (the click-to-close overlays in
-    // resume-preview{,-dialog}.tsx and the gridcell role in month-picker.tsx).
+    // resume-preview{,-dialog}.tsx, and the listbox/option roles in
+    // month-picker.tsx and progress-bar.tsx's progressbar, none of which can be
+    // the native tag the rule wants without losing the styling they exist for).
     // Kept as warnings so the signal stays visible without blocking, matching
     // how the old ESLint config handled newly-introduced rules.
     "jsx-a11y/click-events-have-key-events": "warn",
