@@ -80,7 +80,7 @@ const MonthCalendar: FC<MonthCalendarProps> = ({ currentMonth = new Date(), onMo
                 className={cn(
                   buttonVariants({ variant: "outline" }),
                   "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                  "absolute right-1 disabled:bg-slate-100",
+                  "absolute right-1 disabled:bg-muted",
                 )}
                 type="button"
                 disabled={isFuture(add(firstDayCurrentYear, { years: 1 }))}
@@ -94,21 +94,25 @@ const MonthCalendar: FC<MonthCalendarProps> = ({ currentMonth = new Date(), onMo
             {months.map((month) => (
               <div
                 key={month.toString()}
-                className="relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-slate-100 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md dark:[&:has([aria-selected])]:bg-slate-800"
+                className="relative p-0 text-center text-sm focus-within:z-20"
                 role="presentation"
               >
                 <button
                   name="day"
                   className={cn(
-                    "inline-flex h-9 w-16 items-center justify-center rounded-md p-0 text-sm font-normal ring-offset-white transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 aria-selected:opacity-100 dark:ring-offset-slate-950 dark:hover:bg-slate-800 dark:hover:text-slate-50 dark:focus-visible:ring-slate-800",
+                    "inline-flex h-9 w-16 items-center justify-center rounded-md p-0 text-sm font-normal ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+                    /* Selected is the inked button, and it has to stay inked under the
+                       cursor: without the hover and focus repeats the row's generic
+                       `hover:bg-accent` would wash the current month back to a wash. */
                     isEqual(month, currentMonth) &&
-                      "bg-slate-900 text-slate-50 hover:bg-slate-900 hover:text-slate-50 focus:bg-slate-900 focus:text-slate-50 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-50 dark:hover:text-slate-900 dark:focus:bg-slate-50 dark:focus:text-slate-900",
+                      "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                     !isEqual(month, currentMonth) &&
                       isEqual(month, getStartOfCurrentMonth()) &&
-                      "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50",
+                      "bg-accent text-accent-foreground",
                   )}
                   disabled={isFuture(month)}
                   role="gridcell"
+                  aria-selected={isEqual(month, currentMonth)}
                   tabIndex={-1}
                   type="button"
                   onClick={() => onMonthChange?.(month)}
