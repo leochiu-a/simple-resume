@@ -1,9 +1,9 @@
 import { pathToFileURL } from "node:url";
 
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { downloadHtml, downloadMenu, preview, selectTemplate } from "./helpers";
-import { HALF_FILLED_PROJECTS, seedResume } from "./seeds";
+import { HALF_FILLED_PROJECTS, seedResume, type SeedResume } from "./seeds";
 
 /**
  * A project entry nobody has filled in yet is left out of every rendering.
@@ -79,5 +79,46 @@ test.describe("projects", () => {
       }),
     });
     await expect(projects.locator("article")).toHaveCount(1);
+  });
+
+  /**
+   * "A link to your work" reads the project urls too.
+   *
+   * It used to count the Links section alone, and skip itself entirely when that
+   * section was hidden — so someone whose evidence was three linked GitHub
+   * projects was told they had no links, which is both wrong and unfixable
+   * without adding the URL a second time.
+   */
+  test.describe("the link check", () => {
+    const hidingLinks = (url: string): SeedResume => ({
+      ...HALF_FILLED_PROJECTS,
+      projects: [{ ...HALF_FILLED_PROJECTS.projects[0], url }],
+      visibility: { ...HALF_FILLED_PROJECTS.visibility, socialLinks: false },
+    });
+
+    /** The panel files each check under "To fix" or "Passing". */
+    const group = (page: Page, heading: string) =>
+      page.locator("section").filter({ has: page.getByRole("heading", { name: heading }) });
+
+    const openScorePanel = async (page: Page) => {
+      await page.getByRole("button", { name: "Resume score" }).click();
+      await expect(page.getByRole("heading", { name: "Passing" })).toBeVisible();
+    };
+
+    test("passes on a project's url when the Links section is hidden", async ({ page }) => {
+      await seedResume(page, hidingLinks("https://github.com/tideline"));
+      await page.goto("/resume-editor");
+      await openScorePanel(page);
+
+      await expect(group(page, "Passing").getByText("A link to your work")).toBeVisible();
+    });
+
+    test("still asks for one when nothing on the page links anywhere", async ({ page }) => {
+      await seedResume(page, hidingLinks(""));
+      await page.goto("/resume-editor");
+      await openScorePanel(page);
+
+      await expect(group(page, "To fix").getByText("A link to your work")).toBeVisible();
+    });
   });
 });

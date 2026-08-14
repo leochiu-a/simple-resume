@@ -45,7 +45,12 @@ export interface ResumeMetrics {
   educationCount: number;
   socialLinkCount: number;
   employmentCount: number;
-  projectCount: number;
+  /**
+   * Projects carrying a url. Counted apart from `socialLinkCount` because it is
+   * the same evidence by a different route — a reader who can open the work does
+   * not care which section the link was filed under.
+   */
+  projectLinkCount: number;
 }
 
 /**
@@ -183,6 +188,11 @@ export const measureResume = (resume: Resume, lang: ResumeLang): ResumeMetrics =
       ? resume.socialLinks.filter((link) => link.url.trim()).length
       : 0,
     employmentCount: visibility.employmentHistory ? resume.employmentHistory.length : 0,
-    projectCount: visibility.projects ? resume.projects.length : 0,
+    projectLinkCount: visibility.projects
+      ? // Optional, as in `resume-markdown`: a document that arrived by import or
+        // from an older release can be missing the field entirely, and the score
+        // runs on every keystroke — throwing here takes the editor with it.
+        resume.projects.filter((project) => project.url?.trim()).length
+      : 0,
   };
 };

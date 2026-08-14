@@ -436,14 +436,20 @@ const RULES: Rule[] = [
     title: "A link to your work",
     weight: 4,
     run: (metrics, resume) => {
-      if (!resume.visibility.socialLinks) return skip();
-      return metrics.socialLinkCount > 0
+      const { socialLinks, projects } = resume.visibility;
+
+      // Both places a link can live. Skipped only when neither is on the page:
+      // with Links hidden, a project's url is still a link to the work, and
+      // marking this down would be asking for a URL the reader can already see.
+      if (!socialLinks && !projects) return skip();
+
+      return metrics.socialLinkCount + metrics.projectLinkCount > 0
         ? { status: "pass" as const, earned: 4, detail: "" }
         : {
             status: "warn" as const,
             earned: 0,
             detail:
-              "No links. A GitHub, LinkedIn or portfolio URL is the cheapest evidence on the page.",
+              "No links. A GitHub, LinkedIn or portfolio URL — on a project or in Links — is the cheapest evidence on the page.",
           };
     },
   },
