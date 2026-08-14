@@ -202,6 +202,6 @@ test.describe("Formal template", () => {
     // Github / Medium / Threads stay clickable in the Links section, and the
     // project's url is clickable where it sits under the project name.
     expect(pdf.linkAnnotations).toBe(4);
-    expect(pdf.linkTargets).toContain("https://github.com/simple-resume");
+    expect(pdf.linkTargets).toContain("https://github.com/open-resume");
   });
 });

@@ -62,8 +62,8 @@ export const DEFAULT_RESUME: Resume = {
   ],
   projects: [
     {
-      name: "Simple Resume",
-      url: "https://github.com/simple-resume",
+      name: "Open Resume",
+      url: "https://github.com/open-resume",
       description: "Built a local-first resume editor with four print-ready templates",
     },
   ],

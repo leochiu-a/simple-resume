@@ -85,7 +85,7 @@ const SiteNav = () => {
             <span className="block size-2.5 rounded-[3px] bg-white/95" />
           </span>
           <span className="whitespace-nowrap font-display text-[0.9375rem] font-semibold tracking-[-0.02em] sm:text-[1.0625rem]">
-            Simple Resume
+            Open Resume
           </span>
         </Link>
 

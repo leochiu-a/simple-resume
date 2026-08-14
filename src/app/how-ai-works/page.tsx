@@ -15,9 +15,9 @@ import ToolTable from "@/components/landing/ai/tool-table";
 import { SITE_URL } from "@/constants/site";
 
 const DESCRIPTION =
-  "Simple Resume runs the browser's own AI model to rewrite and translate a resume, and registers itself as 17 WebMCP tools so an agent like Claude Code can read, score, and edit it. Nothing is uploaded either way.";
+  "Open Resume runs the browser's own AI model to rewrite and translate a resume, and registers itself as 17 WebMCP tools so an agent like Claude Code can read, score, and edit it. Nothing is uploaded either way.";
 
-const TITLE = "AI in Simple Resume — on-device rewriting and a WebMCP agent";
+const TITLE = "AI in Open Resume — on-device rewriting and a WebMCP agent";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -123,10 +123,10 @@ const Ai = () => (
           <p className="mt-6 max-w-[62ch] text-[1.0625rem] leading-[1.65] text-[var(--graphite-soft)]">
             Two different things get called AI here, and they are worth separating. The browser now
             ships a <span className="font-medium text-[var(--graphite)]">model of its own</span>,
-            which Simple Resume uses to rewrite and translate. Separately, the editor registers
-            itself as <span className="font-medium text-[var(--graphite)]">WebMCP tools</span>, so
-            an agent such as Claude Code can read and edit the resume by calling functions instead
-            of guessing where to click. Neither one uploads the resume.
+            which Open Resume uses to rewrite and translate. Separately, the editor registers itself
+            as <span className="font-medium text-[var(--graphite)]">WebMCP tools</span>, so an agent
+            such as Claude Code can read and edit the resume by calling functions instead of
+            guessing where to click. Neither one uploads the resume.
           </p>
 
           <dl className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -237,8 +237,8 @@ const Ai = () => (
                 >
                   WebMCP
                 </Link>{" "}
-                lets a page hand an agent a set of functions instead of a screen to squint at.
-                Simple Resume registers{" "}
+                lets a page hand an agent a set of functions instead of a screen to squint at. Open
+                Resume registers{" "}
                 <span className="font-medium text-[var(--graphite)]">seventeen of them</span> when
                 the editor opens: two that read the resume, fourteen that write to it, and one that
                 publishes a written review.

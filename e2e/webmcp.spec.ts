@@ -372,7 +372,7 @@ test.describe("WebMCP resume tools", () => {
     await callTool(page, "update-project", { index: 1, name: "Tideline 2" });
 
     const resume = JSON.parse(textOf(await callTool(page, "get-resume")));
-    expect(resume.projects[0].name).toBe("Simple Resume");
+    expect(resume.projects[0].name).toBe("Open Resume");
     expect(resume.projects[1].name).toBe("Tideline 2");
   });
 
@@ -439,7 +439,7 @@ test.describe("WebMCP resume tools", () => {
   test("tools are unregistered when the editor unmounts", async ({ page }) => {
     expect(await listTools(page)).toHaveLength(REGISTERED_TOOLS.length);
 
-    await page.getByRole("link", { name: "Simple Resume" }).click();
+    await page.getByRole("link", { name: "Open Resume" }).click();
     await expect(page).toHaveURL("/");
 
     await expect.poll(() => listTools(page)).toEqual([]);

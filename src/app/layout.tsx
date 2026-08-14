@@ -45,7 +45,7 @@ const mono = IBM_Plex_Mono({
 const DESCRIPTION =
   "Write a resume in the browser and export it as a PDF or a single self-contained HTML file. No account, no upload — it is saved in your browser's storage and nowhere else.";
 
-const TITLE = "Simple Resume — a resume that never leaves your browser";
+const TITLE = "Open Resume — a resume that never leaves your browser";
 
 export const metadata: Metadata = {
   /* Without this, `opengraph-image.png` is emitted against `http://localhost:3000`,
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
        destination, and `type` defaults to nothing, which some scrapers treat as
        unshareable. */
     url: SITE_URL,
-    siteName: "Simple Resume",
+    siteName: "Open Resume",
     type: "website",
   },
   twitter: {

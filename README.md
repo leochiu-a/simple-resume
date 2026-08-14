@@ -1,6 +1,6 @@
-# Simple RESUME
+# Open RESUME
 
-![The Simple Resume landing page: a template rendered live on the right, with the template and colour pickers above it](docs/screenshot.webp)
+![The Open Resume landing page: a template rendered live on the right, with the template and colour pickers above it](docs/screenshot.webp)
 
 An online tool to create a resume — with no account, and nothing uploaded anywhere.
 
@@ -124,7 +124,7 @@ reason: at mobile widths the gutter costs more than the marks add.
 
 Two things not to do to the editor:
 
-- **Nothing in the bar whose accessible name contains "Simple Resume"** other than the wordmark
+- **Nothing in the bar whose accessible name contains "Open Resume"** other than the wordmark
   itself. Two links in one bar whose names overlap are ambiguous to read out and to select.
 - **Do not give the form an action, a method or a submit handler.** Nothing here is ever submitted —
   the `<form>` groups the fields and gives react-hook-form something to own, and every change is

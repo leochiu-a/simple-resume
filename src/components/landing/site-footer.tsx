@@ -44,7 +44,7 @@ const SiteFooter = () => (
               <span className="block size-2 rounded-[2px] bg-white/95" />
             </span>
             <span className="font-display text-[0.9375rem] font-semibold tracking-[-0.015em]">
-              Simple Resume
+              Open Resume
             </span>
           </Link>
           <p className="mt-4 max-w-[36ch] text-[0.875rem] leading-[1.6] text-[var(--graphite-soft)]">

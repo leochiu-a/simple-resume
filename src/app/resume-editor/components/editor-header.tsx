@@ -98,7 +98,7 @@ const EditorHeader: FC<EditorHeaderProps> = ({
       <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 md:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" className="truncate font-display text-xl font-semibold tracking-[-0.02em]">
-            <h1>Simple Resume</h1>
+            <h1>Open Resume</h1>
           </Link>
           <span className="hidden whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground xl:inline">
             Saved in this browser

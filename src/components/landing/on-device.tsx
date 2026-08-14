@@ -32,7 +32,7 @@ const OnDevice = () => (
             The model runs here too.
           </h2>
           <p className="mt-5 max-w-[46ch] text-[1rem] leading-[1.65] text-[var(--graphite-soft)]">
-            Chrome and Edge now ship a language model to the page itself. Simple Resume uses it to
+            Chrome and Edge now ship a language model to the page itself. Open Resume uses it to
             rewrite and translate, which is the only reason a page that promises nothing leaves your
             browser can offer rewriting at all — there is no API key here, and no request to send
             one with.

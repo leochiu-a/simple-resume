@@ -172,8 +172,8 @@ test.describe("timeline template", () => {
       expect(pdf.embeddedFonts.some((f) => f.endsWith(family))).toBe(true);
     }
     // Github / Medium / Threads stay clickable in the rail, plus the project
-    // link — which wraps in the narrow column, and react-pdf emits one
-    // annotation per line box of a link.
-    expect(pdf.linkAnnotations).toBe(5);
+    // link. One annotation each — react-pdf emits one per line box of a link, so
+    // a sample URL long enough to wrap in the narrow column would raise this.
+    expect(pdf.linkAnnotations).toBe(4);
   });
 });

@@ -42,7 +42,7 @@ test.describe("PDF download", () => {
         "https://github.com",
         "https://medium.com",
         "https://threads.net",
-        "https://github.com/simple-resume",
+        "https://github.com/open-resume",
       ]),
     );
   });
