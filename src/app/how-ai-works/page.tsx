@@ -26,11 +26,6 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
     url: `${SITE_URL}/how-ai-works`,
-    /* Stated even though the root layout has it. A child's `openGraph` replaces the
-       parent's object rather than merging into it, so declaring one here without
-       `images` dropped the root `opengraph-image.png` and this page shared with no
-       image at all. */
-    images: ["/opengraph-image.png"],
   },
 };
 
