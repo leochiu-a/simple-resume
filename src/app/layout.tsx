@@ -42,13 +42,16 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
+/** Names the three things the landing page actually argues — templates, the two
+ *  exports, and an AI that runs locally — because the version that listed only the
+ *  exports described a smaller product than the one that ships. */
 const DESCRIPTION =
-  "Write a resume in the browser and export it as a PDF or a single self-contained HTML file. No account, no upload — it is saved in your browser's storage and nowhere else.";
+  "Write a resume, pick a template, and export a PDF or one self-contained HTML file. The browser's own AI can rewrite it. No account, and nothing is uploaded.";
 
 const TITLE = "Open Resume — a resume that never leaves your browser";
 
 export const metadata: Metadata = {
-  /* Without this, `opengraph-image.png` is emitted against `http://localhost:3000`,
+  /* Without this, the generated `opengraph-image` is emitted against `http://localhost:3000`,
      which is the address of the machine that built the page and of nothing a crawler
      can fetch — so every share renders with no image. It is the base every relative
      metadata URL resolves against, not a canonical-URL declaration. */

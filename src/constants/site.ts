@@ -2,7 +2,7 @@
  * Where this app is deployed.
  *
  * Stated once because two unrelated things need it and neither can derive it: the
- * root layout's `metadataBase`, which turns `opengraph-image.png` into the absolute
+ * root layout's `metadataBase`, which turns the generated `opengraph-image` into the absolute
  * URL a crawler can fetch, and the copyable prompt's server-rendered fallback.
  *
  * Deliberately a constant rather than `VERCEL_URL`. A preview deployment's own
