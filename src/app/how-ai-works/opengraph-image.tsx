@@ -16,7 +16,7 @@ const Image = () =>
     lead: "The model runs",
     highlight: "in your browser.",
     tail: "",
-    eyebrow: "On-device rewriting · 17 WebMCP tools · Nothing uploaded",
+    eyebrow: "On-device rewriting · 18 WebMCP tools · Nothing uploaded",
   });
 
 export default Image;

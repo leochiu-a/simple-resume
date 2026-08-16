@@ -1,5 +1,6 @@
 import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
+import { sectionsHtml } from "@/lib/resume-sections";
 import { Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
 
@@ -376,10 +377,12 @@ const buildResumeHtml = ({
 ${infoSection(resume)}
 
       <div class="content">
-${resume.visibility.profile ? profileSection(resume.profile) : ""}
-${resume.visibility.employmentHistory ? employmentHistorySection(resume) : ""}
-${resume.visibility.projects ? projectsSection(resume) : ""}
-${resume.visibility.educations ? educationSection(resume) : ""}
+${sectionsHtml(resume, {
+  profile: () => profileSection(resume.profile),
+  employmentHistory: () => employmentHistorySection(resume),
+  projects: () => projectsSection(resume),
+  educations: () => educationSection(resume),
+})}
       </div>
     </main>
   </body>

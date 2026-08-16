@@ -35,7 +35,7 @@ const Educations: FC = () => {
 
   return (
     <Section className={cn(!visible && "opacity-50")}>
-      <SectionTitle index="07">
+      <SectionTitle>
         <span>Educations</span>
         <Controller
           control={control}

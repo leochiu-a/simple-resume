@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { Page, View, Document } from "@react-pdf/renderer";
 
 import { PAGE_PADDING_Y, styles } from "./styles";
@@ -11,7 +12,14 @@ import Info from "./info";
 import { A4_HEIGHT_PT } from "../constants";
 import { Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
+import { MAIN_COLUMN_SECTIONS, MainColumnSection, sectionsToRender } from "@/lib/resume-sections";
 
+/**
+ * The Classic template: a full-height tinted panel of identity, contacts, links
+ * and skills, with the dated sections in the column beside it.
+ *
+ * Only that column is the user's to arrange — the panel's contents are the design.
+ */
 const ClassicTemplate = ({
   resume,
   backgroundColor,
@@ -19,6 +27,13 @@ const ClassicTemplate = ({
   resume: Resume;
   backgroundColor: string;
 }) => {
+  const sections: Record<MainColumnSection, React.ReactNode> = {
+    profile: <Profile profile={resume.profile} />,
+    employmentHistory: <EmploymentHistory employmentHistory={resume.employmentHistory} />,
+    projects: <Projects projects={filledProjects(resume.projects)} />,
+    educations: <Education educations={resume.educations} />,
+  };
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -59,12 +74,9 @@ const ClassicTemplate = ({
               margin: "0 42px 0 220pt",
             }}
           >
-            {resume.visibility.profile && <Profile profile={resume.profile} />}
-            {resume.visibility.employmentHistory && (
-              <EmploymentHistory employmentHistory={resume.employmentHistory} />
-            )}
-            {resume.visibility.projects && <Projects projects={filledProjects(resume.projects)} />}
-            {resume.visibility.educations && <Education educations={resume.educations} />}
+            {sectionsToRender(resume, MAIN_COLUMN_SECTIONS).map((id) => (
+              <Fragment key={id}>{sections[id]}</Fragment>
+            ))}
           </View>
         </View>
       </Page>

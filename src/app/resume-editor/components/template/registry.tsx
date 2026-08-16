@@ -1,7 +1,8 @@
 import { ReactElement } from "react";
 import type { DocumentProps } from "@react-pdf/renderer";
 
-import { Resume } from "@/types/resume";
+import { ALL_SECTIONS, MAIN_COLUMN_SECTIONS } from "@/lib/resume-sections";
+import { Resume, SectionId } from "@/types/resume";
 
 import ClassicTemplate from "./classic/classic-template";
 import buildClassicResumeHtml from "./classic/build-classic-resume-html";
@@ -32,6 +33,15 @@ export interface TemplateDefinition {
   description: string;
   /** The colour the picker starts on, since the templates tint different areas. */
   defaultColor: string;
+  /**
+   * The sections this template lays out in the flow `sectionOrder` governs.
+   *
+   * Two-column templates own only their main column: skills and links sit in a
+   * sidebar whose arrangement is part of the design. The form reads this to mark
+   * those two "Sidebar" on their headings — arranging them is still allowed and
+   * still stored, it simply has nothing to move while this template is chosen.
+   */
+  orderedSections: readonly SectionId[];
   render: (props: TemplateProps) => ReactElement<DocumentProps>;
   buildHtml: (props: TemplateProps) => string;
 }
@@ -42,6 +52,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     label: "Classic",
     description: "Serif headings on a full-height colour sidebar.",
     defaultColor: "#094C42",
+    orderedSections: MAIN_COLUMN_SECTIONS,
     render: (props) => <ClassicTemplate {...props} />,
     buildHtml: buildClassicResumeHtml,
   },
@@ -50,6 +61,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     label: "Modern",
     description: "Two columns, uppercase headings under hairline rules.",
     defaultColor: DEFAULT_PANEL_COLOR,
+    orderedSections: MAIN_COLUMN_SECTIONS,
     render: (props) => <ModernTemplate {...props} />,
     buildHtml: buildModernResumeHtml,
   },
@@ -58,6 +70,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     label: "Formal",
     description: "Single column, centered serif header.",
     defaultColor: "#02061b",
+    orderedSections: ALL_SECTIONS,
     render: (props) => <FormalTemplate {...props} />,
     buildHtml: buildFormalResumeHtml,
   },
@@ -66,6 +79,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     label: "Timeline",
     description: "Timeline entries, details in a right-hand rail.",
     defaultColor: "#02061b",
+    orderedSections: MAIN_COLUMN_SECTIONS,
     render: (props) => <TimelineTemplate {...props} />,
     buildHtml: buildTimelineResumeHtml,
   },
@@ -74,6 +88,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     label: "Ledger",
     description: "Section titles in a left gutter, content beside them.",
     defaultColor: "#7c2d3a",
+    orderedSections: ALL_SECTIONS,
     render: (props) => <LedgerTemplate {...props} />,
     buildHtml: buildLedgerResumeHtml,
   },

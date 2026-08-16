@@ -78,7 +78,12 @@ test.describe("HTML export", () => {
 
   test("exports the current form state, including hidden sections", async ({ page }) => {
     await page.getByRole("textbox").nth(1).fill("Ada Lovelace");
-    await page.getByRole("heading", { name: "Skills" }).getByRole("button").click();
+    // Named rather than taken by position: the heading carries a drag handle as
+    // well as the eye now, and "the button in the heading" is no longer one thing.
+    await page
+      .getByRole("heading", { name: "Skills" })
+      .getByRole("button", { name: "Hide section" })
+      .click();
 
     const { html } = await exportHtml(page);
 

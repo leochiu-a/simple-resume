@@ -46,11 +46,14 @@ test.describe("resume editor", () => {
     const socialInputs = page.locator('input[name^="socialLinks"]');
     await expect(socialInputs).toHaveCount(6);
 
+    // The delete buttons have their own name now, so this no longer counts buttons
+    // out from the heading — a count the drag handle would have shifted anyway.
+    // Still scoped to the section, since every list in the form has Delete buttons.
     await page
-      .getByRole("heading", { name: "Website & Social links" })
-      .locator("..")
-      .getByRole("button")
-      .nth(1)
+      .locator("section")
+      .filter({ has: page.getByRole("heading", { name: "Website & Social links" }) })
+      .getByRole("button", { name: "Delete" })
+      .first()
       .click();
 
     await expect(socialInputs).toHaveCount(4);

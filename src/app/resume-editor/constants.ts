@@ -1,3 +1,4 @@
+import { DEFAULT_SECTION_ORDER } from "@/lib/resume-sections";
 import { Resume } from "@/types/resume";
 
 export const DEFAULT_RESUME: Resume = {
@@ -75,4 +76,5 @@ export const DEFAULT_RESUME: Resume = {
     employmentHistory: true,
     projects: true,
   },
+  sectionOrder: [...DEFAULT_SECTION_ORDER],
 };

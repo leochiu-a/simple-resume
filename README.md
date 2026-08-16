@@ -12,7 +12,8 @@ the device too, so that stays true with it switched on.
 
 Write it, style it, export it.
 
-1. **Write** your resume in a form that saves as you type.
+1. **Write** your resume in a form that saves as you type. The grip on a section heading floats
+   the running order over it, to drag into the shape you want.
 2. **Style** it with one of [four templates](#templates), tinted in a colour you pick.
 3. **Export** it as a PDF, as a [standalone HTML file](#html-export), or
    [copy it as Markdown](#markdown-for-agents) to paste into an AI agent.

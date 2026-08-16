@@ -1,9 +1,11 @@
 "use client";
 
+import { Fragment } from "react";
 import { Page, View, Text, Document } from "@react-pdf/renderer";
 
 import { Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
+import { MAIN_COLUMN_SECTIONS, MainColumnSection, sectionsToRender } from "@/lib/resume-sections";
 
 import { styles } from "./styles";
 import Section from "./section";
@@ -20,6 +22,9 @@ import Summary from "../summary";
  *
  * The picked colour is used as an accent rather than a fill — it tints the name
  * and the job titles, leaving the rules and body text in ink.
+ *
+ * Only the main column is the user's to arrange; the rail's contacts, skills and
+ * links are part of the design and stay where they are.
  */
 const TimelineTemplate = ({
   resume,
@@ -28,6 +33,19 @@ const TimelineTemplate = ({
   resume: Resume;
   backgroundColor: string;
 }) => {
+  const sections: Record<MainColumnSection, React.ReactNode> = {
+    profile: (
+      <Section title="Summary">
+        <Summary profile={resume.profile} style={styles.summary} />
+      </Section>
+    ),
+    employmentHistory: (
+      <Experience employmentHistory={resume.employmentHistory} accent={backgroundColor} />
+    ),
+    projects: <Projects projects={filledProjects(resume.projects)} accent={backgroundColor} />,
+    educations: <Education educations={resume.educations} />,
+  };
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -38,21 +56,9 @@ const TimelineTemplate = ({
 
         <View style={styles.columns}>
           <View style={styles.main}>
-            {resume.visibility.profile && (
-              <Section title="Summary">
-                <Summary profile={resume.profile} style={styles.summary} />
-              </Section>
-            )}
-
-            {resume.visibility.employmentHistory && (
-              <Experience employmentHistory={resume.employmentHistory} accent={backgroundColor} />
-            )}
-
-            {resume.visibility.projects && (
-              <Projects projects={filledProjects(resume.projects)} accent={backgroundColor} />
-            )}
-
-            {resume.visibility.educations && <Education educations={resume.educations} />}
+            {sectionsToRender(resume, MAIN_COLUMN_SECTIONS).map((id) => (
+              <Fragment key={id}>{sections[id]}</Fragment>
+            ))}
           </View>
 
           <Rail resume={resume} />

@@ -1,5 +1,6 @@
 import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
+import { sectionsHtml } from "@/lib/resume-sections";
 import { Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
 
@@ -393,10 +394,12 @@ const buildModernResumeHtml = ({
 ${sidebar(resume)}
 
       <div class="content">
-${resume.visibility.profile ? summarySection(resume.profile) : ""}
-${resume.visibility.employmentHistory ? experienceSection(resume) : ""}
-${resume.visibility.projects ? projectsSection(resume) : ""}
-${resume.visibility.educations ? educationSection(resume) : ""}
+${sectionsHtml(resume, {
+  profile: () => summarySection(resume.profile),
+  employmentHistory: () => experienceSection(resume),
+  projects: () => projectsSection(resume),
+  educations: () => educationSection(resume),
+})}
       </div>
     </main>
   </body>

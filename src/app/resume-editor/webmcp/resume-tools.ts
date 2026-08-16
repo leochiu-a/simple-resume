@@ -5,25 +5,23 @@ import { LANG_NAME_EN } from "@/lib/resume-doc";
 import { buildAgentReport } from "@/lib/resume-score/agent-report";
 import { AgentReview, MAX_REVIEW_NOTES, ReviewNote } from "@/lib/resume-score/review";
 import { defineTool, toolError, toolText, WebMcpTool, WebMcpToolInit } from "@/lib/webmcp";
+import { normaliseSectionOrder } from "@/lib/resume-sections";
 import {
   Education,
   EmploymentHistory,
   Project,
   Resume,
+  SECTION_IDS,
+  SectionId,
   SocialLink,
   Timeline,
   Visibility,
 } from "@/types/resume";
 import { ResumeLang } from "@/types/resume-doc";
 
-const SECTIONS = [
-  "profile",
-  "socialLinks",
-  "skills",
-  "educations",
-  "employmentHistory",
-  "projects",
-] as const;
+/** The same six the form and the templates work from, so a tool cannot drift from
+ *  what the product actually has. */
+const SECTIONS = SECTION_IDS;
 
 /**
  * What the tools have to know about the multi-language document they are editing.
@@ -78,6 +76,10 @@ const toAgentView = (resume: Resume, context: ResumeMcpContext) => ({
     exists: context.hasActiveLocale,
   },
   ...resume,
+  /* Normalised on the way out, so what the agent reads back is always the six
+     sections `set-section-order` expects — not whatever an older release or a
+     hand-edited storage entry happens to hold. */
+  sectionOrder: normaliseSectionOrder(resume.sectionOrder),
   employmentHistory: resume.employmentHistory.map((job, index) => ({
     index,
     company: job.company,
@@ -795,6 +797,40 @@ export const createResumeTools = (
         }));
 
         return toolText(`Section "${section}" is now ${visible ? "visible" : "hidden"}.`);
+      },
+    }),
+
+    defineWriteTool<{ order: SectionId[] }>({
+      name: "set-section-order",
+      title: "Reorder the sections",
+      description:
+        "Sets the order the sections are laid out in, top to bottom. Sections left out keep their relative order at the end, so moving one to the front only needs that one named. Two-column templates draw skills and links in a sidebar and ignore their position here.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          order: {
+            type: "array",
+            items: { type: "string", enum: [...SECTIONS] },
+            description: "Section ids, in the order they should appear.",
+          },
+        },
+        required: ["order"],
+      },
+      execute: ({ order }) => {
+        const unknown = (order ?? []).filter((id) => !SECTIONS.includes(id));
+        if (unknown.length > 0) {
+          return toolError(
+            `Unknown section${unknown.length > 1 ? "s" : ""} ${unknown.map((id) => `"${id}"`).join(", ")}. Valid sections: ${SECTIONS.join(", ")}.`,
+          );
+        }
+
+        // Normalised rather than written through: a partial list is the useful way
+        // to call this, and it is what keeps the six-section invariant the
+        // templates rely on from depending on the agent getting it right.
+        const next = normaliseSectionOrder(order);
+        write((previous) => ({ ...previous, sectionOrder: next }));
+
+        return toolText(`Sections are now ordered: ${next.join(", ")}.`);
       },
     }),
   ];

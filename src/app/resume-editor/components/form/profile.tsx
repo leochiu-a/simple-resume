@@ -13,7 +13,7 @@ const Profile = () => {
 
   return (
     <Section className={cn(!visible && "opacity-50")}>
-      <SectionTitle index="02">
+      <SectionTitle>
         <span>Profile</span>
         {/* Both controls ride the heading's `ml-auto` as one group, so the
             rewrite trigger sits beside the visibility toggle rather than on a

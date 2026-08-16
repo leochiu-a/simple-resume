@@ -167,7 +167,9 @@ const ResumeEditorPage = () => {
 
                   {/* Until the translation exists there is nothing to edit, and
                       the panel above is the whole screen. */}
-                  {doc.hasActiveLocale && <ResumeForm />}
+                  {/* The form needs the template to say which of its sections the
+                      sheet lays out in a sidebar, where reordering has no effect. */}
+                  {doc.hasActiveLocale && <ResumeForm template={templateOptions.template} />}
                 </div>
               </div>
 

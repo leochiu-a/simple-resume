@@ -67,12 +67,12 @@ the flag themselves (or who are on a browser with native support).
 | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | [`src/types/webmcp.d.ts`](../src/types/webmcp.d.ts)                                                                                                 | Ambient types for `document.modelContext`                            |
 | [`src/lib/webmcp.ts`](../src/lib/webmcp.ts)                                                                                                         | Feature detection, `defineTool`, result helpers                      |
-| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 17 tool definitions                                              |
+| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 18 tool definitions                                              |
 | [`src/app/resume-editor/hooks/useResumeMcp.ts`](../src/app/resume-editor/hooks/useResumeMcp.ts)                                                     | Registers on mount, aborts on unmount, feeds in the language context |
 | [`src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx`](../src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx) | The nav panel, shared with on-device translation                     |
 
 Lifecycle: tools are registered once when the editor mounts and torn down by aborting the controller
-when it unmounts, so navigating away from `/resume-editor` removes all 17 tools and coming back
+when it unmounts, so navigating away from `/resume-editor` removes all 18 tools and coming back
 re-registers them. Form state is read through a ref, so a tool always writes to the current form
 without re-registering on every keystroke.
 
@@ -132,7 +132,15 @@ accept, and every list entry carries its `index`:
     "skills": true,
     "educations": true,
     "employmentHistory": true
-  }
+  },
+  "sectionOrder": [
+    "profile",
+    "employmentHistory",
+    "projects",
+    "educations",
+    "skills",
+    "socialLinks"
+  ]
 }
 ```
 
@@ -349,6 +357,22 @@ so this is a toggle, not a delete.
 | --------- | ------- | -------- | ----------------------------------------------------------------------------- |
 | `section` | string  | yes      | `profile` \| `socialLinks` \| `skills` \| `educations` \| `employmentHistory` |
 | `visible` | boolean | yes      |                                                                               |
+
+### `set-section-order`
+
+Sets the order the sections are laid out in, top to bottom — the same order the form shows them in.
+
+Partial lists are the useful way to call this: anything left out keeps its relative position behind
+what was named, so promoting one section only needs that one section. The argument is normalised
+before it is stored, so a duplicate or a missing id cannot leave the resume with a section that no
+template will draw.
+
+Two-column templates (Classic, Modern, Timeline) lay skills and links out in a sidebar and ignore
+their position here. The order is still recorded, and takes effect on a single-column template.
+
+| Argument | Type     | Required | Notes                                                              |
+| -------- | -------- | -------- | ------------------------------------------------------------------ |
+| `order`  | string[] | yes      | Section ids, in order. Same six values as `set-section-visibility` |
 
 ## Languages
 
