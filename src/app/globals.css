@@ -334,6 +334,109 @@
   }
 
   /**
+   * The writing guide's figures: a line being rewritten, a stack being reordered,
+   * a list being cut. Each plays once, when it is first scrolled to.
+   *
+   * Same discipline as `.landing-rise`, and for the same reason. Every resting
+   * state below is the **finished** state and every keyframe supplies only the
+   * `from`, so a figure whose animation is interrupted — or whose observer never
+   * fires at all — is a figure that is simply already correct. The animations are
+   * additionally gated behind `[data-played]`, which the figure sets on itself
+   * when it enters the viewport; that is what makes them play late rather than
+   * during the page load nobody was watching.
+   */
+  @keyframes guide-strike {
+    from {
+      text-decoration-color: transparent;
+    }
+  }
+
+  @keyframes guide-word {
+    from {
+      opacity: 0;
+      transform: translateY(0.14em);
+    }
+  }
+
+  @keyframes guide-mark {
+    from {
+      background-size: 0% 100%;
+    }
+  }
+
+  @keyframes guide-lift {
+    from {
+      transform: translateY(var(--from-y, 0));
+    }
+  }
+
+  @keyframes guide-cull {
+    from {
+      opacity: 1;
+      text-decoration-color: transparent;
+    }
+  }
+
+  /* Struck through by fading the decoration in, not by drawing a rule across the
+     box: the old wording runs to three lines at narrow widths, and a background
+     rule has no way to cross more than one of them. */
+  .guide-strike {
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0;
+  }
+
+  /* The highlight under a number, as a background rather than a `mark`: it has to
+     grow from the left and sit *under* the type at any line-height. */
+  .guide-mark {
+    --mark: color-mix(in oklab, var(--accent) 26%, transparent);
+    background-image: linear-gradient(var(--mark), var(--mark));
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    border-radius: 3px;
+    padding: 0.05em 0.15em;
+  }
+
+  [data-played] .guide-strike {
+    animation: guide-strike 0.55s ease-out;
+  }
+
+  /* The new wording arrives a word at a time. Per word rather than per character
+     because the line wraps: a clip travelling left to right would uncover every
+     line of a paragraph at once, which reads as a wipe and not as writing. */
+  .guide-word {
+    display: inline-block;
+  }
+
+  [data-played] .guide-word {
+    animation: guide-word 0.42s ease-out var(--delay, 0s);
+  }
+
+  /* Timed off the end of the words rather than a fixed beat, so the highlight lands
+     as the sentence finishes however long the sentence is. */
+  [data-played] .guide-mark {
+    animation: guide-mark 0.5s ease-out var(--mark-delay, 1s);
+  }
+
+  [data-played] .guide-lift {
+    animation: guide-lift 0.85s cubic-bezier(0.22, 0.68, 0.14, 1) var(--delay, 0s);
+  }
+
+  [data-played] .guide-cull {
+    animation: guide-cull 0.65s ease-out var(--delay, 0s);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-played] .guide-strike,
+    [data-played] .guide-word,
+    [data-played] .guide-mark,
+    [data-played] .guide-lift,
+    [data-played] .guide-cull {
+      animation: none;
+    }
+  }
+
+  /**
    * A progress bar with no percentage to show — a segment that travels the track.
    *
    * This used to be `animate-pulse`, which fades the whole bar's opacity in and out.

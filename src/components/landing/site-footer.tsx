@@ -10,7 +10,8 @@ import Link from "next/link";
 const LINKS = [
   { label: "Editor", href: "/resume-editor" },
   { label: "Templates", href: "/#templates" },
-  { label: "How AI works", href: "/ai" },
+  { label: "Writing guide", href: "/how-to-write-a-resume" },
+  { label: "How AI works", href: "/how-ai-works" },
   { label: "Privacy", href: "/#privacy" },
 ];
 
