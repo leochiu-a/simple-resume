@@ -26,7 +26,7 @@ const SocialLinksSection: FC = () => {
 
   return (
     <Section className={cn(!visible && "opacity-50")}>
-      <SectionTitle index="03">
+      <SectionTitle>
         <span>Website & Social links</span>
         <Controller
           control={control}
@@ -52,6 +52,9 @@ const SocialLinksSection: FC = () => {
                 <button
                   type="button"
                   onClick={() => remove(index)}
+                  // The tooltip renders in a portal, so it names nothing for a screen
+                  // reader — this icon button's only content is an icon.
+                  aria-label="Delete"
                   className="text-muted-foreground transition-colors hover:text-destructive"
                 >
                   <DeleteIcon className="size-4" />

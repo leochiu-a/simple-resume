@@ -15,7 +15,7 @@ import ToolTable from "@/components/landing/ai/tool-table";
 import { SITE_URL } from "@/constants/site";
 
 const DESCRIPTION =
-  "Open Resume runs the browser's own AI model to rewrite and translate a resume, and registers itself as 17 WebMCP tools so an agent like Claude Code can read, score, and edit it. Nothing is uploaded either way.";
+  "Open Resume runs the browser's own AI model to rewrite and translate a resume, and registers itself as 18 WebMCP tools so an agent like Claude Code can read, score, and edit it. Nothing is uploaded either way.";
 
 const TITLE = "AI in Open Resume — on-device rewriting and a WebMCP agent";
 
@@ -78,7 +78,7 @@ const LIMITS = [
 
 const FACTS = [
   ["Model runs", "In your browser"],
-  ["Agent tools", "17 · read and write"],
+  ["Agent tools", "18 · read and write"],
   ["Uploads", "None, either way"],
   ["Account", "Not required"],
 ];
@@ -251,7 +251,7 @@ const Ai = () => (
 
               <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
                 {[
-                  ["Tools", "17 · read and write"],
+                  ["Tools", "18 · read and write"],
                   ["Browsers", "Edge 147+ · Chrome behind a flag"],
                   ["Status", "W3C draft, still moving"],
                   ["Leaves the page", "Nothing"],

@@ -51,7 +51,7 @@ const EmploymentHistory: FC = () => {
 
   return (
     <Section className={cn(!visible && "opacity-50")}>
-      <SectionTitle index="05">
+      <SectionTitle>
         <span>Employment History</span>
         <Controller
           control={control}

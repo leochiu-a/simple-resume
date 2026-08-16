@@ -1,5 +1,6 @@
 import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
+import { sectionsHtml } from "@/lib/resume-sections";
 import { Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
 
@@ -390,7 +391,6 @@ const buildLedgerResumeHtml = ({
   backgroundColor: string;
 }) => {
   const title = `${resume.name} — ${resume.wantedJob}`;
-  const { visibility } = resume;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -406,12 +406,14 @@ const buildLedgerResumeHtml = ({
 ${header(resume)}
 
       <div class="body">
-${visibility.profile ? summarySection(resume.profile) : ""}
-${visibility.employmentHistory ? experienceSection(resume) : ""}
-${visibility.projects ? projectsSection(resume) : ""}
-${visibility.educations ? educationSection(resume) : ""}
-${visibility.skills ? skillsSection(resume) : ""}
-${visibility.socialLinks ? linksSection(resume) : ""}
+${sectionsHtml(resume, {
+  profile: () => summarySection(resume.profile),
+  employmentHistory: () => experienceSection(resume),
+  projects: () => projectsSection(resume),
+  educations: () => educationSection(resume),
+  skills: () => skillsSection(resume),
+  socialLinks: () => linksSection(resume),
+})}
       </div>
     </main>
   </body>

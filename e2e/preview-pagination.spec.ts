@@ -173,7 +173,10 @@ test.describe("preview pagination", () => {
     // Hiding the bulk of the content has to collapse the page count, which proves
     // it is measured rather than latched — and the view has to fall back to a page
     // that still exists rather than showing an empty sheet.
-    await page.getByRole("heading", { name: "Employment History" }).getByRole("button").click();
+    await page
+      .getByRole("heading", { name: "Employment History" })
+      .getByRole("button", { name: "Hide section" })
+      .click();
 
     await expect(pager(page)).toHaveCount(0);
     expect(await shownPage(page)).toBe(1);

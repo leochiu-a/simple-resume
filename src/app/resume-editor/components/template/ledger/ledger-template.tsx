@@ -1,9 +1,11 @@
 "use client";
 
+import { Fragment } from "react";
 import { Page, View, Document } from "@react-pdf/renderer";
 
-import { Resume } from "@/types/resume";
+import { Resume, SectionId } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
+import { ALL_SECTIONS, sectionsToRender } from "@/lib/resume-sections";
 
 import { styles } from "./styles";
 import Header from "./header";
@@ -22,6 +24,8 @@ import Summary from "../summary";
  * There is no tinted panel to carry the picked colour, so it goes on the rule
  * under the header and on the section titles running down the gutter — the two
  * things that describe the layout — and the rest of the sheet stays in ink.
+ *
+ * Every row is in the one flow, so all six sections are the user's to arrange.
  */
 const LedgerTemplate = ({
   resume,
@@ -30,7 +34,20 @@ const LedgerTemplate = ({
   resume: Resume;
   backgroundColor: string;
 }) => {
-  const { visibility } = resume;
+  const sections: Record<SectionId, React.ReactNode> = {
+    profile: (
+      <Section title="Summary" titleColor={backgroundColor}>
+        <Summary profile={resume.profile} style={styles.summary} />
+      </Section>
+    ),
+    employmentHistory: (
+      <Experience employmentHistory={resume.employmentHistory} titleColor={backgroundColor} />
+    ),
+    projects: <Projects projects={filledProjects(resume.projects)} titleColor={backgroundColor} />,
+    educations: <Education educations={resume.educations} titleColor={backgroundColor} />,
+    skills: <Skills skills={resume.skills} titleColor={backgroundColor} />,
+    socialLinks: <Links socialLinks={resume.socialLinks} titleColor={backgroundColor} />,
+  };
 
   return (
     <Document>
@@ -38,29 +55,9 @@ const LedgerTemplate = ({
         <Header resume={resume} accentColor={backgroundColor} />
 
         <View style={styles.body}>
-          {visibility.profile && (
-            <Section title="Summary" titleColor={backgroundColor}>
-              <Summary profile={resume.profile} style={styles.summary} />
-            </Section>
-          )}
-
-          {visibility.employmentHistory && (
-            <Experience employmentHistory={resume.employmentHistory} titleColor={backgroundColor} />
-          )}
-
-          {visibility.projects && (
-            <Projects projects={filledProjects(resume.projects)} titleColor={backgroundColor} />
-          )}
-
-          {visibility.educations && (
-            <Education educations={resume.educations} titleColor={backgroundColor} />
-          )}
-
-          {visibility.skills && <Skills skills={resume.skills} titleColor={backgroundColor} />}
-
-          {visibility.socialLinks && (
-            <Links socialLinks={resume.socialLinks} titleColor={backgroundColor} />
-          )}
+          {sectionsToRender(resume, ALL_SECTIONS).map((id) => (
+            <Fragment key={id}>{sections[id]}</Fragment>
+          ))}
         </View>
       </Page>
     </Document>

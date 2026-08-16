@@ -1,3 +1,4 @@
+import { DEFAULT_SECTION_ORDER } from "@/lib/resume-sections";
 import { Resume } from "@/types/resume";
 import { ResumeDoc, ResumeLang } from "@/types/resume-doc";
 
@@ -82,4 +83,5 @@ export const createEmptyResume = (): Resume => ({
     employmentHistory: true,
     projects: true,
   },
+  sectionOrder: [...DEFAULT_SECTION_ORDER],
 });

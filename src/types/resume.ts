@@ -1,3 +1,22 @@
+/**
+ * The parts of a resume that are a section on the sheet — everything except the
+ * name, job title and contact details, which are the header of every template.
+ *
+ * Declared as a tuple rather than as a union so the same list can be a runtime
+ * value: it is what a stored order is validated against, what the reorder list
+ * renders, and what the agent tool advertises as its enum.
+ */
+export const SECTION_IDS = [
+  "profile",
+  "employmentHistory",
+  "projects",
+  "educations",
+  "skills",
+  "socialLinks",
+] as const;
+
+export type SectionId = (typeof SECTION_IDS)[number];
+
 export interface Resume {
   name: string;
   wantedJob: string;
@@ -11,6 +30,20 @@ export interface Resume {
   employmentHistory: EmploymentHistory[];
   projects: Project[];
   visibility: Visibility;
+  /**
+   * Top to bottom, the order the sections are laid out in.
+   *
+   * Part of the resume rather than of the appearance settings, even though it is
+   * a layout decision: a share link carries a `Resume` and nothing else, and an
+   * order that did not travel with it would mean the page someone is sent is not
+   * the page that was sent. It is stored per locale for the same reason
+   * `visibility` is — a translation is a copy, so it inherits the order and can
+   * then diverge.
+   *
+   * Never trust one that came out of storage or a link; run it through
+   * `normaliseSectionOrder` first.
+   */
+  sectionOrder: SectionId[];
 }
 
 export interface SocialLink {
@@ -56,11 +89,4 @@ export interface Project {
   description: string;
 }
 
-export interface Visibility {
-  profile: boolean;
-  socialLinks: boolean;
-  skills: boolean;
-  educations: boolean;
-  employmentHistory: boolean;
-  projects: boolean;
-}
+export type Visibility = Record<SectionId, boolean>;

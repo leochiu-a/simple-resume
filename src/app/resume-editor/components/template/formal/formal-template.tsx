@@ -1,9 +1,11 @@
 "use client";
 
+import { Fragment } from "react";
 import { Page, View, Document } from "@react-pdf/renderer";
 
-import { Resume } from "@/types/resume";
+import { Resume, SectionId } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
+import { ALL_SECTIONS, sectionsToRender } from "@/lib/resume-sections";
 
 import { styles } from "./styles";
 import Header from "./header";
@@ -21,6 +23,9 @@ import Summary from "../summary";
  *
  * There is no tinted panel to carry the picked colour, so it tints the name and
  * the rest of the sheet stays in ink.
+ *
+ * One column means every section is in the flow, so all six are the user's to
+ * arrange.
  */
 const FormalTemplate = ({
   resume,
@@ -29,7 +34,18 @@ const FormalTemplate = ({
   resume: Resume;
   backgroundColor: string;
 }) => {
-  const { visibility } = resume;
+  const sections: Record<SectionId, React.ReactNode> = {
+    profile: (
+      <Section title="Summary">
+        <Summary profile={resume.profile} style={styles.summary} />
+      </Section>
+    ),
+    employmentHistory: <Experience employmentHistory={resume.employmentHistory} />,
+    projects: <Projects projects={filledProjects(resume.projects)} />,
+    educations: <Education educations={resume.educations} />,
+    skills: <Skills skills={resume.skills} />,
+    socialLinks: <Links socialLinks={resume.socialLinks} />,
+  };
 
   return (
     <Document>
@@ -37,23 +53,10 @@ const FormalTemplate = ({
         <Header resume={resume} nameColor={backgroundColor} />
 
         <View style={styles.body}>
-          {visibility.profile && (
-            <Section title="Summary">
-              <Summary profile={resume.profile} style={styles.summary} />
-            </Section>
-          )}
-
-          {visibility.employmentHistory && (
-            <Experience employmentHistory={resume.employmentHistory} />
-          )}
-
-          {visibility.projects && <Projects projects={filledProjects(resume.projects)} />}
-
-          {visibility.educations && <Education educations={resume.educations} />}
-
-          {visibility.skills && <Skills skills={resume.skills} />}
-
-          {visibility.socialLinks && <Links socialLinks={resume.socialLinks} />}
+          {/* Only the visible ones come back, so the map needs no guard of its own. */}
+          {sectionsToRender(resume, ALL_SECTIONS).map((id) => (
+            <Fragment key={id}>{sections[id]}</Fragment>
+          ))}
         </View>
       </Page>
     </Document>

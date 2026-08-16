@@ -1,5 +1,5 @@
 /**
- * The 17 registered tools, grouped by what they are for.
+ * The 18 registered tools, grouped by what they are for.
  *
  * The names are the `name` fields in `webmcp/resume-tools.ts` — the strings an
  * agent actually calls — so this table is checkable against the source rather
@@ -25,6 +25,7 @@ const GROUPS = [
       ["set-skills", "Replaces the whole skill list, in display order"],
       ["set-social-links", "Replaces the whole link list"],
       ["set-section-visibility", "Shows or hides a section — content is kept"],
+      ["set-section-order", "Sets the order the sections are laid out in"],
     ],
   },
   {

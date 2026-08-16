@@ -109,6 +109,7 @@ const REGISTERED_TOOLS = [
   "update-project",
   "remove-project",
   "set-section-visibility",
+  "set-section-order",
 ];
 
 /**
@@ -401,6 +402,34 @@ test.describe("WebMCP resume tools", () => {
 
     await callTool(page, "set-section-visibility", { section: "skills", visible: true });
     await expect(preview(page).getByText("TypeScript")).toBeVisible();
+  });
+
+  test("set-section-order moves a section to the top of the sheet", async ({ page }) => {
+    // Partial on purpose: naming the one section to promote is the useful call, and
+    // the rest keep their relative order behind it.
+    const result = await callTool(page, "set-section-order", { order: ["educations"] });
+
+    expect(textOf(result)).toContain(
+      "educations, profile, employmentHistory, projects, skills, socialLinks",
+    );
+
+    // The form is the same list, so it reorders with the sheet.
+    await expect(page.locator("#resume-form h2")).toHaveText([
+      /Information/,
+      /Educations/,
+      /Profile/,
+      /Employment History/,
+      /Projects/,
+      /Skills/,
+      /Website & Social links/,
+    ]);
+  });
+
+  test("set-section-order rejects a section it does not have", async ({ page }) => {
+    const result = await callTool(page, "set-section-order", { order: ["profile", "hobbies"] });
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toContain("Valid sections");
   });
 
   test("an unknown section is rejected", async ({ page }) => {

@@ -11,7 +11,7 @@ const Information: FC = () => {
 
   return (
     <Section>
-      <SectionTitle index="01">Information</SectionTitle>
+      <SectionTitle>Information</SectionTitle>
       <SectionBody className="grid grid-cols-2 gap-4 space-y-0">
         <Controller
           name="wantedJob"
