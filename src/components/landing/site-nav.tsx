@@ -84,7 +84,12 @@ const SiteNav = () => {
           >
             <span className="block size-2.5 rounded-[3px] bg-white/95" />
           </span>
-          <span className="whitespace-nowrap font-display text-[0.9375rem] font-semibold tracking-[-0.02em] sm:text-[1.0625rem]">
+          {/* Below `sm` the mark carries the wordmark on its own: with two
+              destinations in the bar there is no longer room for both at 375px, and
+              the alternative was a nav that overlapped its own controls. `sr-only`
+              rather than `hidden`, so the link keeps its name when it loses its
+              label. */}
+          <span className="sr-only whitespace-nowrap font-display text-[0.9375rem] font-semibold tracking-[-0.02em] sm:not-sr-only sm:text-[1.0625rem]">
             Open Resume
           </span>
         </Link>
@@ -96,7 +101,10 @@ const SiteNav = () => {
             Named after what the page explains rather than after the technology in it:
             "AI" on its own labels a topic and promises nothing. Same shape as the
             "How it works" every product nav already has. */}
-        <nav className="flex items-center gap-0.5 sm:gap-1">
+        <nav className="flex min-w-0 items-center gap-0.5 sm:gap-1">
+          <Link href="/how-to-write-a-resume" className={NAV_LINK}>
+            Writing guide
+          </Link>
           <Link href="/how-ai-works" className={NAV_LINK}>
             How AI works
           </Link>

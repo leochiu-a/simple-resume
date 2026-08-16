@@ -47,6 +47,47 @@ Two things are worth knowing before editing [`src/components/landing/`](../src/c
 whose resting state is visible and whose keyframe supplies only the `from` — do not drive it from JS.
 An interrupted JS animation could strand the whole pitch at `opacity: 0`.
 
+## The writing guide
+
+[`/how-to-write-a-resume`](../src/app/how-to-write-a-resume/page.tsx) is six edits, each with the
+change itself under it rather than a claim about it. The content is
+[`EDITS`](../src/components/landing/guide/edits.ts) and each entry carries a `figure`: a `line`
+rewritten, a `stack` reordered, or a list of `chips` cut.
+
+**Do not put a rendered sheet on this page.** It was built that way first — a pinned `TemplateSheet`
+repaired step by step as you scrolled — and it had to come out. A4 in a column scales to about 0.66,
+which puts the template's body type on screen at **7.9px**: the one thing a reader came for, the
+actual words, was the one thing they could not read. Widening the column does not fix it (13px needs
+a sheet around 860px wide) and nothing fixes it on a phone. The figures are set at reading size
+instead, and each shows only what it can show honestly.
+
+The `guide-*` keyframes in [`globals.css`](../src/app/globals.css) follow `.landing-rise`'s rule
+exactly: **every resting state is the finished state and every keyframe supplies only the `from`**,
+so an interrupted animation leaves a figure that is already correct. They are additionally gated
+behind `[data-played]`, which each figure sets on itself while it is on screen — without that they
+would finish during the page load, before anyone was looking.
+
+**When a figure plays is as important as how long it takes.** The first version fired at
+`threshold: 0.25` against the bottom of the viewport, so a figure ran while it was still a quarter
+visible at the very bottom of the screen and was over before the reader's eye reached it. That reads
+as "the animation is too fast" and is really "the animation already happened" — the band is now inset
+top and bottom and wants half the figure inside it. `data-played` is also dropped again on the way
+out, so scrolling back replays it; the animation is the explanation, and an explanation you get one
+chance to catch is a bad one. It is one play per arrival and not a loop, because six figures cycling
+forever is motion nobody asked for and a change that keeps un-happening stops reading as a change.
+The rewrite is two beats — the old line is struck, and only then is the new one written — since
+running them together showed both halves at once and demonstrated neither.
+
+[`e2e/writing-guide.spec.ts`](../e2e/writing-guide.spec.ts) asserts both. Note that a hidden page
+receives no `IntersectionObserver` callbacks at all, so none of this can be checked in a preview pane
+that is not actually visible.
+
+Two details worth keeping. The struck line fades its `text-decoration-color` in rather than drawing a
+rule across the box, because the old wording runs to three lines at narrow widths and a background
+rule cannot cross more than one. And the rewritten line arrives a word at a time rather than a
+character at a time, for the same reason: a clip travelling left to right uncovers every line of a
+wrapped paragraph at once, which reads as a wipe and not as writing.
+
 ## The editor
 
 **The form and the preview scroll independently, and neither hides under the mobile address bar.**
