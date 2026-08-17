@@ -19,6 +19,9 @@ const TITLE = "How to write a resume — six edits, shown on the page";
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
+  /* See the note on the landing page: the same HTML answers on more than one Vercel
+     hostname, and every page has to name which one is itself. */
+  alternates: { canonical: PAGE_URL },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,

@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import AccentProvider from "@/components/landing/accent";
 import SiteNav from "@/components/landing/site-nav";
 import Hero from "@/components/landing/hero";
@@ -10,6 +12,22 @@ import Closing from "@/components/landing/closing";
 import SiteFooter from "@/components/landing/site-footer";
 import JsonLd from "@/components/json-ld";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/constants/site";
+
+/**
+ * The canonical URL, declared here rather than in the root layout.
+ *
+ * Metadata is inherited down the tree, so a canonical on the layout would hand every
+ * route the landing page's URL as its own — the one thing a canonical must never do.
+ * Each page states its own; this page's is the only one that belongs to `/`.
+ *
+ * It is needed at all because the same HTML answers on more than one hostname. A Vercel
+ * project is reachable at its production domain, at `*.vercel.app`, and at a per-branch
+ * alias, and every one of them serves this page. `og:url` does not settle that — Open
+ * Graph consumers read it, search engines do not treat it as a canonical declaration.
+ */
+export const metadata: Metadata = {
+  alternates: { canonical: SITE_URL },
+};
 
 /**
  * What the site is, in the vocabulary a search engine and an answer engine both read.

@@ -25,6 +25,9 @@ const TITLE = "AI in Open Resume — on-device rewriting and a WebMCP agent";
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
+  /* See the note on the landing page: the same HTML answers on more than one Vercel
+     hostname, and every page has to name which one is itself. */
+  alternates: { canonical: PAGE_URL },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
