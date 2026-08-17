@@ -1,4 +1,3 @@
-import formatDateRange from "@/lib/formatDateRange";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { sectionsHtml } from "@/lib/resume-sections";
 import { Resume } from "@/types/resume";
@@ -7,6 +6,7 @@ import { filledProjects } from "@/lib/resume-projects";
 import { escapeHtml, paragraphsHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
 
 import { DATE_COLUMN_WIDTH } from "./units";
+import formatMarginDateRange from "./format-date";
 
 /**
  * Builds a standalone HTML document for the Dated template — the same A4 sheet
@@ -129,7 +129,7 @@ const styles = (accent: string) => `
   .body {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
   }
 
   section {
@@ -150,6 +150,9 @@ const styles = (accent: string) => `
     color: ${accent};
     border-bottom: 1px solid ${HAIRLINE};
   }
+
+  /* More leading than the page's, for the one block of running prose on it. */
+  .summary { line-height: 1.4; }
 
   .entries {
     display: flex;
@@ -318,7 +321,7 @@ const experienceSection = (resume: Resume) => {
         .map((item) => `<li>${escapeHtml(item)}</li>`)
         .join("");
 
-      const date = escapeHtml(formatDateRange(timeline, "Present"));
+      const date = escapeHtml(formatMarginDateRange(timeline, "Present"));
 
       return `
             <div class="dated">
@@ -380,7 +383,7 @@ const educationSection = (resume: Resume) => {
 
       return `
             <div class="dated">
-              <p class="date">${escapeHtml(formatDateRange(timeline, "In school"))}</p>
+              <p class="date">${escapeHtml(formatMarginDateRange(timeline, "In school"))}</p>
               <div class="entry">
                 <p class="headline">${escapeHtml(school)}</p>
                 <p class="subline">${escapeHtml(subline)}</p>

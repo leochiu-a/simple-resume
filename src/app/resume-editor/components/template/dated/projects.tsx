@@ -30,7 +30,7 @@ const Projects = ({ projects, accent }: { projects: Project[]; accent: string })
 
           return (
             <Fragment key={index}>
-              <AvoidBreak style={styles.entry} key={index}>
+              <AvoidBreak style={styles.projectHead} key={index}>
                 <View style={styles.entryTopRow}>
                   <Text style={styles.entryHeadlineFlex}>{name}</Text>
 

@@ -2,7 +2,7 @@ import { View, Text } from "@react-pdf/renderer";
 import { Fragment } from "react";
 
 import { EmploymentHistory } from "@/types/resume";
-import formatDateRange from "@/lib/formatDateRange";
+import formatMarginDateRange from "./format-date";
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
 import Section from "./section";
@@ -49,7 +49,7 @@ const Experience = ({
             // the blocks inside it could no longer be placed on separate pages.
             <Fragment key={index}>
               <AvoidBreak style={styles.entryHead}>
-                <Text style={styles.dateColumn}>{formatDateRange(timeline, "Present")}</Text>
+                <Text style={styles.dateColumn}>{formatMarginDateRange(timeline, "Present")}</Text>
 
                 <View style={styles.entryColumn}>
                   <Text style={styles.entryHeadline}>{jobTitle}</Text>

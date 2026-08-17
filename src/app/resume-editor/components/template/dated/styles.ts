@@ -41,7 +41,21 @@ export const MUTED = "rgb(96, 102, 112)";
 /** Under the header and under each section title. */
 const HAIRLINE_COLOR = "#d8d8d8";
 
-export const SECTION_SPACING = pt(20);
+/**
+ * 15 rather than the 20 it was, to pay for the profile's leading below.
+ *
+ * Same trade as Formal's, for the same reason: this sheet's default finishes close
+ * enough to the bottom that giving the profile leading of its own pushed a short
+ * resume onto a second page. Air moved out of the gaps between sections and into
+ * the one block that is running prose.
+ *
+ * Cheaper here than there, because each section title already carries a rule
+ * underneath it — the rule does the separating that the gap was doing twice over.
+ *
+ * Not free to grow again without re-checking: the single-page assertion in
+ * `e2e/dated-template.spec.ts` is what catches it.
+ */
+export const SECTION_SPACING = pt(15);
 /** The gap between entries, and between a summary's paragraphs. */
 export const PARAGRAPH_SPACING = pt(14);
 
@@ -235,6 +249,23 @@ export const styles = StyleSheet.create({
        margin leaves the first entry where it was and every later one spaced. */
     marginTop: `-${PARAGRAPH_SPACING}`,
   },
+  /**
+   * Opens a run in Projects, which has no date to hang in the gutter and so needs
+   * a column rather than the row `entryHead` is.
+   *
+   * The margin is not optional. `splitEntryList` pulls the whole list up by one
+   * PARAGRAPH_SPACING on the understanding that every block opening a run puts it
+   * back; a head style without it leaves the negative uncancelled, and the section
+   * rides up into the rule under its own heading. That is exactly what Projects
+   * did while it borrowed `entry`, which has no margin because the lists that use
+   * it space their children with `rowGap` instead.
+   */
+  projectHead: {
+    display: "flex",
+    flexDirection: "column",
+    rowGap: pt(3),
+    marginTop: PARAGRAPH_SPACING,
+  },
   /** Opens a run. The margin is the gap `entryList` used to put between entries. */
   entryHead: {
     display: "flex",
@@ -303,8 +334,24 @@ export const styles = StyleSheet.create({
     fontFamily: SANS,
   },
 
+  /**
+   * The profile is the one place on the sheet with several lines of running prose,
+   * and it sets its own leading rather than taking the page's.
+   *
+   * It has to be said explicitly: @react-pdf does not inherit a `Page`'s
+   * `lineHeight` into the nested `Text` the shared `Summary` renders, while the
+   * preview does inherit it, because CSS `line-height` does. So this block printed
+   * at the font's natural leading and displayed at the page's, and neither was the
+   * leading a paragraph of this measure wants.
+   *
+   * 1.4 rather than the 1.5 the roomier templates use, and the section spacing
+   * above came down to pay for even that. The gutter makes this the narrowest
+   * measure of any template, so the same profile is more lines here than anywhere
+   * else, and each one costs.
+   */
   summary: {
     fontFamily: SANS,
+    lineHeight: 1.4,
   },
 
   /*
