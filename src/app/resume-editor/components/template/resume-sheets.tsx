@@ -13,7 +13,7 @@ import "./silence-pdf-tag-warnings";
 import { A4_HEIGHT_PX, A4_WIDTH_PX } from "./constants";
 import { SHEET_DOCUMENT } from "./sheet-document";
 import usePagination from "./use-pagination";
-import useResumeScale from "./use-resume-scale";
+import useResumeScale, { CROP_MARK_GUTTER, MAX_SHEET_WIDTH_PX } from "./use-resume-scale";
 
 /**
  * Every page of a resume, laid out down the screen — the reading end of a share
@@ -61,9 +61,20 @@ const Sheet = ({
   }, [pageCount, onPageCount]);
 
   return (
+    // The paper, sized entirely in CSS — as wide as the column less the crop-mark
+    // gutter, capped at 1:1, A4 ratio for the height. Sizing it from the measured
+    // `scale` meant a stack of sheets that changed height once JS had run.
     <div
-      className="relative"
-      style={{ maxWidth: `${A4_WIDTH_PX * scale}px`, maxHeight: `${A4_HEIGHT_PX * scale}px` }}
+      className="relative bg-white shadow-[0_18px_50px_-20px_rgba(23,21,15,0.45)]"
+      style={{
+        width: `calc(100% - ${CROP_MARK_GUTTER * 2}px)`,
+        maxWidth: `${MAX_SHEET_WIDTH_PX}px`,
+        aspectRatio: `${A4_WIDTH_PX} / ${A4_HEIGHT_PX}`,
+        // A flex item's automatic minimum size is its content, and the content here
+        // is a full-size A4 that only *looks* smaller because it is scaled — so
+        // without this the ratio loses and every sheet is 1122px tall.
+        minHeight: 0,
+      }}
     >
       {/* Desktop only: at mobile widths the sheet is already the width of the
           screen, and 24px of gutter either side costs more than the marks add. */}
@@ -76,10 +87,12 @@ const Sheet = ({
           width: `${A4_WIDTH_PX}px`,
           height: `${A4_HEIGHT_PX}px`,
           transform: `scale(${scale})`,
+          // Hidden until measured — the box above is already paper.
+          visibility: scale ? "visible" : "hidden",
           borderRadius: "2px",
           overflow: "hidden",
         }}
-        className="origin-top-left bg-white shadow-[0_18px_50px_-20px_rgba(23,21,15,0.45)]"
+        className="origin-top-left"
       >
         <Frame
           // Numbered rather than the editor's single "Resume preview": there are

@@ -41,9 +41,15 @@ export const MAX_SHEET_WIDTH_PX = A4_WIDTH_PX;
  *
  * Shared by the editor's paged preview and the shared page's stack of sheets, so
  * a sheet is the same size in both for the same amount of room.
+ *
+ * 0 until the first measurement, and callers keep the sheet hidden until it is
+ * not. It used to start at 0.5, which is a guess — and a guess paints: the sheet
+ * appeared at half size and then snapped to the ~1.0 the pane actually affords,
+ * one frame later, which is the jump the preview had on load. Nothing is drawn at
+ * a scale nobody measured.
  */
 const useResumeScale = (containerRef: RefObject<HTMLElement | null>) => {
-  const [scale, setScale] = useState(0.5);
+  const [scale, setScale] = useState(0);
   const matches = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
