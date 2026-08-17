@@ -220,6 +220,42 @@ test.describe("Dated template", () => {
     expect(columns).toBe(2);
   });
 
+  /**
+   * A date range occupies exactly one line of the margin.
+   *
+   * It did not at first. The gutter was 22% and the full "JANUARY 2018 — JANUARY
+   * 2020" measures 28.4% of the text column, so every range wrapped to two lines
+   * with the em-dash left dangling at the end of the first. Widening the gutter
+   * to fit it would have made the page worse, not better — the same column is
+   * empty beside the four sections that have no dates. The string was shortened
+   * instead; see `format-date.ts` for the measurements.
+   *
+   * Counted with a Range rather than by comparing heights, so this says "one line
+   * box" exactly rather than "not much taller than one line".
+   */
+  test("keeps each date range on a single line", async ({ page }) => {
+    await selectDated(page);
+
+    const lines = await preview(page)
+      .locator("page")
+      .first()
+      .evaluate((sheet) => {
+        const range = sheet.ownerDocument.createRange();
+
+        return [...sheet.querySelectorAll<HTMLElement>("text")]
+          .filter((el) => /^\w+ \d{4} —/.test(el.textContent?.trim() ?? ""))
+          .map((el) => {
+            range.selectNodeContents(el);
+            return { text: el.textContent?.trim(), lines: range.getClientRects().length };
+          });
+      });
+
+    expect(lines.length).toBeGreaterThanOrEqual(3);
+    for (const date of lines) {
+      expect(date.lines).toBe(1);
+    }
+  });
+
   test("leaves out a contact detail that was never filled in", async ({ page }) => {
     await selectDated(page);
 
