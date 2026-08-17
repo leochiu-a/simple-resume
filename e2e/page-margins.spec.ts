@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { downloadPdf, preview, readPdfPageText, selectTemplate } from "./helpers";
-import { LONG_SEEDS, seedResume, UNBROKEN } from "./seeds";
+import { LONG_SEEDS, seedResume, UNBROKEN_WITH_HISTORY } from "./seeds";
 
 /**
  * Every page keeps a margin at its top and bottom, on page two as much as on page
@@ -18,7 +18,16 @@ import { LONG_SEEDS, seedResume, UNBROKEN } from "./seeds";
  * renderings of one document and a fix in either alone is half a fix.
  */
 
-const TEMPLATES = ["Classic", "Modern", "Formal", "Timeline"];
+const TEMPLATES = [
+  "Classic",
+  "Modern",
+  "Formal",
+  "Timeline",
+  "Ledger",
+  "Banner",
+  "Compact",
+  "Dated",
+];
 
 const A4_HEIGHT_PX = (842 * 4) / 3;
 
@@ -131,8 +140,11 @@ test.describe("page margins", () => {
 
     test(`${template} keeps the PDF's text off the trim on every page`, async ({ page }) => {
       // The seed the preview cannot place — one paragraph taller than a page — is
-      // still the PDF's job to get right, so it is the one the PDF is held to.
-      await seedResume(page, UNBROKEN);
+      // still the PDF's job to get right, so it is the one the PDF is held to. It
+      // carries an employment history as well, purely so that the sheet spills in
+      // the densest template too; see the seed for why the paragraph itself is not
+      // simply made longer.
+      await seedResume(page, UNBROKEN_WITH_HISTORY);
       await page.goto("/resume-editor");
       await selectTemplate(page, template);
 

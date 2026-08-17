@@ -15,6 +15,14 @@ import { DOC_STORAGE_KEY } from "./helpers";
  * different lengths — prose with typed line breaks, prose with none, and bulk
  * carried by many short entries all break differently, and a fix for one of them
  * is not a fix for the others.
+ *
+ * How long "long" has to be is set by the *densest* template, not by an average
+ * one. `page-margins.spec.ts` checks that a seed overflowed before it checks
+ * anything about the break, because a seed that fits on one page would otherwise
+ * pass a margin test that never ran — and Compact fits about a third more on a
+ * sheet than Formal does, so several of these stopped spilling there the day it
+ * was added. If a template arrives that is denser still, these are the numbers to
+ * raise; the assertion is not the thing to relax.
  */
 
 const LOREM =
@@ -97,7 +105,7 @@ const jobs = (count: number, bullets: number) =>
  * profile, and the one a single `Text` per paragraph used to turn into one
  * indivisible slab taller than a page.
  */
-export const TYPED_LINES: SeedResume = { ...BASE, profile: lorem(7, "\n") };
+export const TYPED_LINES: SeedResume = { ...BASE, profile: lorem(10, "\n") };
 
 /** The same bulk as separate paragraphs, which are separate blocks already. */
 export const PARAGRAPHS: SeedResume = { ...BASE, profile: lorem(7, "\n\n") };
@@ -119,16 +127,16 @@ export const MANY_ENTRIES: SeedResume = { ...BASE, employmentHistory: jobs(6, 8)
 /**
  * Bulk in the sidebar rather than the main column.
  *
- * Two of the four templates put skills and links in a tinted panel beside the
- * content, so a long enough list is the one way to make that panel — the thing
- * pulled out over the page's margin to bleed — be what runs onto page two.
+ * Several templates put skills and links in a tinted panel beside the content, so
+ * a long enough list is the one way to make that panel — the thing pulled out over
+ * the page's margin to bleed — be what runs onto page two.
  */
 export const SIDEBAR_HEAVY: SeedResume = {
   ...BASE,
-  skills: Array.from({ length: 40 }, (_, i) => ({
+  skills: Array.from({ length: 56 }, (_, i) => ({
     name: `Skill ${i + 1} with a name long enough to wrap`,
   })),
-  socialLinks: Array.from({ length: 12 }, (_, i) => ({
+  socialLinks: Array.from({ length: 16 }, (_, i) => ({
     name: `Profile ${i + 1}`,
     url: `https://example.com/profile-${i + 1}`,
   })),
@@ -223,7 +231,7 @@ export const CHINESE: SeedResume = {
   phone: "0912345678",
   city: "臺北市",
   profile: Array.from(
-    { length: 6 },
+    { length: 8 },
     () =>
       "五年以上前端開發經驗，熟悉 React 與 TypeScript，負責過設計系統的建置與維護，並將團隊的建置時間縮短四成。曾主導跨團隊的技術規劃，導入自動化測試與持續整合流程，讓每週的發布次數提高到三倍，同時把線上事故的平均修復時間壓到半小時以內。",
   ).join("\n"),
@@ -237,7 +245,7 @@ export const CHINESE: SeedResume = {
       timeline: { from: "2018-08-01", to: "2020-08-01" },
     },
   ],
-  employmentHistory: Array.from({ length: 3 }, (_, n) => ({
+  employmentHistory: Array.from({ length: 4 }, (_, n) => ({
     company: `第 ${n + 1} 家公司`,
     jobTitle: "前端工程師",
     timeline: { from: "2020-10-01", to: "2024-11-01" },
@@ -269,6 +277,26 @@ export const EVERYTHING: SeedResume = {
  * hold the PDF to that, and to make the limit visible rather than forgotten.
  */
 export const UNBROKEN: SeedResume = { ...BASE, profile: lorem(7, " ") };
+
+/**
+ * The same unsplittable paragraph, with an ordinary employment history behind it.
+ *
+ * `UNBROKEN` on its own no longer reaches a second page in the densest template,
+ * and the PDF margin check has nothing to say about a sheet that never breaks. The
+ * fix is not a longer paragraph: that run is one `Text` the renderer has to split
+ * inside, so lengthening it does not add more of the same case — it adds page
+ * boundaries *within* the run, which is a different and harder thing that the
+ * other templates do not currently survive.
+ *
+ * So the bulk is added around it instead. The pathological run is still there and
+ * still has to be placed correctly; what the entries buy is only the guarantee
+ * that every template spills far enough for the check to mean something.
+ */
+export const UNBROKEN_WITH_HISTORY: SeedResume = {
+  ...BASE,
+  profile: lorem(7, " "),
+  employmentHistory: jobs(4, 6),
+};
 
 /**
  * Every seed the layout suites run through, by the name they report under.
