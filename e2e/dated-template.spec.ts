@@ -145,6 +145,81 @@ test.describe("Dated template", () => {
     }
   });
 
+  /**
+   * Every section's content starts on the same edge, dated or not.
+   *
+   * This is the defect the layout shipped with and the PDF render did not make
+   * obvious: the four sections without dates ran the full measure, so Experience
+   * sat indented behind its date column while Projects, Skills and Links snapped
+   * back out to the page margin. At the size the editor shows the sheet it reads
+   * as broken alignment rather than as a deliberate change of measure.
+   *
+   * Measured as the leftmost run in each section body that is *not* a date. The
+   * dates are excluded because they are the one thing that is meant to sit further
+   * left than everything else — including them would just measure the gutter and
+   * find it in the same place on every dated section, which is a different claim.
+   */
+  test("starts every section's content on one edge", async ({ page }) => {
+    await selectDated(page);
+
+    const edges = await preview(page)
+      .locator("page")
+      .first()
+      .evaluate((sheet, titles) => {
+        const runs = [...sheet.querySelectorAll<HTMLElement>("text")];
+        const isDate = (text: string) => /^\w+ \d{4} —/.test(text);
+
+        return titles.map((title) => {
+          const heading = runs.find((el) => el.textContent?.trim() === title)!;
+          const body = [...heading.parentElement!.querySelectorAll<HTMLElement>("text")].filter(
+            (el) => {
+              const text = el.textContent?.trim() ?? "";
+              return el !== heading && text !== "" && !isDate(text);
+            },
+          );
+
+          return {
+            title,
+            left: Math.round(Math.min(...body.map((el) => el.getBoundingClientRect().left))),
+            headingLeft: Math.round(heading.getBoundingClientRect().left),
+          };
+        });
+      }, SECTIONS);
+
+    expect(edges).toHaveLength(SECTIONS.length);
+    expect(new Set(edges.map((row) => row.left)).size).toBe(1);
+    // And that edge is inside the headings, which stay out at the page margin.
+    expect(new Set(edges.map((row) => row.headingLeft)).size).toBe(1);
+    expect(edges[0].left).toBeGreaterThan(edges[0].headingLeft);
+  });
+
+  /**
+   * The skills sit in two columns on screen as well as in the PDF.
+   *
+   * They did not at first. Each item is half the width with a little padding, and
+   * yoga counts that padding inside the 50% while the browser counts it outside —
+   * so in the preview every item came out wider than half and only one fitted per
+   * row. Nothing failed: the PDF was right, the HTML export was right, and the
+   * sheet on screen quietly showed a layout no output actually produced.
+   */
+  test("lays the skills out in two columns on screen", async ({ page }) => {
+    await selectDated(page);
+
+    const columns = await preview(page)
+      .locator("page")
+      .first()
+      .evaluate((sheet) => {
+        const names = ["TypeScript", "React", "Next.js", "GraphQL", "Redux"];
+        const runs = [...sheet.querySelectorAll<HTMLElement>("text")].filter((el) =>
+          names.includes(el.textContent?.trim() ?? ""),
+        );
+
+        return new Set(runs.map((el) => Math.round(el.getBoundingClientRect().left))).size;
+      });
+
+    expect(columns).toBe(2);
+  });
+
   test("leaves out a contact detail that was never filled in", async ({ page }) => {
     await selectDated(page);
 
@@ -309,7 +384,7 @@ test.describe("Dated template", () => {
     // Every dated row puts its date left of the entry, level with it, and every
     // date ends on the same edge.
     const rows = await page.evaluate(() =>
-      [...document.querySelectorAll(".dated")].map((row) => {
+      [...document.querySelectorAll(".dated:not(.dateless)")].map((row) => {
         const date = row.querySelector(".date")!.getBoundingClientRect();
         const entry = row.querySelector(".entry")!.getBoundingClientRect();
 
@@ -330,21 +405,30 @@ test.describe("Dated template", () => {
     }
     expect(new Set(rows.map((row) => row.right)).size).toBe(1);
 
-    // Projects has no dates, so it takes the full measure rather than an empty
-    // gutter — the section that would look broken if it did not.
-    const projects = await page.evaluate(() => {
-      const section = [...document.querySelectorAll("section")].find(
-        (el) => el.querySelector("h2")?.textContent === "Projects",
-      )!;
+    /*
+     * Every section's content starts on one edge, whether it has dates or not.
+     *
+     * The dateless sections ran the full measure at first, and the result was a
+     * page with two left edges — Experience indented behind its date column,
+     * Projects snapping back out to the margin. It reads as broken alignment
+     * rather than as a change of measure, so they keep the column and leave the
+     * gutter empty.
+     */
+    const bodyEdges = await page.evaluate(() =>
+      [...document.querySelectorAll("section")].map((section) => ({
+        name: section.querySelector("h2")!.textContent,
+        // The grid's second cell, which is where every section's content sits.
+        left: Math.round(
+          section.querySelector(".dated > *:nth-child(2)")!.getBoundingClientRect().left,
+        ),
+        headingLeft: Math.round(section.querySelector("h2")!.getBoundingClientRect().left),
+      })),
+    );
 
-      return {
-        dated: section.querySelectorAll(".dated").length,
-        headlineLeft: section.querySelector(".headline")!.getBoundingClientRect().left,
-        headingLeft: section.querySelector("h2")!.getBoundingClientRect().left,
-      };
-    });
-    expect(projects.dated).toBe(0);
-    expect(Math.abs(projects.headlineLeft - projects.headingLeft)).toBeLessThan(1);
+    expect(bodyEdges).toHaveLength(SECTIONS.length);
+    expect(new Set(bodyEdges.map((row) => row.left)).size).toBe(1);
+    // And that edge is inside the heading's, which stays out at the margin.
+    expect(bodyEdges[0].left).toBeGreaterThan(bodyEdges[0].headingLeft);
 
     // Skills run in two columns.
     const skillColumns = await page.evaluate(() => {
@@ -371,7 +455,7 @@ test.describe("Dated template", () => {
        the row stacks instead — and the date ranges left, since there is no column
        edge left for it to be flush against. */
     const row = await page.evaluate(() => {
-      const dated = document.querySelector(".dated")!;
+      const dated = document.querySelector(".dated:not(.dateless)")!;
       const date = dated.querySelector(".date")!;
       const entry = dated.querySelector(".entry")!.getBoundingClientRect();
 

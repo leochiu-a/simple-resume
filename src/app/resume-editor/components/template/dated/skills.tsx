@@ -6,13 +6,14 @@ import Section from "./section";
 import { styles } from "./styles";
 
 /**
- * Two columns of disc bullets across the full measure — no date margin, since a
- * skill has no date. @react-pdf has no CSS grid, so the row wraps and every item
- * claims half its width.
+ * Two columns of disc bullets in the entry column, with the date gutter beside
+ * them left empty — a skill has no date, but it still lines up with everything
+ * else. @react-pdf has no CSS grid, so the row wraps and every item claims half
+ * its width.
  */
 const Skills = ({ skills, accent }: { skills: Skill[]; accent: string }) => {
   return (
-    <Section title="Skills" accent={accent}>
+    <Section title="Skills" accent={accent} inset>
       <View style={styles.skillList}>
         {skills.map(({ name }, index) => (
           <View style={styles.skillItem} key={index}>
