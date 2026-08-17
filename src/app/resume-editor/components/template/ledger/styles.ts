@@ -144,8 +144,18 @@ export const styles = StyleSheet.create({
     flexDirection: "column",
   },
 
+  /**
+   * The profile is the one place on the sheet with several lines of prose in a
+   * row, and it gets more leading than the page's own.
+   *
+   * 1.35 is set for the page because most of what is on it is a headline or a
+   * one-line subline, where tighter is better — it keeps an entry reading as one
+   * unit. Eight lines of prose at that leading is a slab, and it read as cramped
+   * against a page whose entries are otherwise well spaced.
+   */
   summary: {
     fontFamily: SANS,
+    lineHeight: 1.45,
   },
 
   entryList: {

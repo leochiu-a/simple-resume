@@ -156,6 +156,9 @@ const styles = (colors: BannerColors) => `
     text-transform: uppercase;
   }
 
+  /* More leading than the page's, for the one block of running prose on it. */
+  .summary { line-height: 1.5; }
+
   .entries {
     display: flex;
     flex-direction: column;
