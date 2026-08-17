@@ -235,6 +235,23 @@ export const styles = StyleSheet.create({
        margin leaves the first entry where it was and every later one spaced. */
     marginTop: `-${PARAGRAPH_SPACING}`,
   },
+  /**
+   * Opens a run in Projects, which has no date to hang in the gutter and so needs
+   * a column rather than the row `entryHead` is.
+   *
+   * The margin is not optional. `splitEntryList` pulls the whole list up by one
+   * PARAGRAPH_SPACING on the understanding that every block opening a run puts it
+   * back; a head style without it leaves the negative uncancelled, and the section
+   * rides up into the rule under its own heading. That is exactly what Projects
+   * did while it borrowed `entry`, which has no margin because the lists that use
+   * it space their children with `rowGap` instead.
+   */
+  projectHead: {
+    display: "flex",
+    flexDirection: "column",
+    rowGap: pt(3),
+    marginTop: PARAGRAPH_SPACING,
+  },
   /** Opens a run. The margin is the gap `entryList` used to put between entries. */
   entryHead: {
     display: "flex",

@@ -256,6 +256,48 @@ test.describe("Dated template", () => {
     }
   });
 
+  /**
+   * Every section opens the same distance below its own heading.
+   *
+   * Projects did not. Its entries sit in `splitEntryList`, which pulls the list up
+   * by one paragraph of spacing on the understanding that whatever opens a run
+   * puts it back — and Projects borrowed `entry`, which carries no top margin
+   * because the lists that use it space their children with `rowGap`. Nothing
+   * cancelled the negative, so the whole section rode up into the rule beneath its
+   * own title while every other section sat clear of it.
+   *
+   * Measured heading-bottom to first-content-top, which is the gap the eye reads.
+   */
+  test("opens every section the same distance below its heading", async ({ page }) => {
+    await selectDated(page);
+
+    const gaps = await preview(page)
+      .locator("page")
+      .first()
+      .evaluate((sheet, titles) => {
+        const runs = [...sheet.querySelectorAll<HTMLElement>("text")];
+
+        return titles.map((title) => {
+          const heading = runs.find((el) => el.textContent?.trim() === title)!;
+          const body = [...heading.parentElement!.querySelectorAll<HTMLElement>("text")].filter(
+            (el) => el !== heading && (el.textContent?.trim() ?? "") !== "",
+          );
+          const top = Math.min(...body.map((el) => el.getBoundingClientRect().top));
+
+          return { title, gap: Math.round(top - heading.getBoundingClientRect().bottom) };
+        });
+      }, SECTIONS);
+
+    expect(gaps).toHaveLength(SECTIONS.length);
+    // Every section clear of its rule, and all by the same amount.
+    for (const section of gaps) {
+      expect(section.gap).toBeGreaterThan(0);
+    }
+    expect(Math.max(...gaps.map((s) => s.gap)) - Math.min(...gaps.map((s) => s.gap))).toBeLessThan(
+      4,
+    );
+  });
+
   test("leaves out a contact detail that was never filled in", async ({ page }) => {
     await selectDated(page);
 
