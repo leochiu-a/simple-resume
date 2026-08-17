@@ -41,7 +41,21 @@ export const MUTED = "rgb(96, 102, 112)";
 /** Under the header and under each section title. */
 const HAIRLINE_COLOR = "#d8d8d8";
 
-export const SECTION_SPACING = pt(20);
+/**
+ * 15 rather than the 20 it was, to pay for the profile's leading below.
+ *
+ * Same trade as Formal's, for the same reason: this sheet's default finishes close
+ * enough to the bottom that giving the profile leading of its own pushed a short
+ * resume onto a second page. Air moved out of the gaps between sections and into
+ * the one block that is running prose.
+ *
+ * Cheaper here than there, because each section title already carries a rule
+ * underneath it — the rule does the separating that the gap was doing twice over.
+ *
+ * Not free to grow again without re-checking: the single-page assertion in
+ * `e2e/dated-template.spec.ts` is what catches it.
+ */
+export const SECTION_SPACING = pt(15);
 /** The gap between entries, and between a summary's paragraphs. */
 export const PARAGRAPH_SPACING = pt(14);
 
@@ -320,8 +334,24 @@ export const styles = StyleSheet.create({
     fontFamily: SANS,
   },
 
+  /**
+   * The profile is the one place on the sheet with several lines of running prose,
+   * and it sets its own leading rather than taking the page's.
+   *
+   * It has to be said explicitly: @react-pdf does not inherit a `Page`'s
+   * `lineHeight` into the nested `Text` the shared `Summary` renders, while the
+   * preview does inherit it, because CSS `line-height` does. So this block printed
+   * at the font's natural leading and displayed at the page's, and neither was the
+   * leading a paragraph of this measure wants.
+   *
+   * 1.4 rather than the 1.5 the roomier templates use, and the section spacing
+   * above came down to pay for even that. The gutter makes this the narrowest
+   * measure of any template, so the same profile is more lines here than anywhere
+   * else, and each one costs.
+   */
   summary: {
     fontFamily: SANS,
+    lineHeight: 1.4,
   },
 
   /*

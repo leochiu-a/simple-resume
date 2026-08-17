@@ -126,7 +126,7 @@ const styles = (nameColor: string) => `
   .body {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
   }
 
   section {
@@ -144,7 +144,11 @@ const styles = (nameColor: string) => `
     text-transform: uppercase;
   }
 
-  .summary { padding-left: 30px; }
+  /* More leading than the page's, for the one block of running prose on it. */
+  .summary {
+    padding-left: 30px;
+    line-height: 1.4;
+  }
 
   .entries {
     display: flex;

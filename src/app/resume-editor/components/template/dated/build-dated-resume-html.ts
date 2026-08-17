@@ -129,7 +129,7 @@ const styles = (accent: string) => `
   .body {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
   }
 
   section {
@@ -150,6 +150,9 @@ const styles = (accent: string) => `
     color: ${accent};
     border-bottom: 1px solid ${HAIRLINE};
   }
+
+  /* More leading than the page's, for the one block of running prose on it. */
+  .summary { line-height: 1.4; }
 
   .entries {
     display: flex;

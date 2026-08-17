@@ -27,7 +27,26 @@ export const INK = "rgb(2, 6, 27)";
 const HAIRLINE_COLOR = "#dadada";
 const SEPARATOR_COLOR = "#aaa";
 
-export const SECTION_SPACING = pt(24);
+/**
+ * 20 rather than the 24 it was, to pay for the profile's leading below.
+ *
+ * This template's default sheet finishes within about ten points of the bottom,
+ * so giving the profile any leading of its own pushed four runs onto a second
+ * page — a short resume with two links stranded there. The height had to come from
+ * somewhere, and the gaps between sections were the loosest thing on the sheet.
+ * Air moved out of the spaces between blocks and into the one block that is
+ * running prose, which is a better distribution of the same page.
+ *
+ * It stops at 20, and the profile at 1.4 rather than the 1.5 the other templates
+ * use, because that is the pair that fits. Going further on either — 18 with a
+ * 1.5 profile, or 14 with 24's worth of section air — buys nothing and costs the
+ * airiness that is this template's whole character: at 14 its sections sit as
+ * tight as Compact's, which is the template whose entire point is being dense.
+ *
+ * Not free to grow again without re-checking: the single-page assertion in
+ * `e2e/formal-template.spec.ts` is what catches it.
+ */
+export const SECTION_SPACING = pt(20);
 /** The gap between entries, and between a summary's paragraphs. */
 export const PARAGRAPH_SPACING = pt(18.4);
 /** Every section body is indented this far from the sheet's own padding. */
@@ -136,9 +155,23 @@ export const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
 
+  /**
+   * The profile is the one place on the sheet with several lines of running prose,
+   * and it sets its own leading rather than taking the page's.
+   *
+   * It has to be said explicitly: @react-pdf does not inherit a `Page`'s
+   * `lineHeight` into the nested `Text` the shared `Summary` renders, while the
+   * preview does inherit it, because CSS `line-height` does. So this block printed
+   * at the font's natural leading and displayed at the page's, and neither was the
+   * leading a paragraph of this measure wants.
+   *
+   * Saying it costs height, which is why the two spacing constants above came
+   * down. See them for the trade.
+   */
   summary: {
     fontFamily: SANS,
     paddingLeft: BODY_INDENT,
+    lineHeight: 1.4,
   },
 
   entryList: {

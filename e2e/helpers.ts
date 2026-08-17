@@ -400,9 +400,31 @@ export function collectConsoleErrors(page: Page): string[] {
  *
  * `headPattern` picks out the block that opens a run — the one carrying the
  * headline — so the caller can assert the headline is bound to what follows it.
+ *
+ * Two things are waited for before anything is measured, and both were flakes
+ * first.
+ *
+ * The pager, because it is the preview's own signal that it has finished
+ * paginating. Read before that, the sheet is still one long page: every block
+ * reports page 0, no page has another after it, and `trailingGaps` comes back
+ * empty — which surfaces at the call site as `Math.min(...) === Infinity` rather
+ * than as "measured too early".
+ *
+ * The iframe's fonts, because until they load the sheet is laid out in a fallback
+ * face whose metrics are not Noto's. Lines wrap in different places, blocks come
+ * out a different height, and the same seed paginates differently from run to run
+ * — the same cause as a preview screenshot that comes out unexpectedly serif.
+ * This was a 1-in-4 flake here and is the likeliest explanation for the
+ * occasional unrelated failure elsewhere in the layout suites.
  */
 export const entryBlockLayout = async (page: Page, headPattern: RegExp) => {
   const A4_PX = (842 * 4) / 3;
+
+  await expect(page.getByRole("navigation", { name: "Resume pages" })).toBeVisible();
+  await preview(page)
+    .locator("page")
+    .first()
+    .evaluate((sheet) => (sheet.ownerDocument as Document).fonts.ready);
 
   return preview(page)
     .locator("[data-resume-page] > div")
