@@ -15,6 +15,13 @@ import TimelineTemplate from "./timeline/timeline-template";
 import buildTimelineResumeHtml from "./timeline/build-timeline-resume-html";
 import LedgerTemplate from "./ledger/ledger-template";
 import buildLedgerResumeHtml from "./ledger/build-ledger-resume-html";
+import BannerTemplate from "./banner/banner-template";
+import buildBannerResumeHtml from "./banner/build-banner-resume-html";
+import { DEFAULT_BANNER_COLOR } from "./banner/banner-color";
+import CompactTemplate from "./compact/compact-template";
+import buildCompactResumeHtml from "./compact/build-compact-resume-html";
+import DatedTemplate from "./dated/dated-template";
+import buildDatedResumeHtml from "./dated/build-dated-resume-html";
 
 /**
  * Every template the editor can render. A template owns both of its outputs — the
@@ -91,6 +98,33 @@ export const TEMPLATES: TemplateDefinition[] = [
     orderedSections: ALL_SECTIONS,
     render: (props) => <LedgerTemplate {...props} />,
     buildHtml: buildLedgerResumeHtml,
+  },
+  {
+    id: "banner",
+    label: "Banner",
+    description: "Single column under a full-width colour band.",
+    defaultColor: DEFAULT_BANNER_COLOR,
+    orderedSections: ALL_SECTIONS,
+    render: (props) => <BannerTemplate {...props} />,
+    buildHtml: buildBannerResumeHtml,
+  },
+  {
+    id: "compact",
+    label: "Compact",
+    description: "Dense single column, headings on ruled lines.",
+    defaultColor: "#2e404a",
+    orderedSections: ALL_SECTIONS,
+    render: (props) => <CompactTemplate {...props} />,
+    buildHtml: buildCompactResumeHtml,
+  },
+  {
+    id: "dated",
+    label: "Dated",
+    description: "Dates in a left margin, entries beside them.",
+    defaultColor: "#5b4636",
+    orderedSections: ALL_SECTIONS,
+    render: (props) => <DatedTemplate {...props} />,
+    buildHtml: buildDatedResumeHtml,
   },
 ];
 
