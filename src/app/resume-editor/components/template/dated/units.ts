@@ -31,10 +31,16 @@ export const PAGE_MIN_HEIGHT = "841pt";
  * beside them drift apart between the preview and the PDF, so it is defined once
  * here and both `styles.ts` and the HTML builder read it.
  *
- * 22% is what a date range needs. Narrower and "January 2018 — November 2024"
- * wraps to three lines against a two-line headline, which puts the gutter's text
- * taller than the entry it labels.
+ * 20% against the 18.1% an abbreviated range measures — see `format-date.ts`,
+ * which is where the width of the string and the width of this column are
+ * reasoned about together. The margin over 18.1% is for a longer placeholder than
+ * "Present".
+ *
+ * It is also as narrow as it can be made without the dates wrapping, and that
+ * matters in the other direction: the same column is empty beside the four
+ * sections that have no dates, so every point of width here is a point of empty
+ * paper down the side of most of the page.
  */
-export const DATE_COLUMN_WIDTH = "22%";
+export const DATE_COLUMN_WIDTH = "20%";
 /** What separates the date from the entry it belongs to. */
 export const DATE_COLUMN_GAP = pt(18);

@@ -1,7 +1,7 @@
 import { View, Text } from "@react-pdf/renderer";
 
 import { Education as EducationType } from "@/types/resume";
-import formatDateRange from "@/lib/formatDateRange";
+import formatMarginDateRange from "./format-date";
 
 import Section from "./section";
 import { styles } from "./styles";
@@ -20,7 +20,7 @@ const Education = ({ educations, accent }: { educations: EducationType[]; accent
       <View style={styles.entryList}>
         {educations.map(({ school, degree, major, timeline }, index) => (
           <AvoidBreak style={styles.datedRow} key={index}>
-            <Text style={styles.dateColumn}>{formatDateRange(timeline, "In school")}</Text>
+            <Text style={styles.dateColumn}>{formatMarginDateRange(timeline, "In school")}</Text>
 
             <View style={styles.entryColumn}>
               <Text style={styles.entryHeadline}>{school}</Text>
