@@ -14,10 +14,10 @@ import { DATE_COLUMN_GAP, DATE_COLUMN_WIDTH, PAGE_MIN_HEIGHT, pt } from "./units
  * Here the gutter belongs to the entries, and it carries a different fact — when,
  * not what — which is a different thing to scan for.
  *
- * Only Experience and Education use it, because only they have dates. Summary,
- * Projects, Skills and Links run the full measure instead. A gutter left
- * deliberately empty beside four of the six sections would read as a rendering
- * fault rather than as a rhythm, and prose wants the wider line anyway.
+ * Only Experience and Education put anything in it, because only they have dates.
+ * The other four keep the same two columns with the gutter left empty, so that
+ * every section's content starts on one edge — see `section.tsx` for why they do
+ * not simply run the full measure instead.
  *
  * The dates are set flush right, against the gap rather than against the margin.
  * That gives the column the clean edge the design depends on: ranged left, the
@@ -260,6 +260,22 @@ export const styles = StyleSheet.create({
   },
 
   /**
+   * The same two columns for a section that has no dates at all, so that every
+   * section's content starts on one edge. See `section.tsx` for why they do not
+   * simply run the full measure.
+   */
+  insetRow: {
+    display: "flex",
+    flexDirection: "row",
+    columnGap: DATE_COLUMN_GAP,
+  },
+  insetBody: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+  },
+
+  /**
    * A bullet in a column of them — the Links list.
    *
    * Deliberately *not* the same style as the one below, though the two differ by a
@@ -301,7 +317,14 @@ export const styles = StyleSheet.create({
     flexWrap: "wrap",
     rowGap: pt(6),
   },
+  /*
+   * `boxSizing` is load-bearing here, not decoration. Yoga measures the 50% as
+   * border-box, so the padding sits inside it; the browser defaults to
+   * content-box, so in the preview each item came out wider than half and only
+   * one fitted per row — two columns in the PDF, a single stack on screen.
+   */
   skillItem: {
+    boxSizing: "border-box",
     display: "flex",
     flexDirection: "row",
     width: "50%",

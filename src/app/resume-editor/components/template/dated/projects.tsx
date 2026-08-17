@@ -9,9 +9,8 @@ import { styles } from "./styles";
 import AvoidBreak from "../avoid-break";
 
 /**
- * A project has no timeline, so this section runs the full measure instead of
- * taking the date margin — an empty gutter down the side of every project would
- * read as something failing to render rather than as a column.
+ * A project has no timeline, so its gutter is empty — the section is `inset` so
+ * that its entries still start on the same edge as the dated ones.
  *
  * The url takes the right of the headline row, where a dated section would have
  * put the years.
@@ -22,7 +21,7 @@ import AvoidBreak from "../avoid-break";
  */
 const Projects = ({ projects, accent }: { projects: Project[]; accent: string }) => {
   return (
-    <Section title="Projects" accent={accent}>
+    <Section title="Projects" accent={accent} inset>
       <View style={styles.splitEntryList}>
         {projects.map(({ name, url, description }, index) => {
           const [firstBullet, ...restBullets] = description

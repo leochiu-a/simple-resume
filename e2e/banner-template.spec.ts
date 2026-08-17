@@ -141,6 +141,33 @@ test.describe("Banner template", () => {
     expect(await bandBleed(page, "rgb(242, 242, 242)")).not.toBeNull();
   });
 
+  /**
+   * The skills sit in two columns on screen as well as in the PDF.
+   *
+   * They did not at first. Each item is half the width with a little padding, and
+   * yoga counts that padding inside the 50% while the browser counts it outside —
+   * so in the preview every item came out wider than half and only one fitted per
+   * row. Nothing failed: the PDF was right, the HTML export was right, and the
+   * sheet on screen quietly showed a layout no output actually produced.
+   */
+  test("lays the skills out in two columns on screen", async ({ page }) => {
+    await selectBanner(page);
+
+    const columns = await preview(page)
+      .locator("page")
+      .first()
+      .evaluate((sheet) => {
+        const names = ["TypeScript", "React", "Next.js", "GraphQL", "Redux"];
+        const runs = [...sheet.querySelectorAll<HTMLElement>("text")].filter((el) =>
+          names.includes(el.textContent?.trim() ?? ""),
+        );
+
+        return new Set(runs.map((el) => Math.round(el.getBoundingClientRect().left))).size;
+      });
+
+    expect(columns).toBe(2);
+  });
+
   test("leaves out a contact detail that was never filled in", async ({ page }) => {
     await selectBanner(page);
 

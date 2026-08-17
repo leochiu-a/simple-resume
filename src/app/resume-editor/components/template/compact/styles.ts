@@ -242,6 +242,24 @@ export const styles = StyleSheet.create({
   inlineList: {
     fontFamily: SANS,
   },
+  /**
+   * The links' version of the same idea, as a wrapping row of flex items.
+   *
+   * The skills above can be one `Text` because they are plain words. A link
+   * cannot: see `links.tsx` for why one `Text` full of them renders as a stack in
+   * the preview.
+   */
+  inlineRow: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "baseline",
+    columnGap: pt(9),
+    rowGap: pt(3),
+  },
+  inlineSeparator: {
+    fontFamily: SANS,
+  },
   /*
    * `display: flex` is load-bearing in the preview: a link renders there as a
    * <link> element, which the browser's own stylesheet hides.

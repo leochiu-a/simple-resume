@@ -69,8 +69,16 @@ export const styles = StyleSheet.create({
     marginLeft: PAGE_BLEED,
     marginRight: PAGE_BLEED,
     marginBottom: pt(26),
-    paddingVertical: pt(32),
-    paddingHorizontal: PAGE_PADDING,
+    /*
+     * Spelled out per edge. `paddingVertical` and `paddingHorizontal` are
+     * @react-pdf's own shorthands and are not CSS properties, so the browser drops
+     * them: the PDF got its padding and the preview rendered the name hard against
+     * the paper's edge with the rule running the full width of the sheet.
+     */
+    paddingTop: pt(32),
+    paddingBottom: pt(32),
+    paddingLeft: PAGE_PADDING,
+    paddingRight: PAGE_PADDING,
     rowGap: pt(14),
   },
   /*
@@ -244,7 +252,14 @@ export const styles = StyleSheet.create({
     flexWrap: "wrap",
     rowGap: pt(6),
   },
+  /*
+   * `boxSizing` is load-bearing here, not decoration. Yoga measures the 50% as
+   * border-box, so the padding sits inside it; the browser defaults to
+   * content-box, so in the preview each item came out wider than half and only
+   * one fitted per row — two columns in the PDF, a single stack on screen.
+   */
   skillItem: {
+    boxSizing: "border-box",
     display: "flex",
     flexDirection: "row",
     width: "50%",

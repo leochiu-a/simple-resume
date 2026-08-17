@@ -30,7 +30,10 @@ const Info = ({
         alignItems: "center",
       }}
     >
-      <View style={{ marginHorizontal: "40pt", marginTop: "40pt" }}>
+      {/* Spelled out per edge: `marginHorizontal` is one of @react-pdf's own
+          shorthands and is not a CSS property, so the browser dropped it and the
+          preview inset this block by nothing while the PDF inset it by 40pt. */}
+      <View style={{ marginLeft: "40pt", marginRight: "40pt", marginTop: "40pt" }}>
         <Title style={{ fontSize: "16pt", marginBottom: 0 }}>{name}</Title>
       </View>
       <View
