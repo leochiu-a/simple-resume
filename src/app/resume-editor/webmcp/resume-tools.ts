@@ -77,7 +77,7 @@ const toAgentView = (resume: Resume, context: ResumeMcpContext) => ({
   },
   ...resume,
   /* Normalised on the way out, so what the agent reads back is always the six
-     sections `set-section-order` expects — not whatever an older release or a
+     sections `set-section-layout` expects — not whatever an older release or a
      hand-edited storage entry happens to hold. */
   sectionOrder: normaliseSectionOrder(resume.sectionOrder),
   employmentHistory: resume.employmentHistory.map((job, index) => ({
@@ -107,6 +107,151 @@ const toAgentView = (resume: Resume, context: ResumeMcpContext) => ({
 
 const describeTimeline = ({ from, to }: Timeline) =>
   `${toAgentMonth(from) || "?"} — ${toAgentMonth(to) || "Present"}`;
+
+/**
+ * The three sections that hold a list of entries, and so are edited by index
+ * rather than replaced wholesale.
+ *
+ * They share one add/update/remove trio instead of having nine tools between
+ * them: the three differ only in which fields an entry carries, and the loop an
+ * agent runs — read indexes, edit one, re-read — is identical for all of them.
+ * What is genuinely per-section lives in `ENTRY_SPECS` below, so the tools stay
+ * a dispatch and the sections stay separable.
+ *
+ * Skills and social links are not here: they have no per-entry identity worth
+ * an index, so `update-resume` replaces those lists outright.
+ */
+const ENTRY_SECTIONS = ["employmentHistory", "educations", "projects"] as const;
+
+type EntrySection = (typeof ENTRY_SECTIONS)[number];
+
+type Entry = EmploymentHistory | Education | Project;
+
+/** Every field the entry tools accept, across all three sections. */
+interface EntryArgs {
+  section: EntrySection;
+  index?: number;
+  company?: string;
+  jobTitle?: string;
+  school?: string;
+  degree?: string;
+  major?: string;
+  name?: string;
+  url?: string;
+  from?: string;
+  to?: string;
+  bullets?: string[];
+}
+
+type EntryField = Exclude<keyof EntryArgs, "section" | "index">;
+
+interface EntrySpec<T extends Entry> {
+  /** Used in results and in the out-of-range message. */
+  label: string;
+  /** What this section accepts. Anything else passed with it is rejected. */
+  fields: readonly EntryField[];
+  /** What `add-entry` insists on, since a new entry has nothing to fall back to. */
+  required: readonly EntryField[];
+  read: (resume: Resume) => T[];
+  write: (resume: Resume, entries: T[]) => Resume;
+  /** Builds the stored entry. With `current`, unpassed fields keep its values. */
+  build: (args: EntryArgs, current?: T) => T;
+  describe: (entry: T) => string;
+}
+
+/** Erases the entry type at the declaration site, as `defineTool` does for args. */
+const defineEntry = <T extends Entry>(spec: EntrySpec<T>) => spec as unknown as EntrySpec<Entry>;
+
+const ENTRY_SPECS: Record<EntrySection, EntrySpec<Entry>> = {
+  employmentHistory: defineEntry<EmploymentHistory>({
+    label: "job",
+    fields: ["company", "jobTitle", "from", "to", "bullets"],
+    required: ["company", "jobTitle", "from"],
+    read: (resume) => resume.employmentHistory,
+    write: (resume, employmentHistory) => ({ ...resume, employmentHistory }),
+    build: (args, current) => ({
+      company: args.company ?? current?.company ?? "",
+      jobTitle: args.jobTitle ?? current?.jobTitle ?? "",
+      timeline: {
+        from: current ? toIsoMonthOr(args.from, current.timeline.from) : toIsoMonth(args.from),
+        to: current ? toIsoMonthOr(args.to, current.timeline.to) : toIsoMonth(args.to),
+      },
+      description: args.bullets ? toBulletText(args.bullets) : (current?.description ?? ""),
+    }),
+    describe: (entry) =>
+      `"${entry.jobTitle} at ${entry.company}" (${describeTimeline(entry.timeline)})`,
+  }),
+
+  educations: defineEntry<Education>({
+    label: "education entry",
+    fields: ["school", "degree", "major", "from", "to"],
+    required: ["school", "degree", "major", "from"],
+    read: (resume) => resume.educations,
+    write: (resume, educations) => ({ ...resume, educations }),
+    build: (args, current) => ({
+      school: args.school ?? current?.school ?? "",
+      degree: args.degree ?? current?.degree ?? "",
+      major: args.major ?? current?.major ?? "",
+      timeline: {
+        from: current ? toIsoMonthOr(args.from, current.timeline.from) : toIsoMonth(args.from),
+        to: current ? toIsoMonthOr(args.to, current.timeline.to) : toIsoMonth(args.to),
+      },
+    }),
+    describe: (entry) =>
+      `"${entry.degree} in ${entry.major}, ${entry.school}" (${describeTimeline(entry.timeline)})`,
+  }),
+
+  projects: defineEntry<Project>({
+    label: "project",
+    fields: ["name", "url", "bullets"],
+    required: ["name"],
+    /* `projects` is optional on older stored resumes, so every read defaults. */
+    read: (resume) => resume.projects ?? [],
+    write: (resume, projects) => ({ ...resume, projects }),
+    build: (args, current) => ({
+      name: args.name ?? current?.name ?? "",
+      url: args.url ?? current?.url ?? "",
+      description: args.bullets ? toBulletText(args.bullets) : (current?.description ?? ""),
+    }),
+    describe: (entry) => `"${entry.name}"`,
+  }),
+};
+
+/**
+ * One flat schema covering all three sections rather than a discriminated union.
+ *
+ * A union would be more precise, but models handle `anyOf` over a discriminator
+ * poorly, and the price of the flat shape is only that a wrong field reaches
+ * `execute` — where `rejectStrayFields` names it and the section it belongs to,
+ * which is a better error than a schema violation would have produced anyway.
+ */
+const ENTRY_FIELD_SCHEMA = {
+  company: { type: "string", description: "employmentHistory: the employer." },
+  jobTitle: {
+    type: "string",
+    description: "employmentHistory: the role held.",
+  },
+  school: { type: "string", description: "educations: the institution." },
+  degree: {
+    type: "string",
+    description: 'educations: e.g. "Bachelor", "Master".',
+  },
+  major: { type: "string", description: "educations: the field of study." },
+  name: { type: "string", description: "projects: the project's name." },
+  url: { type: "string", description: "projects: a repo, a demo, a write-up." },
+  from: monthSchema("employmentHistory, educations: month this started."),
+  to: monthSchema("employmentHistory, educations: month this ended."),
+  bullets: {
+    type: "array",
+    items: { type: "string" },
+    description:
+      "employmentHistory, projects: one achievement or line per item, each rendered as its own bullet.",
+  },
+};
+
+const SECTION_FIELD_LIST = ENTRY_SECTIONS.map(
+  (section) => `${section} takes ${ENTRY_SPECS[section].fields.join(", ")}`,
+).join("; ");
 
 /**
  * Builds the tool set the agent uses to fill in the resume.
@@ -176,6 +321,32 @@ export const createResumeTools = (
         length === 1 ? "y" : "ies"
       }, so valid indexes are 0–${length - 1}.`,
     );
+
+  const unknownSection = (section: string, valid: readonly string[]) =>
+    toolError(`Unknown section "${section}". Valid sections: ${valid.join(", ")}.`);
+
+  /**
+   * The flat entry schema lets `school` reach `add-entry` on a project, which
+   * would otherwise be dropped in silence — the agent would read its entry back
+   * missing the field it just passed and have no idea why. Naming the section
+   * each stray field does belong to turns that into a one-call correction.
+   */
+  const rejectStrayFields = (section: EntrySection, args: EntryArgs) => {
+    const accepted = ENTRY_SPECS[section].fields;
+    const stray = (Object.keys(args) as (keyof EntryArgs)[]).filter(
+      (key) =>
+        key !== "section" &&
+        key !== "index" &&
+        args[key] !== undefined &&
+        !accepted.includes(key as EntryField),
+    );
+
+    if (stray.length === 0) return undefined;
+
+    return toolError(
+      `${stray.map((key) => `"${key}"`).join(", ")} ${stray.length > 1 ? "are not fields" : "is not a field"} of ${section}, which takes ${accepted.join(", ")}. ${SECTION_FIELD_LIST}.`,
+    );
+  };
 
   return [
     defineTool({
@@ -323,22 +494,80 @@ export const createResumeTools = (
       },
     }),
 
-    defineWriteTool<Partial<Pick<Resume, "name" | "wantedJob" | "city" | "phone" | "email">>>({
-      name: "update-basic-info",
-      title: "Update contact details",
+    /*
+      Everything on the resume that is not an indexed list: the header, the
+      profile paragraph, and the two flat lists.
+
+      One tool rather than four because the agent's decision is the same for all
+      of them — "set this field to that" — and splitting it only made the agent
+      pick a tool name before it could act. The two list fields keep replace
+      semantics, which the schema says outright, since a patch that appended
+      would leave no way to remove a skill.
+    */
+    defineWriteTool<{
+      name?: string;
+      wantedJob?: string;
+      city?: string;
+      phone?: string;
+      email?: string;
+      profile?: string;
+      skills?: string[];
+      socialLinks?: SocialLink[];
+    }>({
+      name: "update-resume",
+      title: "Update the resume's fields",
       description:
-        "Updates the header of the resume: the person's name, the job they are applying for, and their contact details. Only the fields you pass are changed.",
+        "Updates the parts of the resume that are single fields rather than lists of entries: the header (name, target job, contact details), the profile summary, the skill list and the social links. Only the fields you pass are changed, so this is safe to call with one field. Note that skills and socialLinks replace their whole list — pass every item that should appear, in display order. For jobs, schools and projects use add-entry, update-entry and remove-entry instead.",
       inputSchema: {
         type: "object",
         properties: {
           name: { type: "string", description: "Full name." },
-          wantedJob: { type: "string", description: "The job title being applied for." },
+          wantedJob: {
+            type: "string",
+            description: "The job title being applied for.",
+          },
           city: { type: "string", description: "City the person is based in." },
           phone: { type: "string" },
           email: { type: "string" },
+          profile: {
+            type: "string",
+            description:
+              "The whole summary paragraph at the top of the resume. Replaces the existing one.",
+          },
+          skills: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              'Replaces the entire skill list, in display order, e.g. ["TypeScript", "React"].',
+          },
+          socialLinks: {
+            type: "array",
+            description: "Replaces the entire list of links shown under the contact details.",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: 'Label, e.g. "GitHub".' },
+                url: {
+                  type: "string",
+                  description: "Full URL including the scheme.",
+                },
+              },
+              required: ["name", "url"],
+            },
+          },
         },
       },
       execute: (args) => {
+        const changed = (Object.keys(args) as (keyof typeof args)[]).filter(
+          (key) => args[key] !== undefined,
+        );
+
+        if (changed.length === 0) {
+          return toolError(
+            "No fields were passed, so there is nothing to update. Pass at least one of name, wantedJob, city, phone, email, profile, skills or socialLinks.",
+          );
+        }
+
         write((previous) => ({
           ...previous,
           name: args.name ?? previous.name,
@@ -346,478 +575,202 @@ export const createResumeTools = (
           city: args.city ?? previous.city,
           phone: args.phone ?? previous.phone,
           email: args.email ?? previous.email,
+          profile: args.profile ?? previous.profile,
+          skills: args.skills ? args.skills.map((name) => ({ name })) : previous.skills,
+          socialLinks: args.socialLinks ?? previous.socialLinks,
         }));
 
-        const changed = Object.keys(args);
+        /* The list fields report their new contents: they replaced rather than
+           patched, so "updated skills" alone would not say what survived. */
+        const detail = [
+          args.skills && `skills are now ${args.skills.join(", ") || "empty"}`,
+          args.socialLinks &&
+            `social links are now ${args.socialLinks.map((link) => link.name).join(", ") || "empty"}`,
+        ].filter(Boolean);
 
         return toolText(
-          changed.length > 0
-            ? `Updated ${changed.join(", ")}.`
-            : "No fields were passed, so nothing changed.",
+          `Updated ${changed.join(", ")}.${detail.length > 0 ? ` ${detail.join("; ")}.` : ""}`,
         );
       },
     }),
 
-    defineWriteTool<{ profile: string }>({
-      name: "update-profile",
-      title: "Write the profile summary",
-      description:
-        "Replaces the profile summary — the short paragraph at the top of the resume that pitches the candidate.",
+    /*
+      One trio for all three list sections, dispatched on `section`.
+
+      The nine tools this replaces differed only in which fields an entry
+      carries — the index handling, the out-of-range error and the re-read rule
+      were copied three times over. `ENTRY_SPECS` holds the part that is really
+      per-section, so adding a fourth list section is a spec, not three tools.
+    */
+    defineWriteTool<EntryArgs>({
+      name: "add-entry",
+      title: "Add a job, school or project",
+      description: `Appends one entry to a list section of the resume. Which fields you pass depends on the section: ${SECTION_FIELD_LIST}. Returns the index the entry landed at, which update-entry and remove-entry take. For the header, profile, skills or social links use update-resume instead.`,
       inputSchema: {
         type: "object",
         properties: {
-          profile: { type: "string", description: "The full summary paragraph." },
-        },
-        required: ["profile"],
-      },
-      execute: ({ profile }) => {
-        write((previous) => ({ ...previous, profile }));
-
-        return toolText(`Profile summary set (${profile.length} characters).`);
-      },
-    }),
-
-    defineWriteTool<{ skills: string[] }>({
-      name: "set-skills",
-      title: "Set the skill list",
-      description:
-        "Replaces the entire skill list. Pass every skill that should appear, in the order they should be shown.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          skills: {
-            type: "array",
-            items: { type: "string" },
-            description: 'Skill names, e.g. ["TypeScript", "React"].',
+          section: {
+            type: "string",
+            enum: [...ENTRY_SECTIONS],
+            description: "Which list to append to.",
           },
+          ...ENTRY_FIELD_SCHEMA,
         },
-        required: ["skills"],
+        required: ["section"],
       },
-      execute: ({ skills }) => {
-        write((previous) => ({ ...previous, skills: skills.map((name) => ({ name })) }));
+      execute: (args) => {
+        const spec = ENTRY_SPECS[args.section];
+        if (!spec) return unknownSection(args.section, ENTRY_SECTIONS);
 
-        return toolText(`Skill list set to ${skills.length} skills: ${skills.join(", ")}.`);
-      },
-    }),
+        const stray = rejectStrayFields(args.section, args);
+        if (stray) return stray;
 
-    defineWriteTool<{ socialLinks: SocialLink[] }>({
-      name: "set-social-links",
-      title: "Set the social links",
-      description:
-        "Replaces the entire list of social links shown under the contact details (GitHub, LinkedIn, a personal site, and so on).",
-      inputSchema: {
-        type: "object",
-        properties: {
-          socialLinks: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                name: { type: "string", description: 'Label, e.g. "GitHub".' },
-                url: { type: "string", description: "Full URL including the scheme." },
-              },
-              required: ["name", "url"],
-            },
-          },
-        },
-        required: ["socialLinks"],
-      },
-      execute: ({ socialLinks }) => {
-        write((previous) => ({ ...previous, socialLinks }));
-
-        return toolText(
-          `Social links set to: ${socialLinks.map((link) => link.name).join(", ") || "none"}.`,
-        );
-      },
-    }),
-
-    defineWriteTool<{
-      company: string;
-      jobTitle: string;
-      from: string;
-      to?: string;
-      bullets?: string[];
-    }>({
-      name: "add-employment",
-      title: "Add a job",
-      description:
-        "Appends one job to the employment history. Describe the work as bullet points — each one becomes a separate bullet on the resume.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          company: { type: "string" },
-          jobTitle: { type: "string" },
-          from: monthSchema("Month the job started."),
-          to: monthSchema("Month the job ended."),
-          bullets: {
-            type: "array",
-            items: { type: "string" },
-            description: "One achievement or responsibility per item.",
-          },
-        },
-        required: ["company", "jobTitle", "from"],
-      },
-      execute: ({ company, jobTitle, from, to, bullets }) => {
-        const entry: EmploymentHistory = {
-          company,
-          jobTitle,
-          timeline: { from: toIsoMonth(from), to: toIsoMonth(to) },
-          description: toBulletText(bullets ?? []),
-        };
-
-        let index = 0;
-        write((previous) => {
-          index = previous.employmentHistory.length;
-
-          return { ...previous, employmentHistory: [...previous.employmentHistory, entry] };
-        });
-
-        return toolText(
-          `Added "${jobTitle} at ${company}" (${describeTimeline(entry.timeline)}) at index ${index}.`,
-        );
-      },
-    }),
-
-    defineWriteTool<{
-      index: number;
-      company?: string;
-      jobTitle?: string;
-      from?: string;
-      to?: string;
-      bullets?: string[];
-    }>({
-      name: "update-employment",
-      title: "Edit a job",
-      description:
-        "Updates one job already in the employment history. Get the index from get-resume. Only the fields you pass are changed; passing bullets replaces all of them.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          index: { type: "number", description: "Zero-based index from get-resume." },
-          company: { type: "string" },
-          jobTitle: { type: "string" },
-          from: monthSchema("Month the job started."),
-          to: monthSchema("Month the job ended."),
-          bullets: { type: "array", items: { type: "string" } },
-        },
-        required: ["index"],
-      },
-      execute: ({ index, company, jobTitle, from, to, bullets }) => {
-        const entries = read().employmentHistory;
-        const current = entries[index];
-        if (!current) return outOfRange("job", index, entries.length);
-
-        const entry: EmploymentHistory = {
-          company: company ?? current.company,
-          jobTitle: jobTitle ?? current.jobTitle,
-          timeline: {
-            from: toIsoMonthOr(from, current.timeline.from),
-            to: toIsoMonthOr(to, current.timeline.to),
-          },
-          description: bullets ? toBulletText(bullets) : current.description,
-        };
-
-        write((previous) => ({
-          ...previous,
-          employmentHistory: previous.employmentHistory.map((item, itemIndex) =>
-            itemIndex === index ? entry : item,
-          ),
-        }));
-
-        return toolText(
-          `Updated the job at index ${index}: ${entry.jobTitle} at ${entry.company}.`,
-        );
-      },
-    }),
-
-    defineWriteTool<{ index: number }>({
-      name: "remove-employment",
-      title: "Remove a job",
-      description:
-        "Deletes one job from the employment history. Get the index from get-resume — indexes shift after a removal, so re-read before removing another.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          index: { type: "number", description: "Zero-based index from get-resume." },
-        },
-        required: ["index"],
-      },
-      execute: ({ index }) => {
-        const entries = read().employmentHistory;
-        const current = entries[index];
-        if (!current) return outOfRange("job", index, entries.length);
-
-        write((previous) => ({
-          ...previous,
-          employmentHistory: previous.employmentHistory.filter(
-            (_, itemIndex) => itemIndex !== index,
-          ),
-        }));
-
-        return toolText(`Removed "${current.jobTitle} at ${current.company}".`);
-      },
-    }),
-
-    defineWriteTool<{ school: string; degree: string; major: string; from: string; to?: string }>({
-      name: "add-education",
-      title: "Add a school",
-      description: "Appends one entry to the education section.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          school: { type: "string" },
-          degree: { type: "string", description: 'e.g. "Bachelor", "Master".' },
-          major: { type: "string" },
-          from: monthSchema("Month the studies started."),
-          to: monthSchema("Month of graduation."),
-        },
-        required: ["school", "degree", "major", "from"],
-      },
-      execute: ({ school, degree, major, from, to }) => {
-        const entry: Education = {
-          school,
-          degree,
-          major,
-          timeline: { from: toIsoMonth(from), to: toIsoMonth(to) },
-        };
-
-        let index = 0;
-        write((previous) => {
-          index = previous.educations.length;
-
-          return { ...previous, educations: [...previous.educations, entry] };
-        });
-
-        return toolText(
-          `Added "${degree} in ${major}, ${school}" (${describeTimeline(entry.timeline)}) at index ${index}.`,
-        );
-      },
-    }),
-
-    defineWriteTool<{
-      index: number;
-      school?: string;
-      degree?: string;
-      major?: string;
-      from?: string;
-      to?: string;
-    }>({
-      name: "update-education",
-      title: "Edit a school",
-      description:
-        "Updates one education entry. Get the index from get-resume. Only the fields you pass are changed.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          index: { type: "number", description: "Zero-based index from get-resume." },
-          school: { type: "string" },
-          degree: { type: "string" },
-          major: { type: "string" },
-          from: monthSchema("Month the studies started."),
-          to: monthSchema("Month of graduation."),
-        },
-        required: ["index"],
-      },
-      execute: ({ index, school, degree, major, from, to }) => {
-        const entries = read().educations;
-        const current = entries[index];
-        if (!current) return outOfRange("education entry", index, entries.length);
-
-        const entry: Education = {
-          school: school ?? current.school,
-          degree: degree ?? current.degree,
-          major: major ?? current.major,
-          timeline: {
-            from: toIsoMonthOr(from, current.timeline.from),
-            to: toIsoMonthOr(to, current.timeline.to),
-          },
-        };
-
-        write((previous) => ({
-          ...previous,
-          educations: previous.educations.map((item, itemIndex) =>
-            itemIndex === index ? entry : item,
-          ),
-        }));
-
-        return toolText(`Updated the education entry at index ${index}: ${entry.school}.`);
-      },
-    }),
-
-    defineWriteTool<{ index: number }>({
-      name: "remove-education",
-      title: "Remove a school",
-      description:
-        "Deletes one education entry. Get the index from get-resume — indexes shift after a removal.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          index: { type: "number", description: "Zero-based index from get-resume." },
-        },
-        required: ["index"],
-      },
-      execute: ({ index }) => {
-        const entries = read().educations;
-        const current = entries[index];
-        if (!current) return outOfRange("education entry", index, entries.length);
-
-        write((previous) => ({
-          ...previous,
-          educations: previous.educations.filter((_, itemIndex) => itemIndex !== index),
-        }));
-
-        return toolText(`Removed "${current.school}".`);
-      },
-    }),
-
-    defineWriteTool<{ name: string; url?: string; bullets?: string[] }>({
-      name: "add-project",
-      title: "Add a project",
-      description: "Appends one entry to the projects section.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          name: { type: "string", description: "The project's name." },
-          url: { type: "string", description: "Where to see it — a repo, a demo, a write-up." },
-          bullets: {
-            type: "array",
-            items: { type: "string" },
-            description: "One line per bullet, as shown under the project.",
-          },
-        },
-        required: ["name"],
-      },
-      execute: ({ name, url, bullets }) => {
-        const entry: Project = {
-          name,
-          url: url ?? "",
-          description: toBulletText(bullets ?? []),
-        };
-
-        let index = 0;
-        write((previous) => {
-          const entries = previous.projects ?? [];
-          index = entries.length;
-
-          return { ...previous, projects: [...entries, entry] };
-        });
-
-        return toolText(`Added the project "${name}" at index ${index}.`);
-      },
-    }),
-
-    defineWriteTool<{ index: number; name?: string; url?: string; bullets?: string[] }>({
-      name: "update-project",
-      title: "Edit a project",
-      description:
-        "Updates one project entry. Get the index from get-resume. Only the fields you pass are changed.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          index: { type: "number", description: "Zero-based index from get-resume." },
-          name: { type: "string" },
-          url: { type: "string" },
-          bullets: {
-            type: "array",
-            items: { type: "string" },
-            description: "Replaces every bullet on this project.",
-          },
-        },
-        required: ["index"],
-      },
-      execute: ({ index, name, url, bullets }) => {
-        const entries = read().projects ?? [];
-        const current = entries[index];
-        if (!current) return outOfRange("project", index, entries.length);
-
-        const entry: Project = {
-          name: name ?? current.name,
-          url: url ?? current.url,
-          description: bullets ? toBulletText(bullets) : current.description,
-        };
-
-        write((previous) => ({
-          ...previous,
-          projects: (previous.projects ?? []).map((item, itemIndex) =>
-            itemIndex === index ? entry : item,
-          ),
-        }));
-
-        return toolText(`Updated the project at index ${index}: ${entry.name}.`);
-      },
-    }),
-
-    defineWriteTool<{ index: number }>({
-      name: "remove-project",
-      title: "Remove a project",
-      description:
-        "Deletes one project entry. Get the index from get-resume — indexes shift after a removal.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          index: { type: "number", description: "Zero-based index from get-resume." },
-        },
-        required: ["index"],
-      },
-      execute: ({ index }) => {
-        const entries = read().projects ?? [];
-        const current = entries[index];
-        if (!current) return outOfRange("project", index, entries.length);
-
-        write((previous) => ({
-          ...previous,
-          projects: (previous.projects ?? []).filter((_, itemIndex) => itemIndex !== index),
-        }));
-
-        return toolText(`Removed "${current.name}".`);
-      },
-    }),
-
-    defineWriteTool<{ section: keyof Visibility; visible: boolean }>({
-      name: "set-section-visibility",
-      title: "Show or hide a section",
-      description:
-        "Shows or hides a whole section in the resume preview and the exported PDF. The section's content is kept either way.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          section: { type: "string", enum: [...SECTIONS] },
-          visible: { type: "boolean" },
-        },
-        required: ["section", "visible"],
-      },
-      execute: ({ section, visible }) => {
-        if (!SECTIONS.includes(section)) {
-          return toolError(`Unknown section "${section}". Valid sections: ${SECTIONS.join(", ")}.`);
+        /* Checked here rather than in `required` on the schema, because what is
+           required depends on the section and the flat schema cannot say so. */
+        const missing = spec.required.filter((field) => args[field] === undefined);
+        if (missing.length > 0) {
+          return toolError(
+            `A new ${spec.label} needs ${missing.join(", ")}. ${args.section} takes ${spec.fields.join(", ")}.`,
+          );
         }
 
-        write((previous) => ({
-          ...previous,
-          visibility: { ...previous.visibility, [section]: visible },
-        }));
+        const entry = spec.build(args);
 
-        return toolText(`Section "${section}" is now ${visible ? "visible" : "hidden"}.`);
+        let index = 0;
+        write((previous) => {
+          const entries = spec.read(previous);
+          index = entries.length;
+
+          return spec.write(previous, [...entries, entry]);
+        });
+
+        return toolText(`Added the ${spec.label} ${spec.describe(entry)} at index ${index}.`);
       },
     }),
 
-    defineWriteTool<{ order: SectionId[] }>({
-      name: "set-section-order",
-      title: "Reorder the sections",
+    defineWriteTool<EntryArgs & { index: number }>({
+      name: "update-entry",
+      title: "Edit a job, school or project",
+      description: `Updates one entry already in a list section. Get the index from get-resume. Only the fields you pass are changed, except bullets, which replaces every bullet on the entry. Which fields apply depends on the section: ${SECTION_FIELD_LIST}.`,
+      inputSchema: {
+        type: "object",
+        properties: {
+          section: {
+            type: "string",
+            enum: [...ENTRY_SECTIONS],
+            description: "Which list the entry is in.",
+          },
+          index: {
+            type: "number",
+            description: "Zero-based index from get-resume.",
+          },
+          ...ENTRY_FIELD_SCHEMA,
+        },
+        required: ["section", "index"],
+      },
+      execute: (args) => {
+        const spec = ENTRY_SPECS[args.section];
+        if (!spec) return unknownSection(args.section, ENTRY_SECTIONS);
+
+        const stray = rejectStrayFields(args.section, args);
+        if (stray) return stray;
+
+        const { index } = args;
+        const entries = spec.read(read());
+        const current = entries[index];
+        if (!current) return outOfRange(spec.label, index, entries.length);
+
+        const entry = spec.build(args, current);
+
+        write((previous) =>
+          spec.write(
+            previous,
+            spec.read(previous).map((item, itemIndex) => (itemIndex === index ? entry : item)),
+          ),
+        );
+
+        return toolText(`Updated the ${spec.label} at index ${index}: ${spec.describe(entry)}.`);
+      },
+    }),
+
+    defineWriteTool<{ section: EntrySection; index: number }>({
+      name: "remove-entry",
+      title: "Remove a job, school or project",
       description:
-        "Sets the order the sections are laid out in, top to bottom. Sections left out keep their relative order at the end, so moving one to the front only needs that one named. Two-column templates draw skills and links in a sidebar and ignore their position here.",
+        "Deletes one entry from a list section. Get the index from get-resume — indexes shift after a removal, so re-read before removing another.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          section: {
+            type: "string",
+            enum: [...ENTRY_SECTIONS],
+            description: "Which list the entry is in.",
+          },
+          index: {
+            type: "number",
+            description: "Zero-based index from get-resume.",
+          },
+        },
+        required: ["section", "index"],
+      },
+      execute: ({ section, index }) => {
+        const spec = ENTRY_SPECS[section];
+        if (!spec) return unknownSection(section, ENTRY_SECTIONS);
+
+        const entries = spec.read(read());
+        const current = entries[index];
+        if (!current) return outOfRange(spec.label, index, entries.length);
+
+        write((previous) =>
+          spec.write(
+            previous,
+            spec.read(previous).filter((_, itemIndex) => itemIndex !== index),
+          ),
+        );
+
+        return toolText(`Removed the ${spec.label} ${spec.describe(current)}.`);
+      },
+    }),
+
+    /*
+      Order and visibility are one tool because they are one decision. "Lead
+      with education and drop the links" was two calls that both rewrote the
+      shape of the sheet, and an agent that made only the first left the resume
+      in a state it had not intended.
+    */
+    defineWriteTool<{ order?: SectionId[]; visibility?: Partial<Visibility> }>({
+      name: "set-section-layout",
+      title: "Reorder or hide sections",
+      description:
+        "Sets how the sections are laid out: the order they run in, top to bottom, and which of them are shown. Pass either or both. Sections left out of `order` keep their relative position behind the ones named, so promoting one section only needs that one named. Hiding keeps the section's content — it is a toggle, not a delete. Two-column templates draw skills and links in a sidebar and ignore their position in the order, though it is still recorded and applies on a single-column template.",
       inputSchema: {
         type: "object",
         properties: {
           order: {
             type: "array",
             items: { type: "string", enum: [...SECTIONS] },
-            description: "Section ids, in the order they should appear.",
+            description: "Section ids, in the order they should appear. May be partial.",
+          },
+          visibility: {
+            type: "object",
+            description: "Per-section show/hide. Only the sections you name change.",
+            properties: Object.fromEntries(
+              SECTIONS.map((id) => [id, { type: "boolean" }] as const),
+            ),
           },
         },
-        required: ["order"],
       },
-      execute: ({ order }) => {
-        const unknown = (order ?? []).filter((id) => !SECTIONS.includes(id));
+      execute: ({ order, visibility }) => {
+        if (order === undefined && visibility === undefined) {
+          return toolError(
+            `Pass "order", "visibility" or both. Valid sections: ${SECTIONS.join(", ")}.`,
+          );
+        }
+
+        const unknown = [...(order ?? []), ...Object.keys(visibility ?? {})].filter(
+          (id) => !SECTIONS.includes(id as SectionId),
+        );
+
         if (unknown.length > 0) {
           return toolError(
             `Unknown section${unknown.length > 1 ? "s" : ""} ${unknown.map((id) => `"${id}"`).join(", ")}. Valid sections: ${SECTIONS.join(", ")}.`,
@@ -827,10 +780,23 @@ export const createResumeTools = (
         // Normalised rather than written through: a partial list is the useful way
         // to call this, and it is what keeps the six-section invariant the
         // templates rely on from depending on the agent getting it right.
-        const next = normaliseSectionOrder(order);
-        write((previous) => ({ ...previous, sectionOrder: next }));
+        const next = order ? normaliseSectionOrder(order) : undefined;
 
-        return toolText(`Sections are now ordered: ${next.join(", ")}.`);
+        write((previous) => ({
+          ...previous,
+          sectionOrder: next ?? previous.sectionOrder,
+          visibility: visibility ? { ...previous.visibility, ...visibility } : previous.visibility,
+        }));
+
+        const said = [
+          next && `Sections are now ordered: ${next.join(", ")}`,
+          visibility &&
+            `Now ${Object.entries(visibility)
+              .map(([id, shown]) => `${id} is ${shown ? "visible" : "hidden"}`)
+              .join(", ")}`,
+        ].filter(Boolean);
+
+        return toolText(`${said.join(". ")}.`);
       },
     }),
   ];

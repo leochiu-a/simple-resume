@@ -8,7 +8,7 @@ import { CheckResult, potentialGain, scoreResume } from "./rules";
  * Where a finding is, in the coordinates the write tools take.
  *
  * `entryIndex` is the same zero-based index `get-resume` reports and
- * `update-employment` / `update-project` accept, so an agent can carry a finding
+ * `update-entry` accepts, so an agent can carry a finding
  * straight into the call that fixes it without searching for the text again.
  */
 export interface FindingLocation {

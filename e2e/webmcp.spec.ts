@@ -95,21 +95,11 @@ const REGISTERED_TOOLS = [
   "get-resume",
   "score-resume",
   "submit-review",
-  "update-basic-info",
-  "update-profile",
-  "set-skills",
-  "set-social-links",
-  "add-employment",
-  "update-employment",
-  "remove-employment",
-  "add-education",
-  "update-education",
-  "remove-education",
-  "add-project",
-  "update-project",
-  "remove-project",
-  "set-section-visibility",
-  "set-section-order",
+  "update-resume",
+  "add-entry",
+  "update-entry",
+  "remove-entry",
+  "set-section-layout",
 ];
 
 /**
@@ -190,9 +180,7 @@ test.describe("WebMCP resume tools", () => {
       exists: false,
     });
 
-    const result = await callTool(page, "update-basic-info", {
-      name: "Ada Lovelace",
-    });
+    const result = await callTool(page, "update-resume", { name: "Ada Lovelace" });
 
     expect(result.isError).toBe(true);
     expect(textOf(result)).toContain("no English version");
@@ -217,9 +205,7 @@ test.describe("WebMCP resume tools", () => {
     await page.goto("/resume-editor");
     await waitForRegistration(page);
 
-    const result = await callTool(page, "update-basic-info", {
-      name: "Ada Lovelace",
-    });
+    const result = await callTool(page, "update-resume", { name: "Ada Lovelace" });
 
     expect(result.isError).toBeFalsy();
     expect(textOf(result)).toContain("English translation");
@@ -263,7 +249,7 @@ test.describe("WebMCP resume tools", () => {
     expect(errors).toEqual([]);
   });
 
-  test("update-employment leaves an ongoing job ongoing when `to` is omitted", async ({ page }) => {
+  test("update-entry leaves an ongoing job ongoing when `to` is omitted", async ({ page }) => {
     await waitForStoredResume(page);
     await page.addInitScript(() => {
       const stored = JSON.parse(window.localStorage.getItem("resume-doc") as string);
@@ -274,7 +260,8 @@ test.describe("WebMCP resume tools", () => {
     await page.goto("/resume-editor");
     await waitForRegistration(page);
 
-    const result = await callTool(page, "update-employment", {
+    const result = await callTool(page, "update-entry", {
+      section: "employmentHistory",
       index: 0,
       jobTitle: "Staff Engineer",
     });
@@ -286,8 +273,8 @@ test.describe("WebMCP resume tools", () => {
     await expect(preview(page).getByText(/— Present/)).toBeVisible();
   });
 
-  test("update-basic-info writes through to the form and the preview", async ({ page }) => {
-    const result = await callTool(page, "update-basic-info", {
+  test("update-resume writes through to the form and the preview", async ({ page }) => {
+    const result = await callTool(page, "update-resume", {
       name: "Ada Lovelace",
       wantedJob: "Staff Engineer",
       city: "London",
@@ -301,8 +288,8 @@ test.describe("WebMCP resume tools", () => {
     expect(JSON.parse(textOf(await callTool(page, "get-resume"))).email).toBe("good@gmail.com");
   });
 
-  test("set-skills replaces the whole list in the field array", async ({ page }) => {
-    await callTool(page, "set-skills", { skills: ["Rust", "WebAssembly"] });
+  test("update-resume replaces the whole skill list in the field array", async ({ page }) => {
+    await callTool(page, "update-resume", { skills: ["Rust", "WebAssembly"] });
 
     await expect(preview(page).getByText("Rust")).toBeVisible();
     await expect(preview(page).getByText("WebAssembly")).toBeVisible();
@@ -313,8 +300,9 @@ test.describe("WebMCP resume tools", () => {
     ]);
   });
 
-  test("add-employment appends a job and renders each bullet separately", async ({ page }) => {
-    const result = await callTool(page, "add-employment", {
+  test("add-entry appends a job and renders each bullet separately", async ({ page }) => {
+    const result = await callTool(page, "add-entry", {
+      section: "employmentHistory",
       company: "Vercel",
       jobTitle: "Frontend Engineer",
       from: "2020-03",
@@ -332,13 +320,18 @@ test.describe("WebMCP resume tools", () => {
     await expect(preview(page).getByText("Google")).toBeVisible();
   });
 
-  test("update-employment edits one entry and leaves the rest alone", async ({ page }) => {
-    await callTool(page, "add-employment", {
+  test("update-entry edits one job and leaves the rest alone", async ({ page }) => {
+    await callTool(page, "add-entry", {
+      section: "employmentHistory",
       company: "Vercel",
       jobTitle: "Frontend Engineer",
       from: "2020-03",
     });
-    await callTool(page, "update-employment", { index: 0, jobTitle: "Principal Engineer" });
+    await callTool(page, "update-entry", {
+      section: "employmentHistory",
+      index: 0,
+      jobTitle: "Principal Engineer",
+    });
 
     const resume = JSON.parse(textOf(await callTool(page, "get-resume")));
     expect(resume.employmentHistory[0].jobTitle).toBe("Principal Engineer");
@@ -346,15 +339,16 @@ test.describe("WebMCP resume tools", () => {
     expect(resume.employmentHistory[1].company).toBe("Vercel");
   });
 
-  test("remove-employment deletes the entry", async ({ page }) => {
-    await callTool(page, "remove-employment", { index: 0 });
+  test("remove-entry deletes the job", async ({ page }) => {
+    await callTool(page, "remove-entry", { section: "employmentHistory", index: 0 });
 
     await expect(preview(page).getByText("Google")).toBeHidden();
     expect(JSON.parse(textOf(await callTool(page, "get-resume"))).employmentHistory).toEqual([]);
   });
 
-  test("add-project appends a project and renders each bullet separately", async ({ page }) => {
-    const result = await callTool(page, "add-project", {
+  test("add-entry appends a project and renders each bullet separately", async ({ page }) => {
+    const result = await callTool(page, "add-entry", {
+      section: "projects",
       name: "Tideline",
       url: "https://example.com/tideline",
       bullets: ["Offline-first tide charts", "Ships as a PWA"],
@@ -368,23 +362,26 @@ test.describe("WebMCP resume tools", () => {
     await expect(preview(page).getByText("Ships as a PWA")).toBeVisible();
   });
 
-  test("update-project edits one entry and leaves the rest alone", async ({ page }) => {
-    await callTool(page, "add-project", { name: "Tideline" });
-    await callTool(page, "update-project", { index: 1, name: "Tideline 2" });
+  test("update-entry edits one project and leaves the rest alone", async ({ page }) => {
+    await callTool(page, "add-entry", { section: "projects", name: "Tideline" });
+    await callTool(page, "update-entry", { section: "projects", index: 1, name: "Tideline 2" });
 
     const resume = JSON.parse(textOf(await callTool(page, "get-resume")));
     expect(resume.projects[0].name).toBe("Open Resume");
     expect(resume.projects[1].name).toBe("Tideline 2");
   });
 
-  test("remove-project deletes the entry", async ({ page }) => {
-    await callTool(page, "remove-project", { index: 0 });
+  test("remove-entry deletes the project", async ({ page }) => {
+    await callTool(page, "remove-entry", { section: "projects", index: 0 });
 
     expect(JSON.parse(textOf(await callTool(page, "get-resume"))).projects).toEqual([]);
   });
 
   test("an out-of-range index comes back as a tool error, not a crash", async ({ page }) => {
-    const result = await callTool(page, "remove-employment", { index: 7 });
+    const result = await callTool(page, "remove-entry", {
+      section: "employmentHistory",
+      index: 7,
+    });
 
     expect(result.isError).toBe(true);
     expect(textOf(result)).toContain("valid indexes are 0–0");
@@ -393,21 +390,21 @@ test.describe("WebMCP resume tools", () => {
     expect(errors).toEqual([]);
   });
 
-  test("set-section-visibility hides a section without losing its content", async ({ page }) => {
-    await callTool(page, "set-section-visibility", { section: "skills", visible: false });
+  test("set-section-layout hides a section without losing its content", async ({ page }) => {
+    await callTool(page, "set-section-layout", { visibility: { skills: false } });
 
     await expect(preview(page).getByText("TypeScript")).toBeHidden();
     // Hidden, not deleted.
     expect(JSON.parse(textOf(await callTool(page, "get-resume"))).skills).toContain("TypeScript");
 
-    await callTool(page, "set-section-visibility", { section: "skills", visible: true });
+    await callTool(page, "set-section-layout", { visibility: { skills: true } });
     await expect(preview(page).getByText("TypeScript")).toBeVisible();
   });
 
-  test("set-section-order moves a section to the top of the sheet", async ({ page }) => {
+  test("set-section-layout moves a section to the top of the sheet", async ({ page }) => {
     // Partial on purpose: naming the one section to promote is the useful call, and
     // the rest keep their relative order behind it.
-    const result = await callTool(page, "set-section-order", { order: ["educations"] });
+    const result = await callTool(page, "set-section-layout", { order: ["educations"] });
 
     expect(textOf(result)).toContain(
       "educations, profile, employmentHistory, projects, skills, socialLinks",
@@ -425,21 +422,127 @@ test.describe("WebMCP resume tools", () => {
     ]);
   });
 
-  test("set-section-order rejects a section it does not have", async ({ page }) => {
-    const result = await callTool(page, "set-section-order", { order: ["profile", "hobbies"] });
+  /**
+   * The reason the two used to be separate tools were merged: reshaping the
+   * sheet is usually one decision, and half of it applied is a state the agent
+   * never asked for.
+   */
+  test("set-section-layout reorders and hides in one call", async ({ page }) => {
+    const result = await callTool(page, "set-section-layout", {
+      order: ["educations"],
+      visibility: { skills: false },
+    });
 
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toContain("Valid sections");
+    expect(result.isError).toBeFalsy();
+    expect(textOf(result)).toContain("skills is hidden");
+
+    await expect(preview(page).getByText("TypeScript")).toBeHidden();
+    await expect(page.locator("#resume-form h2").nth(1)).toHaveText(/Educations/);
   });
 
-  test("an unknown section is rejected", async ({ page }) => {
-    const result = await callTool(page, "set-section-visibility", {
-      section: "hobbies",
-      visible: true,
+  test("set-section-layout with neither argument is refused", async ({ page }) => {
+    const result = await callTool(page, "set-section-layout", {});
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toContain('Pass "order", "visibility" or both');
+  });
+
+  test("an unknown section is rejected, in the order and in the visibility", async ({ page }) => {
+    const inOrder = await callTool(page, "set-section-layout", {
+      order: ["profile", "hobbies"],
+    });
+
+    expect(inOrder.isError).toBe(true);
+    expect(textOf(inOrder)).toContain("Valid sections");
+
+    const inVisibility = await callTool(page, "set-section-layout", {
+      visibility: { hobbies: true },
+    });
+
+    expect(inVisibility.isError).toBe(true);
+    expect(textOf(inVisibility)).toContain("Valid sections");
+
+    const inEntry = await callTool(page, "remove-entry", { section: "hobbies", index: 0 });
+
+    expect(inEntry.isError).toBe(true);
+    expect(textOf(inEntry)).toContain("Valid sections");
+  });
+
+  /**
+   * The entry tools share one flat schema across three sections, so nothing in
+   * the schema stops `school` reaching a project. Dropping it in silence would
+   * leave the agent reading back an entry missing the field it just passed, so
+   * the mismatch has to be an error that names where the field does belong.
+   */
+  test("a field from the wrong section is rejected rather than dropped", async ({ page }) => {
+    const result = await callTool(page, "add-entry", {
+      section: "projects",
+      name: "Tideline",
+      school: "MIT",
     });
 
     expect(result.isError).toBe(true);
-    expect(textOf(result)).toContain("Valid sections");
+    expect(textOf(result)).toContain('"school" is not a field of projects');
+    expect(textOf(result)).toContain("educations takes school, degree, major, from, to");
+    // Nothing was appended.
+    expect(JSON.parse(textOf(await callTool(page, "get-resume"))).projects).toHaveLength(1);
+  });
+
+  /**
+   * `required` on the schema cannot express this: what a new entry needs depends
+   * on which section it is going into, and the flat schema has one `required`.
+   */
+  test("add-entry names the fields the section requires", async ({ page }) => {
+    const result = await callTool(page, "add-entry", {
+      section: "educations",
+      school: "MIT",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toContain("needs degree, major, from");
+    // The refusal left the list alone.
+    expect(JSON.parse(textOf(await callTool(page, "get-resume"))).educations).toHaveLength(2);
+  });
+
+  test("add-entry appends a school", async ({ page }) => {
+    const result = await callTool(page, "add-entry", {
+      section: "educations",
+      school: "MIT",
+      degree: "Master",
+      major: "Computer Science",
+      from: "2019-09",
+      to: "2021-06",
+    });
+
+    expect(textOf(result)).toContain("at index 2");
+    await expect(preview(page).getByText("MIT")).toBeVisible();
+  });
+
+  test("update-resume patches one field and replaces both lists", async ({ page }) => {
+    const result = await callTool(page, "update-resume", {
+      profile: "Ships design systems.",
+      socialLinks: [{ name: "Bluesky", url: "https://bsky.app/profile/example" }],
+    });
+
+    expect(textOf(result)).toContain("social links are now Bluesky");
+
+    const resume = JSON.parse(textOf(await callTool(page, "get-resume")));
+    expect(resume.profile).toBe("Ships design systems.");
+    expect(resume.socialLinks).toEqual([
+      { name: "Bluesky", url: "https://bsky.app/profile/example" },
+    ]);
+    // Untouched fields survive the patch.
+    expect(resume.name).toBe("My Name");
+    expect(resume.skills).toContain("TypeScript");
+  });
+
+  test("update-resume with no fields is refused rather than reported as a no-op", async ({
+    page,
+  }) => {
+    const result = await callTool(page, "update-resume", {});
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toContain("nothing to update");
   });
 
   /**
@@ -459,7 +562,7 @@ test.describe("WebMCP resume tools", () => {
     await openOnDeviceAiPanel(legacyPage);
     await expect(legacyPage.getByText(`${REGISTERED_TOOLS.length} tools registered`)).toBeVisible();
 
-    await callTool(legacyPage, "update-basic-info", { name: "Grace Hopper" });
+    await callTool(legacyPage, "update-resume", { name: "Grace Hopper" });
     await expect(preview(legacyPage).getByText("Grace Hopper")).toBeVisible();
 
     await context.close();

@@ -1,5 +1,5 @@
 /**
- * The 18 registered tools, grouped by what they are for.
+ * The 8 registered tools, grouped by what they are for.
  *
  * The names are the `name` fields in `webmcp/resume-tools.ts` — the strings an
  * agent actually calls — so this table is checkable against the source rather
@@ -17,30 +17,20 @@ const GROUPS = [
     ],
   },
   {
-    kind: "Write · sections",
+    kind: "Write · fields",
     note: "Patches what you pass, leaves the rest.",
     tools: [
-      ["update-basic-info", "Name, target role, city, phone, email"],
-      ["update-profile", "Replaces the summary paragraph"],
-      ["set-skills", "Replaces the whole skill list, in display order"],
-      ["set-social-links", "Replaces the whole link list"],
-      ["set-section-visibility", "Shows or hides a section — content is kept"],
-      ["set-section-order", "Sets the order the sections are laid out in"],
+      ["update-resume", "Header, profile, skills and links — any subset of them"],
+      ["set-section-layout", "The order sections run in, and which are shown"],
     ],
   },
   {
     kind: "Write · entries",
-    note: "Add, patch, or remove one row at an index.",
+    note: "Add, patch, or remove one row at an index. Jobs, schools and projects share the trio.",
     tools: [
-      ["add-employment", "Appends a job and returns the index it landed at"],
-      ["update-employment", "Patches one job; bullets replace all of them"],
-      ["remove-employment", "Removes a job and renumbers the rest"],
-      ["add-education", "Appends a school"],
-      ["update-education", "Patches one school"],
-      ["remove-education", "Removes a school"],
-      ["add-project", "Appends a project"],
-      ["update-project", "Patches one project"],
-      ["remove-project", "Removes a project"],
+      ["add-entry", "Appends to a section and returns the index it landed at"],
+      ["update-entry", "Patches one entry; bullets replace all of them"],
+      ["remove-entry", "Removes one entry and renumbers the rest"],
     ],
   },
   {
