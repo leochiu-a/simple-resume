@@ -52,6 +52,13 @@ const HOW_TO = {
   name: TITLE,
   description: DESCRIPTION,
   url: PAGE_URL,
+  /* The day the page shipped, and the day its advice last changed — kept by hand,
+     because neither is derivable at build time and both have to mean something. Move
+     `dateModified` when an edit is added, dropped or rewritten; not for a reworded
+     caption, and never to "today" to look fresh, which is the thing these two fields
+     exist to be trusted about. */
+  datePublished: "2026-08-16",
+  dateModified: "2026-08-16",
   step: EDITS.map((edit, index) => ({
     "@type": "HowToStep",
     position: index + 1,

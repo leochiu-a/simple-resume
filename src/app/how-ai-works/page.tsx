@@ -53,6 +53,11 @@ const ARTICLE = {
   headline: TITLE,
   description: DESCRIPTION,
   url: PAGE_URL,
+  /* Published with the site's rebuild; last changed when the agent gained an
+     eighteenth tool and every count on the page moved with it. Maintained by hand for
+     the reason given on the writing guide's copy. */
+  datePublished: "2026-08-12",
+  dateModified: "2026-08-16",
   about: { "@id": `${SITE_URL}#app` },
   publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
   proficiencyLevel: "Beginner",
