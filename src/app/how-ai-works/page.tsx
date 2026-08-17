@@ -18,7 +18,7 @@ import { SITE_NAME, SITE_URL } from "@/constants/site";
 const PAGE_URL = `${SITE_URL}/how-ai-works`;
 
 const DESCRIPTION =
-  "Open Resume runs the browser's own AI model to rewrite and translate a resume, and registers itself as 18 WebMCP tools so an agent like Claude Code can read, score, and edit it. Nothing is uploaded either way.";
+  "Open Resume runs the browser's own AI model to rewrite and translate a resume, and registers itself as 8 WebMCP tools so an agent like Claude Code can read, score, and edit it. Nothing is uploaded either way.";
 
 const TITLE = "AI in Open Resume — on-device rewriting and a WebMCP agent";
 
@@ -53,11 +53,11 @@ const ARTICLE = {
   headline: TITLE,
   description: DESCRIPTION,
   url: PAGE_URL,
-  /* Published with the site's rebuild; last changed when the agent gained an
-     eighteenth tool and every count on the page moved with it. Maintained by hand for
-     the reason given on the writing guide's copy. */
+  /* Published with the site's rebuild; last changed when the eighteen tools were
+     folded into eight and every count on the page moved with them. Maintained by hand
+     for the reason given on the writing guide's copy. */
   datePublished: "2026-08-12",
-  dateModified: "2026-08-16",
+  dateModified: "2026-08-17",
   about: { "@id": `${SITE_URL}#app` },
   publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
   proficiencyLevel: "Beginner",
@@ -112,7 +112,7 @@ const LIMITS = [
 
 const FACTS = [
   ["Model runs", "In your browser"],
-  ["Agent tools", "18 · read and write"],
+  ["Agent tools", "8 · read and write"],
   ["Uploads", "None, either way"],
   ["Account", "Not required"],
 ];
@@ -269,8 +269,8 @@ const Ai = () => (
                 </Link>{" "}
                 lets a page hand an agent a set of functions instead of a screen to squint at. Open
                 Resume registers{" "}
-                <span className="font-medium text-[var(--graphite)]">seventeen of them</span> when
-                the editor opens: two that read the resume, fourteen that write to it, and one that
+                <span className="font-medium text-[var(--graphite)]">eight of them</span> when the
+                editor opens: two that read the resume, five that write to it, and one that
                 publishes a written review.
               </p>
 
@@ -286,7 +286,7 @@ const Ai = () => (
 
               <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
                 {[
-                  ["Tools", "18 · read and write"],
+                  ["Tools", "8 · read and write"],
                   ["Browsers", "Edge 147+ · Chrome behind a flag"],
                   ["Status", "W3C draft, still moving"],
                   ["Leaves the page", "Nothing"],
@@ -435,7 +435,7 @@ const Ai = () => (
           <p className="mt-6 max-w-[68ch] text-[1.0625rem] leading-[1.7] text-[var(--graphite-soft)]">
             It does not break here. The rewrite and the translation run on a model inside your
             browser, and the agent&rsquo;s tools only mutate in-page form state — there is no
-            storage, network, or navigation tool among the seventeen. Your resume stays in this
+            storage, network, or navigation tool among the eight. Your resume stays in this
             browser&rsquo;s <code className="font-mono text-[0.9rem]">localStorage</code>, exactly
             as it does when you type it in yourself.
           </p>

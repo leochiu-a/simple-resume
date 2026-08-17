@@ -17,7 +17,7 @@ import { TerminalIcon } from "@/components/icons/terminal";
 const CALLS = [
   ["get-resume", "read the whole sheet"],
   ["score-resume", "59 · four rules failing"],
-  ["update-employment", "rewrote two weak bullets"],
+  ["update-entry", "rewrote two weak bullets"],
   ["score-resume", "91 · interview ready"],
 ];
 
@@ -36,16 +36,16 @@ const Agent = () => (
           </h2>
           <p className="mt-5 max-w-[46ch] text-[1rem] leading-[1.65] text-[var(--graphite-soft)]">
             The editor registers itself as{" "}
-            <span className="font-medium text-[var(--graphite)]">seventeen WebMCP tools</span> — two
-            that read the resume, fourteen that write to it, one that publishes a review. An agent
-            calls functions instead of guessing where to click, and never touches the DOM.
+            <span className="font-medium text-[var(--graphite)]">eight WebMCP tools</span> — two
+            that read the resume, five that write to it, one that publishes a review. An agent calls
+            functions instead of guessing where to click, and never touches the DOM.
           </p>
 
           <Link
             href="/how-ai-works"
             className="group mt-8 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
-            The 18 tools
+            The 8 tools
             <ArrowRightIcon
               aria-hidden
               className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
@@ -58,7 +58,7 @@ const Agent = () => (
             <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3">
               <span aria-hidden className="size-2 rounded-full bg-[var(--g1)]" />
               <span className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-white/55">
-                Agent ready · 18 tools
+                Agent ready · 8 tools
               </span>
             </div>
 

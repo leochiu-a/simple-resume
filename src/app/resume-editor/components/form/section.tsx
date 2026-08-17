@@ -34,7 +34,7 @@ export interface SectionSlot {
    * Pointer only, and the handle below is deliberately not focusable to match: a
    * `<button>` that Tab reaches and Enter does nothing to is worse than no control
    * at all. Reordering by keyboard is not offered here — the agent's
-   * `set-section-order` tool is the non-pointer route.
+   * `set-section-layout` tool is the non-pointer route.
    */
   onGrab?: (event: PointerEvent<HTMLElement>) => void;
   /**

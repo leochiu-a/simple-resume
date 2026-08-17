@@ -67,12 +67,12 @@ the flag themselves (or who are on a browser with native support).
 | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | [`src/types/webmcp.d.ts`](../src/types/webmcp.d.ts)                                                                                                 | Ambient types for `document.modelContext`                            |
 | [`src/lib/webmcp.ts`](../src/lib/webmcp.ts)                                                                                                         | Feature detection, `defineTool`, result helpers                      |
-| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 18 tool definitions                                              |
+| [`src/app/resume-editor/webmcp/resume-tools.ts`](../src/app/resume-editor/webmcp/resume-tools.ts)                                                   | The 8 tool definitions                                               |
 | [`src/app/resume-editor/hooks/useResumeMcp.ts`](../src/app/resume-editor/hooks/useResumeMcp.ts)                                                     | Registers on mount, aborts on unmount, feeds in the language context |
 | [`src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx`](../src/app/resume-editor/components/on-device-ai/on-device-ai-button.tsx) | The nav panel, shared with on-device translation                     |
 
 Lifecycle: tools are registered once when the editor mounts and torn down by aborting the controller
-when it unmounts, so navigating away from `/resume-editor` removes all 18 tools and coming back
+when it unmounts, so navigating away from `/resume-editor` removes all 8 tools and coming back
 re-registers them. Form state is read through a ref, so a tool always writes to the current form
 without re-registering on every keystroke.
 
@@ -195,9 +195,9 @@ feeling. Nothing is mutated, so it is safe to call between every edit.
 | `locations` | Where the finding is, in the same indexes `get-resume` reports              |
 | `notes`     | Caveats about a check's reliability, when it has any                        |
 
-`locations` is the part worth using: `entryIndex` and `bulletIndex` are the indexes
-`update-employment` and `update-project` accept, so a finding carries straight into the call that
-fixes it without searching for the text again. Findings about the document as a whole (overall
+`locations` is the part worth using: `section`, `entryIndex` and `bulletIndex` are exactly the
+arguments `update-entry` takes, so a finding carries straight into the call that fixes it without
+searching for the text again. Findings about the document as a whole (overall
 length, contact details) have an empty `locations`.
 
 Three things to know before trusting the numbers:
@@ -262,117 +262,104 @@ can dismiss it.
 Submitting replaces any previous review. Applying a suggestion is a separate step — call the update
 tools if the user wants one taken up.
 
-### `update-basic-info`
+### `update-resume`
 
-Patches the resume header. Every field is optional; only what you pass changes.
+Patches everything on the resume that is a single field rather than a list of indexed entries.
+Every argument is optional, and only what you pass changes — a call with no arguments is a tool
+error rather than a reported no-op.
 
-| Argument    | Type   | Notes                           |
-| ----------- | ------ | ------------------------------- |
-| `name`      | string | Full name                       |
-| `wantedJob` | string | The job title being applied for |
-| `city`      | string |                                 |
-| `phone`     | string |                                 |
-| `email`     | string |                                 |
+| Argument      | Type                              | Notes                                               |
+| ------------- | --------------------------------- | --------------------------------------------------- |
+| `name`        | string                            | Full name                                           |
+| `wantedJob`   | string                            | The job title being applied for                     |
+| `city`        | string                            |                                                     |
+| `phone`       | string                            |                                                     |
+| `email`       | string                            |                                                     |
+| `profile`     | string                            | **Replaces** the whole summary paragraph            |
+| `skills`      | string[]                          | **Replaces** the whole list, in display order       |
+| `socialLinks` | `{ name: string, url: string }[]` | **Replaces** the whole list; `url` needs the scheme |
 
-### `update-profile`
+The last two replace rather than append, and the result says what the list now holds, since
+`Updated skills.` alone would not tell the agent what survived:
 
-| Argument  | Type   | Required | Notes                                |
-| --------- | ------ | -------- | ------------------------------------ |
-| `profile` | string | yes      | Replaces the whole summary paragraph |
+```
+Updated profile, socialLinks. social links are now Bluesky.
+```
 
-### `set-skills`
+### The entry tools
 
-**Replaces** the entire list — pass every skill that should appear, in display order.
+`employmentHistory`, `educations` and `projects` are lists edited by index, and they share one
+add/update/remove trio dispatched on a `section` argument. They used to be nine tools; the three
+differed only in which fields an entry carries, while the index handling, the out-of-range error and
+the re-read-after-removal rule were copied three times over.
 
-| Argument | Type     | Required | Notes                          |
-| -------- | -------- | -------- | ------------------------------ |
-| `skills` | string[] | yes      | e.g. `["TypeScript", "React"]` |
+What is genuinely per-section lives in one table in `resume-tools.ts`:
 
-### `set-social-links`
+| `section`           | Fields                                         | Required by `add-entry`             |
+| ------------------- | ---------------------------------------------- | ----------------------------------- |
+| `employmentHistory` | `company`, `jobTitle`, `from`, `to`, `bullets` | `company`, `jobTitle`, `from`       |
+| `educations`        | `school`, `degree`, `major`, `from`, `to`      | `school`, `degree`, `major`, `from` |
+| `projects`          | `name`, `url`, `bullets`                       | `name`                              |
 
-**Replaces** the entire list.
+The input schema is flat — every field above on one object — rather than an `anyOf` over the three
+shapes. Models handle a discriminated union poorly, and the price of the flat schema is only that a
+wrong field reaches `execute`, where two runtime checks catch what the schema cannot say:
 
-| Argument      | Type                              | Required | Notes                  |
-| ------------- | --------------------------------- | -------- | ---------------------- |
-| `socialLinks` | `{ name: string, url: string }[]` | yes      | `url` needs the scheme |
+- **A field from the wrong section is an error, not a silent drop.** `school` on a project would
+  otherwise vanish, leaving the agent to read its entry back missing a field it just passed with no
+  hint why. The message names the section the field does belong to.
+- **`required` is per-section**, so `add-entry` checks it rather than the schema, which has only one
+  `required` list to give.
 
-### `add-employment`
+```
+"school" is not a field of projects, which takes name, url, bullets. employmentHistory takes
+company, jobTitle, from, to, bullets; educations takes school, degree, major, from, to; projects
+takes name, url, bullets.
+```
 
-Appends one job.
+#### `add-entry`
 
-| Argument   | Type     | Required | Notes                                              |
-| ---------- | -------- | -------- | -------------------------------------------------- |
-| `company`  | string   | yes      |                                                    |
-| `jobTitle` | string   | yes      |                                                    |
-| `from`     | string   | yes      | `"YYYY-MM"`                                        |
-| `to`       | string   | no       | `"YYYY-MM"`, or `""` for a current job             |
-| `bullets`  | string[] | no       | One achievement per item; each renders as a bullet |
+Appends one entry. Takes `section` plus that section's fields, and returns the index it landed at:
 
-Returns the index it was added at, e.g. `Added "Senior Frontend Engineer at KKday" (2021-04 — Present) at index 0.`
+```
+Added the job "Frontend Engineer at Vercel" (2020-03 — Present) at index 1.
+```
 
-### `update-employment`
+#### `update-entry`
 
-Patches one job. Only what you pass changes — except `bullets`, which replaces all of them.
+Patches one entry. Takes `section` and `index` plus any of that section's fields. Only what you pass
+changes — except `bullets`, which replaces all of them.
 
-| Argument                                       | Type   | Required |
-| ---------------------------------------------- | ------ | -------- |
-| `index`                                        | number | yes      |
-| `company`, `jobTitle`, `from`, `to`, `bullets` | —      | no       |
+#### `remove-entry`
 
-### `remove-employment`
+Takes `section` and `index`. Indexes shift after a removal, so re-read before the next indexed call.
 
-| Argument | Type   | Required |
-| -------- | ------ | -------- |
-| `index`  | number | yes      |
+### `set-section-layout`
 
-### `add-education`
+Sets how the sheet is laid out: the order the sections run in and which of them are shown. Pass
+either argument or both — neither is a tool error.
 
-| Argument | Type   | Required | Notes                         |
-| -------- | ------ | -------- | ----------------------------- |
-| `school` | string | yes      |                               |
-| `degree` | string | yes      | e.g. `"Bachelor"`, `"Master"` |
-| `major`  | string | yes      |                               |
-| `from`   | string | yes      | `"YYYY-MM"`                   |
-| `to`     | string | no       | `"YYYY-MM"`                   |
+| Argument     | Type                                  | Notes                             |
+| ------------ | ------------------------------------- | --------------------------------- |
+| `order`      | `SectionId[]`                         | In display order. May be partial  |
+| `visibility` | `Partial<Record<SectionId, boolean>>` | Only the sections you name change |
 
-### `update-education`
+Both take the same six ids: `profile`, `employmentHistory`, `projects`, `educations`, `skills`,
+`socialLinks`. An unknown id in either one is rejected before anything is written.
 
-| Argument                                  | Type   | Required |
-| ----------------------------------------- | ------ | -------- |
-| `index`                                   | number | yes      |
-| `school`, `degree`, `major`, `from`, `to` | —      | no       |
+One tool rather than two because reshaping the sheet is usually one decision. "Lead with education
+and drop the links" was two calls that both rewrote the layout, and an agent that made only the
+first left the resume in a state nobody asked for.
 
-### `remove-education`
+Partial lists are the useful way to call `order`: anything left out keeps its relative position
+behind what was named, so promoting one section only needs that one section. The argument is
+normalised before it is stored, so a duplicate or a missing id cannot leave the resume with a section
+that no template will draw.
 
-| Argument | Type   | Required |
-| -------- | ------ | -------- |
-| `index`  | number | yes      |
-
-### `set-section-visibility`
-
-Shows or hides a whole section in the preview and the exported PDF. The content is kept either way,
-so this is a toggle, not a delete.
-
-| Argument  | Type    | Required | Notes                                                                         |
-| --------- | ------- | -------- | ----------------------------------------------------------------------------- |
-| `section` | string  | yes      | `profile` \| `socialLinks` \| `skills` \| `educations` \| `employmentHistory` |
-| `visible` | boolean | yes      |                                                                               |
-
-### `set-section-order`
-
-Sets the order the sections are laid out in, top to bottom — the same order the form shows them in.
-
-Partial lists are the useful way to call this: anything left out keeps its relative position behind
-what was named, so promoting one section only needs that one section. The argument is normalised
-before it is stored, so a duplicate or a missing id cannot leave the resume with a section that no
-template will draw.
+Hiding keeps the section's content — it is a toggle, not a delete.
 
 Two-column templates (Classic, Modern, Timeline) lay skills and links out in a sidebar and ignore
-their position here. The order is still recorded, and takes effect on a single-column template.
-
-| Argument | Type     | Required | Notes                                                              |
-| -------- | -------- | -------- | ------------------------------------------------------------------ |
-| `order`  | string[] | yes      | Section ids, in order. Same six values as `set-section-visibility` |
+their position in `order`. The order is still recorded, and takes effect on a single-column template.
 
 ## Languages
 
@@ -432,8 +419,9 @@ than throwing:
 No job at index 9. There are 2 entries, so valid indexes are 0–1.
 ```
 
-**Replace vs. patch.** `set-skills` and `set-social-links` replace the whole list. `update-basic-info`,
-`update-employment`, and `update-education` patch only the fields passed.
+**Replace vs. patch.** `update-resume` and `update-entry` patch only the fields passed — except the
+three that own a whole list and so replace it: `profile`, `skills`, `socialLinks`, and `bullets` on
+an entry.
 
 ## Not exposed to agents
 
@@ -461,7 +449,43 @@ pnpm test:e2e webmcp
 
 It covers registering the full set, the flattened `get-resume` view, each write path reaching the
 form and the preview, out-of-range and unknown-section errors, both language rules above, and
-teardown on unmount.
+teardown on unmount. Since the entry tools share one flat schema it also covers what only a runtime
+check can catch — a field passed to the wrong `section`, and a missing per-section `required` — plus
+the two refusals that replaced a reported no-op: `update-resume` with no fields and
+`set-section-layout` with neither argument.
+
+The stub is not the browser. It follows the draft's shape, so it proves the tools do what they say
+when called; it cannot prove a real `registerTool` accepts these schemas.
+
+### Driving the real implementation
+
+Verified against **Chrome 151**, which exposes the surface behind a feature flag — no origin-trial
+token needed for a local run:
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --enable-features=WebMCP
+```
+
+Two things about Chrome's current shape that the draft does not spell out, and that cost an
+afternoon to find:
+
+- **`executeTool` takes the `RegisteredTool` object, not the name.** Pass a string and it throws
+  `TypeError: The provided value is not of type 'RegisteredTool'`. Get the object from `getTools()`.
+- **Arguments go in as a JSON string, and the result comes back as a JSON string** — not as the
+  objects `registerTool` was given. An object argument throws `UnknownError: Failed to parse input
+arguments`, and a result read as `result.content` is `undefined` until it is parsed.
+
+```js
+const mc = document.modelContext ?? navigator.modelContext;
+const tool = (await mc.getTools()).find((t) => t.name === "add-entry");
+const result = JSON.parse(
+  await mc.executeTool(tool, JSON.stringify({ section: "projects", name: "Tideline" })),
+);
+result.content[0].text; // 'Added the project "Tideline" at index 1.'
+```
+
+`getTools()` also hands back each tool's `inputSchema` as a string, which is the quickest way to see
+what the browser actually accepted.
 
 ## When the spec moves
 
@@ -469,5 +493,10 @@ Things to re-check on the next draft:
 
 - Whether `getTools()` / `executeTool()` are specified — the explainer still lists them as TODO
 - Whether a tool-update mechanism lands, which would remove the abort-and-re-register dance
-- The declarative `<form>` API, which could replace some of these hand-written tools
+- The declarative `<form>` API. Evaluated and **not adopted**: it maps one `<form>` to one tool and
+  derives the schema from the form's controls, which suits a page whose agent-facing action is a
+  submit. The editor has no submit — it persists on a debounce — its list sections are `useFieldArray`
+  with no way to express "the entry at index 2", its bullet fields are `contentEditable` and so
+  invisible to schema derivation, and the missing-locale write guard has no declarative form. Worth
+  re-reading if any of those three gain a mapping
 - Whether `structuredContent` joins `content` in tool results
