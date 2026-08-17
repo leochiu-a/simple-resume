@@ -26,9 +26,9 @@ import Summary from "../summary";
  * line up down a single edge, so the gaps and the tenures are visible as
  * geometry.
  *
- * The gutter is only used where there are dates to put in it. Summary, Projects,
- * Skills and Links run the full measure; see `styles.ts` for why an empty gutter
- * beside them would be worse than none.
+ * The gutter only has something in it where there are dates. Summary, Projects,
+ * Skills and Links keep the column and leave it empty, so the whole sheet has one
+ * content edge; see `section.tsx` for why.
  *
  * Every section is in the flow, so all six are the user's to arrange.
  */
@@ -41,7 +41,7 @@ const DatedTemplate = ({
 }) => {
   const sections: Record<SectionId, React.ReactNode> = {
     profile: (
-      <Section title="Summary" accent={backgroundColor}>
+      <Section title="Summary" accent={backgroundColor} inset>
         <Summary profile={resume.profile} style={styles.summary} />
       </Section>
     ),

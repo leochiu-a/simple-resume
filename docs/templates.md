@@ -62,14 +62,27 @@ every gap between yoga and the browser becomes a silent visual bug:
   to `Image`, which is why no template shows a photo.
 - **`Link` becomes `<link>`, which the browser's own stylesheet hides.** Any link style needs
   `display: "flex"`.
-- **Set `boxSizing: "border-box"` on anything bordered.** Yoga puts borders inside the box; the
-  browser defaults to content-box, so a bordered dot renders at the wrong size in the preview only.
+- **Set `boxSizing: "border-box"` on anything bordered or padded whose width you set.** Yoga puts
+  borders and padding inside the box; the browser defaults to content-box. A bordered dot renders at
+  the wrong size in the preview, and a `width: "50%"` item with padding comes out wider than half —
+  which turned two columns of skills into a single stack, in the preview only.
+- **@react-pdf's own shorthands are not CSS.** `paddingHorizontal`, `paddingVertical`,
+  `marginHorizontal` and friends are understood by yoga and silently dropped by the browser, so the
+  PDF gets the spacing and the preview gets none. Write `paddingLeft`/`paddingRight` instead.
+- **A `Link` inside a run of text has to be its own flex item.** `display: "flex"` is what makes a
+  link visible at all, and inside a `Text` it also makes it a block — so a line of links renders as
+  a stack with the separators stranded on lines of their own. Put each one in its own `Text` inside
+  a `flexDirection: "row"` container, as `compact/links.tsx` does.
 - **No CSS grid, no `calc()`, no `::before`/`::after`.** Use `flexWrap` with percentage widths, flex
   sizing, and explicit `Text` elements for bullets and separators.
 
-Because none of this shows up in a passing test, verify a template by looking at its actual PDF.
-`poppler` is not a dependency; on macOS `qlmanage -t -s 1400 -o <dir> <pdf>` rasterises a page to
-PNG.
+Because none of this shows up in a passing test, verify a template by looking at it — and at _both_
+renderings, not one. Every trap above is a place where the two disagree, so a correct PDF is not
+evidence about the preview and vice versa. Three of them shipped in one round of new templates
+because only the PDFs were checked.
+
+On macOS `qlmanage -t -s 1400 -o <dir> <pdf>` rasterises a page to PNG (`poppler` is not a
+dependency). For the preview, screenshot `iframe[title="Resume preview"]` from a Playwright run.
 
 ## The appearance panel
 

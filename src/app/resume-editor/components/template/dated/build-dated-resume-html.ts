@@ -157,12 +157,23 @@ const styles = (accent: string) => `
     gap: 14px;
   }
 
-  /* The dated sections: years in the margin, entry beside them. */
+  /*
+   * Every section's body, dated or not: years in the margin, content beside them.
+   * The four sections with no dates leave the first cell empty rather than running
+   * the full measure, so the sheet has one content edge — see section.tsx.
+   */
   .dated {
     display: grid;
     grid-template-columns: ${DATE_COLUMN_WIDTH} 1fr;
     column-gap: 18px;
   }
+
+  /*
+   * The dateless class marks the four sections that have no date to put in the
+   * gutter. It carries no rules of its own — the empty first cell has to stay a
+   * grid item, so hiding it would slide the content back into column one — and
+   * exists so a rule or a test can name the rows that really do have a date.
+   */
 
   .dated .date {
     font-size: 12.5px;
@@ -295,7 +306,7 @@ const header = (resume: Resume) => {
 const summarySection = (profile: string) => `
         <section>
           <h2>Summary</h2>
-          ${paragraphsHtml(profile, "summary")}
+          <div class="dated dateless"><div></div><div>${paragraphsHtml(profile, "summary")}</div></div>
         </section>`;
 
 const experienceSection = (resume: Resume) => {
@@ -358,7 +369,7 @@ const projectsSection = (resume: Resume) => {
   return `
         <section>
           <h2>Projects</h2>
-          <div class="entries">${entries}</div>
+          <div class="dated dateless"><div></div><div class="entries">${entries}</div></div>
         </section>`;
 };
 
@@ -391,7 +402,7 @@ const skillsSection = (resume: Resume) => {
   return `
         <section>
           <h2>Skills</h2>
-          <ul class="skills">${items}</ul>
+          <div class="dated dateless"><div></div><ul class="skills">${items}</ul></div>
         </section>`;
 };
 
@@ -408,7 +419,7 @@ const linksSection = (resume: Resume) => {
   return `
         <section>
           <h2>Links</h2>
-          <ul class="links">${items}</ul>
+          <div class="dated dateless"><div></div><ul class="links">${items}</ul></div>
         </section>`;
 };
 
