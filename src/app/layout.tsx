@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 import MotionProvider from "@/components/motion-provider";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SITE_URL } from "@/constants/site";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/constants/site";
 
 import "./globals.css";
 
@@ -42,37 +42,29 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
-/** Names the three things the landing page actually argues — templates, the two
- *  exports, and an AI that runs locally — because the version that listed only the
- *  exports described a smaller product than the one that ships. */
-const DESCRIPTION =
-  "Write a resume, pick a template, and export a PDF or one self-contained HTML file. The browser's own AI can rewrite it. No account, and nothing is uploaded.";
-
-const TITLE = "Open Resume — a resume that never leaves your browser";
-
 export const metadata: Metadata = {
   /* Without this, the generated `opengraph-image` is emitted against `http://localhost:3000`,
      which is the address of the machine that built the page and of nothing a crawler
      can fetch — so every share renders with no image. It is the base every relative
      metadata URL resolves against, not a canonical-URL declaration. */
   metadataBase: new URL(SITE_URL),
-  title: TITLE,
-  description: DESCRIPTION,
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     /* Both stated explicitly: Open Graph consumers key off `url` for the canonical
        destination, and `type` defaults to nothing, which some scrapers treat as
        unshareable. */
     url: SITE_URL,
-    siteName: "Open Resume",
+    siteName: SITE_NAME,
     type: "website",
   },
   twitter: {
     /* The card format the existing 1200×630 image is already the right shape for. */
     card: "summary_large_image",
-    title: TITLE,
-    description: DESCRIPTION,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
 };
 

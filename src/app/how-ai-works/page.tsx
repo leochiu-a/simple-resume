@@ -12,7 +12,10 @@ import CopyablePrompt from "@/components/landing/ai/copyable-prompt";
 import { AFTER_REPORT, BEFORE_REPORT } from "@/components/landing/ai/score-fixtures";
 import ScoreStoryboard from "@/components/landing/ai/score-storyboard";
 import ToolTable from "@/components/landing/ai/tool-table";
-import { SITE_URL } from "@/constants/site";
+import JsonLd from "@/components/json-ld";
+import { SITE_NAME, SITE_URL } from "@/constants/site";
+
+const PAGE_URL = `${SITE_URL}/how-ai-works`;
 
 const DESCRIPTION =
   "Open Resume runs the browser's own AI model to rewrite and translate a resume, and registers itself as 18 WebMCP tools so an agent like Claude Code can read, score, and edit it. Nothing is uploaded either way.";
@@ -25,8 +28,31 @@ export const metadata: Metadata = {
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: `${SITE_URL}/how-ai-works`,
+    url: PAGE_URL,
   },
+  /* See the note on the writing guide's copy of this: the root's `twitter` block is
+     replaced whole, so `card` has to come along with the two text fields. */
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+};
+
+/**
+ * A `TechArticle` rather than the `HowTo` the writing guide publishes: this page explains
+ * a mechanism instead of giving steps to follow. `about` points at the `WebApplication`
+ * node the landing page defines, so the two are one entity to anything reading both.
+ */
+const ARTICLE = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  headline: TITLE,
+  description: DESCRIPTION,
+  url: PAGE_URL,
+  about: { "@id": `${SITE_URL}#app` },
+  publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+  proficiencyLevel: "Beginner",
 };
 
 /**
@@ -90,6 +116,7 @@ const SECTION_TITLE =
 
 const Ai = () => (
   <AccentProvider>
+    <JsonLd data={ARTICLE} />
     <SiteNav />
 
     <main>

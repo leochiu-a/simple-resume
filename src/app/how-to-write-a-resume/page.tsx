@@ -6,7 +6,10 @@ import SiteFooter from "@/components/landing/site-footer";
 import SiteNav from "@/components/landing/site-nav";
 import { EDITS } from "@/components/landing/guide/edits";
 import RewriteGuide from "@/components/landing/guide/rewrite-guide";
+import JsonLd from "@/components/json-ld";
 import { SITE_URL } from "@/constants/site";
+
+const PAGE_URL = `${SITE_URL}/how-to-write-a-resume`;
 
 const DESCRIPTION =
   "Six edits that take one badly written resume to a good one, applied to a real sheet as you scroll: name the job, cut the objective, most recent first, verb and number, trim the skills, spend the top third.";
@@ -19,8 +22,40 @@ export const metadata: Metadata = {
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: `${SITE_URL}/how-to-write-a-resume`,
+    url: PAGE_URL,
   },
+  /* All three restated, `card` included. The root's `twitter` block is replaced whole
+     rather than merged field by field: omitting this left the card showing the landing
+     page's sentence over this page's image, and naming only the two text fields dropped
+     `card` back to its `summary` default — a 1200×630 image in a thumbnail slot. */
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+};
+
+/**
+ * The page as a `HowTo`, generated from the same `EDITS` the page renders.
+ *
+ * Written from the data rather than restated, so a seventh edit or a reworded body
+ * cannot leave the markup describing a page that no longer exists. Each step's `url`
+ * is the anchor the contents list already links to, which is what lets an answer engine
+ * cite one edit instead of the whole guide.
+ */
+const HOW_TO = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: TITLE,
+  description: DESCRIPTION,
+  url: PAGE_URL,
+  step: EDITS.map((edit, index) => ({
+    "@type": "HowToStep",
+    position: index + 1,
+    name: edit.title.replace(/\.$/, ""),
+    text: edit.body,
+    url: `${PAGE_URL}#${edit.id}`,
+  })),
 };
 
 /**
@@ -37,6 +72,7 @@ export const metadata: Metadata = {
  */
 const HowToWriteAResume = () => (
   <AccentProvider>
+    <JsonLd data={HOW_TO} />
     <SiteNav />
 
     <main>
