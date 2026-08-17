@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { ColorResult } from "@uiw/react-color";
+
+import { readAppearanceRequest } from "@/lib/appearance-link";
 
 import { DEFAULT_TEMPLATE_ID, getTemplate, TEMPLATES } from "../components/template/registry";
 
@@ -59,6 +61,28 @@ const useTemplateOptions = () => {
   );
 
   const { templateId, backgroundColor } = isAppearance(stored) ? stored : defaultAppearance();
+
+  /**
+   * The appearance the landing page's preview was showing, if the visitor arrived
+   * on one of its links. It wins over what is in storage — the sheet they were
+   * looking at when they clicked is a fresher statement of intent than a template
+   * chosen on some earlier visit.
+   *
+   * Read from `window.location` rather than `useSearchParams`, which would put a
+   * Suspense boundary around a page that is already client-only, and applied in an
+   * effect so the write happens once instead of on every render.
+   *
+   * The params are stripped afterwards, and that is not tidying: leaving them in
+   * the address bar would make every later reload of the tab re-apply the landing
+   * page's choice over whatever template the user had since picked in the panel.
+   */
+  useEffect(() => {
+    const requested = readAppearanceRequest(window.location.search);
+    if (!requested || !isAppearance(requested)) return;
+
+    setStored(requested);
+    window.history.replaceState(null, "", window.location.pathname);
+  }, [setStored]);
 
   /* Not persisted: whether the custom-colour picker is open is a property of this
      visit to the panel, not of the resume. Restoring it would reopen the picker

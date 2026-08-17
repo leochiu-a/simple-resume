@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@/components/icons/arrow-right";
 import { useIconHover } from "@/components/icons/use-icon-hover";
+import { editorHref } from "@/lib/appearance-link";
 
 import { SWATCHES, useAccent } from "./accent";
 import TemplateSheet from "./template-sheet";
@@ -67,7 +68,8 @@ const Hero = () => {
 
           <div style={rise(3)} className="landing-rise mt-9 flex flex-wrap items-center gap-3">
             <Link
-              href="/resume-editor"
+              /* The editor opens on the sheet beside this button, tint and all. */
+              href={editorHref({ templateId, backgroundColor: color })}
               onMouseEnter={startIcons}
               onMouseLeave={stopIcons}
               onFocus={startIcons}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CheckIcon } from "@/components/icons/check";
 
 import { TEMPLATES } from "@/app/resume-editor/components/template/registry";
+import { editorHref } from "@/lib/appearance-link";
 
 import { useAccent } from "./accent";
 import TemplateSheet from "./template-sheet";
@@ -104,8 +105,10 @@ const Templates = () => {
                 The template is a setting, not a commitment — switch it whenever, your content stays
                 put.
               </p>
+              {/* Carries the card that is showing, so "start with any of them"
+                  starts with the one they actually chose. */}
               <Link
-                href="/resume-editor"
+                href={editorHref({ templateId, backgroundColor: color })}
                 className="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-[var(--graphite)] px-5 py-2.5 text-[0.875rem] font-medium text-[var(--paper)] transition-transform duration-200 hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] motion-reduce:transition-none"
               >
                 Open the editor

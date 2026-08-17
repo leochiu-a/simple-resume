@@ -16,8 +16,11 @@ test.describe("home page", () => {
      * editor now — the nav's "Create resume", the hero and closing band's "Create
      * your resume", and the gallery's "Open the editor" — and the thing that must
      * hold is that every one of them arrives, not that they are worded alike.
+     *
+     * Prefix-matched, because the two links next to the preview carry the
+     * appearance it is showing in their query string.
      */
-    const toEditor = page.locator('a[href="/resume-editor"]');
+    const toEditor = page.locator('a[href^="/resume-editor"]');
     await expect(toEditor.first()).toBeVisible();
     expect(await toEditor.count()).toBeGreaterThanOrEqual(3);
 
@@ -69,6 +72,28 @@ test.describe("home page", () => {
     // The tint is the hero's own control and applies to whatever is showing.
     await page.getByRole("button", { name: "Tint Ochre" }).click();
     await expect(sheet.locator('[style*="rgb(138, 90, 18)"]').first()).toBeVisible();
+  });
+
+  /**
+   * The handoff the gallery is arguing for. Picking a template and a tint and then
+   * landing on Classic in its own green threw away the one decision the page asked
+   * for, which read as the choice not having been registered at all.
+   */
+  test("opening the editor carries the template and tint that were showing", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByRole("button", { name: "Banner" }).click();
+    await page.getByRole("button", { name: "Tint Ochre" }).click();
+
+    await page.getByRole("link", { name: "Open the editor" }).click();
+
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem("resume-appearance")))
+      .toBe(JSON.stringify({ templateId: "banner", backgroundColor: "#8A5A12" }));
+
+    /* Consumed once. Left in the address bar, the params would re-apply on every
+       reload of the tab and undo whatever the user picked in the panel since. */
+    expect(new URL(page.url()).search).toBe("");
   });
 
   /**
