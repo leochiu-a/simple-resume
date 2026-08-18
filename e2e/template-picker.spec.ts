@@ -68,6 +68,21 @@ test.describe("template picker", () => {
     );
   });
 
+  /**
+   * The mark is on every template whose PDF still yields its job title, dates,
+   * skills and URLs to a text extractor — see `atsSafe` in the registry for what
+   * disqualifies one. Asserted as the exact set rather than per card, so a
+   * template that quietly loses the parse cannot keep the badge and a new one
+   * cannot be waved through with it.
+   */
+  test("marks the templates that survive a text extractor", async ({ page }) => {
+    await openAppearanceMenu(page);
+
+    const marked = page.getByRole("button", { name: /ATS/ });
+    await expect(marked).toHaveCount(EXPECTED_TEMPLATES.length - 1);
+    await expect(templateCard(page, "Classic")).not.toHaveAccessibleName(/ATS/);
+  });
+
   test("shows each template as a thumbnail of your own resume", async ({ page }) => {
     await openAppearanceMenu(page);
 

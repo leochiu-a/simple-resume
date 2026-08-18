@@ -71,8 +71,20 @@ const Templates = () => {
                   </div>
 
                   <div className="mt-4 flex items-baseline justify-between gap-3">
-                    <span className="font-display text-[1rem] font-semibold tracking-[-0.01em]">
-                      {template.label}
+                    <span className="flex items-baseline gap-2">
+                      <span className="font-display text-[1rem] font-semibold tracking-[-0.01em]">
+                        {template.label}
+                      </span>
+                      {/* The same mark the editor's picker carries, in this grid's
+                          own type. A visitor choosing here is choosing what they
+                          will send somewhere, so the fact belongs on the card that
+                          made the choice rather than only behind the palette
+                          button. */}
+                      {template.atsSafe && (
+                        <span className="rounded-full border border-[var(--rule)] px-1.5 py-0.5 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-[var(--graphite-soft)]">
+                          ATS-safe
+                        </span>
+                      )}
                     </span>
                     <span
                       className={`inline-flex items-center gap-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] ${

@@ -49,6 +49,26 @@ export interface TemplateDefinition {
    * still stored, it simply has nothing to move while this template is chosen.
    */
   orderedSections: readonly SectionId[];
+  /**
+   * Whether the PDF still reads as a resume once a machine strips the layout off
+   * it.
+   *
+   * An applicant tracking system never sees the page — it sees the string a text
+   * extractor pulls out of the PDF, and a template can lose the parse in ways
+   * that are invisible on paper. Wide `letterSpacing` is the one that bites: the
+   * gaps grow past what the extractor reads as a kern and every glyph comes out
+   * as its own word, so a job title lands as "S e n i o r j o b" and matches no
+   * opening. A link whose only URL lives in the annotation rather than in the
+   * text is the other — most parsers never open annotations, so the profile is
+   * simply absent.
+   *
+   * Set this from what a text extractor actually returns for the template, not
+   * from how it looks: download its PDF, pull the text out, and check that the
+   * job title, the dates, the skills and every URL survive as searchable
+   * strings. Two columns are fine — the sidebar comes out as one block ahead of
+   * the main column, which reads correctly.
+   */
+  atsSafe: boolean;
   render: (props: TemplateProps) => ReactElement<DocumentProps>;
   buildHtml: (props: TemplateProps) => string;
 }
@@ -59,7 +79,12 @@ export const TEMPLATES: TemplateDefinition[] = [
     label: "Classic",
     description: "Serif headings on a full-height colour sidebar.",
     defaultColor: "#094C42",
+    // The only one that does not survive extraction: `subText` tracks its type
+    // 1.5pt apart, which splits the job title, every date range and the project
+    // URL into single characters, and its social links carry the profile name
+    // with the URL only in the annotation.
     orderedSections: MAIN_COLUMN_SECTIONS,
+    atsSafe: false,
     render: (props) => <ClassicTemplate {...props} />,
     buildHtml: buildClassicResumeHtml,
   },
@@ -69,6 +94,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: "Two columns, uppercase headings under hairline rules.",
     defaultColor: DEFAULT_PANEL_COLOR,
     orderedSections: MAIN_COLUMN_SECTIONS,
+    atsSafe: true,
     render: (props) => <ModernTemplate {...props} />,
     buildHtml: buildModernResumeHtml,
   },
@@ -78,6 +104,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: "Single column, centered serif header.",
     defaultColor: "#02061b",
     orderedSections: ALL_SECTIONS,
+    atsSafe: true,
     render: (props) => <FormalTemplate {...props} />,
     buildHtml: buildFormalResumeHtml,
   },
@@ -87,6 +114,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: "Timeline entries, details in a right-hand rail.",
     defaultColor: "#02061b",
     orderedSections: MAIN_COLUMN_SECTIONS,
+    atsSafe: true,
     render: (props) => <TimelineTemplate {...props} />,
     buildHtml: buildTimelineResumeHtml,
   },
@@ -96,6 +124,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: "Section titles in a left gutter, content beside them.",
     defaultColor: "#7c2d3a",
     orderedSections: ALL_SECTIONS,
+    atsSafe: true,
     render: (props) => <LedgerTemplate {...props} />,
     buildHtml: buildLedgerResumeHtml,
   },
@@ -105,6 +134,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: "Single column under a full-width colour band.",
     defaultColor: DEFAULT_BANNER_COLOR,
     orderedSections: ALL_SECTIONS,
+    atsSafe: true,
     render: (props) => <BannerTemplate {...props} />,
     buildHtml: buildBannerResumeHtml,
   },
@@ -114,6 +144,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: "Dense single column, headings on ruled lines.",
     defaultColor: "#2e404a",
     orderedSections: ALL_SECTIONS,
+    atsSafe: true,
     render: (props) => <CompactTemplate {...props} />,
     buildHtml: buildCompactResumeHtml,
   },
@@ -123,6 +154,7 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: "Dates in a left margin, entries beside them.",
     defaultColor: "#5b4636",
     orderedSections: ALL_SECTIONS,
+    atsSafe: true,
     render: (props) => <DatedTemplate {...props} />,
     buildHtml: buildDatedResumeHtml,
   },

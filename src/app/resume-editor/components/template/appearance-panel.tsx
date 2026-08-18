@@ -153,7 +153,9 @@ const AppearancePanel = ({
               // about the layout than a sentence can. A thumbnail is no use to a
               // screen reader, so the label carries both.
               title={entry.description}
-              aria-label={`${entry.label} — ${entry.description}`}
+              aria-label={`${entry.label} — ${entry.description}${
+                entry.atsSafe ? " ATS-safe: parses cleanly in applicant tracking systems." : ""
+              }`}
               aria-pressed={isCurrent}
               className="group flex flex-col items-stretch text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
             >
@@ -185,7 +187,23 @@ const AppearancePanel = ({
                   decoration — `aria-pressed` is what carries the state — so it goes
                   with the word rather than in front of the name. */}
               <span className="mt-3 flex items-baseline justify-between gap-3">
-                <span className="text-sm font-medium">{entry.label}</span>
+                <span className="flex items-baseline gap-2">
+                  <span className="text-sm font-medium">{entry.label}</span>
+                  {/* Only the templates that pass carry a mark. The alternative —
+                      flagging the one that does not — turns the picker into a
+                      warning about the default, and the honest reading of the
+                      evidence is that seven layouts are safe rather than that one
+                      is broken. The name already spells it out for a screen
+                      reader, so the pill itself is decoration. */}
+                  {entry.atsSafe && (
+                    <span
+                      aria-hidden
+                      className="rounded-full bg-secondary px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground ring-1 ring-inset ring-border"
+                    >
+                      ATS-safe
+                    </span>
+                  )}
+                </span>
                 <span
                   className={cn(
                     "inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.14em]",

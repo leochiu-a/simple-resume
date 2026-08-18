@@ -19,7 +19,8 @@ be free to change.
 
 Templates are registered in one place,
 [`registry.tsx`](../src/app/resume-editor/components/template/registry.tsx), so adding one means a
-new folder and a single entry. Each has its own spec under [`e2e/`](../e2e), and
+new folder and a single entry. That entry includes `atsSafe`, and it is the one field you cannot
+answer by looking at the design — see [Whether it survives a parser](#whether-it-survives-a-parser). Each has its own spec under [`e2e/`](../e2e), and
 [`e2e/template-picker.spec.ts`](../e2e/template-picker.spec.ts) asserts the full set — add yours to
 its `EXPECTED_TEMPLATES` or it will fail.
 
@@ -43,6 +44,31 @@ padding on the `Page` and cancelling it with a matching negative margin, rather 
 padding and letting each block pad itself: @react-pdf reapplies a page's padding to every page it
 spills onto, and a `View`'s padding is not reapplied where it wraps, so the second route costs page
 two its top margin. [`e2e/page-margins.spec.ts`](../e2e/page-margins.spec.ts) is what holds that.
+
+## Whether it survives a parser
+
+An applicant tracking system never sees the page. It sees the string a text extractor pulls out of
+the PDF, and a template can lose that while looking perfect on paper. `atsSafe` in the registry says
+which ones hold up, and the picker puts an ATS-safe pill on every card that carries it — both in the
+editor's appearance panel and in the landing page's gallery.
+
+Two things are known to break it, and both are silent:
+
+- **Wide `letterSpacing`.** Past roughly 1.5pt the gaps read as spaces rather than kerns, and every
+  glyph comes out as its own word — a job title extracts as `S e n i o r j o b` and matches no
+  opening. Classic is the template this disqualifies: its `subText` tracks at 1.5pt, which costs it
+  the job title, every date range and the project URL.
+- **A link whose URL exists only in the annotation.** `<Link src>` with a label like "Github" draws
+  the label and nothing else into the text; most parsers never open annotations, so the profile is
+  simply not there. Put a readable URL in the text.
+
+Two columns are _not_ a problem, which is worth knowing before redesigning around it: the sidebar
+extracts as one block ahead of the main column rather than interleaving line by line.
+
+To answer the field for a new template, extract its text rather than judging the layout — download
+its PDF and check that the job title, the dates, the skills and every URL survive as searchable
+strings. `e2e/template-picker.spec.ts` asserts the marked set, so a template that loses the parse
+cannot keep the badge.
 
 ## The preview is not a rasterised PDF
 
