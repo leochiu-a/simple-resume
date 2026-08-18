@@ -353,7 +353,7 @@ export const createResumeTools = (
       name: "get-resume",
       title: "Read the resume",
       description:
-        "Returns the resume currently in the editor as JSON, including the index of every employment and education entry. Also reports which language the editor is showing, whether that language is a translation of the primary version, and whether it exists yet — writes are refused while it does not. Call this before updating or removing an entry.",
+        "Returns the resume currently in the editor as JSON, including the index of every employment, education and project entry, plus the current layout — `sectionOrder` top to bottom and `visibility` per section, the two things set-section-layout writes. Also reports which language the editor is showing, whether that language is a translation of the primary version, and whether it exists yet — writes are refused while it does not. Call this before updating or removing an entry, and before changing the layout.",
       annotations: { readOnlyHint: true },
       execute: () => toolText(JSON.stringify(toAgentView(read(), getContext()), null, 2)),
     }),
@@ -376,8 +376,7 @@ export const createResumeTools = (
       description:
         "Grades the resume in the editor against twelve rules — quantified results, action verbs, bullet and overall length, section completeness, contact details — and returns the score out of 100 with every failing check, what it is worth, and the exact entry and bullet indexes the check is complaining about. Those indexes are the same ones get-resume reports. Runs entirely in the browser and changes nothing, so it is safe to call after each edit to see whether the score moved. Reports findings only; deciding what to do about them is yours.",
       annotations: { readOnlyHint: true },
-      execute: () =>
-        toolText(JSON.stringify(buildAgentReport(read(), getContext().activeLang), null, 2)),
+      execute: () => toolText(JSON.stringify(buildAgentReport(read()), null, 2)),
     }),
 
     /*

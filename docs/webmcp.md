@@ -128,10 +128,11 @@ accept, and every list entry carries its `index`:
   ],
   "visibility": {
     "profile": true,
-    "socialLinks": false,
-    "skills": true,
+    "employmentHistory": true,
+    "projects": true,
     "educations": true,
-    "employmentHistory": true
+    "skills": true,
+    "socialLinks": false
   },
   "sectionOrder": [
     "profile",
@@ -146,6 +147,9 @@ accept, and every list entry carries its `index`:
 
 The `language` block describes the document rather than the resume, and it is the only way to tell
 two locales apart — see [Languages](#languages) below.
+
+`sectionOrder` and `visibility` are the layout, and they are the read side of `set-section-layout`:
+read them before rewriting the layout, and read them back to confirm a section really is hidden.
 
 ### `score-resume`
 
@@ -163,7 +167,6 @@ feeling. Nothing is mutated, so it is safe to call between every edit.
   "score": 62,
   "band": "fair",
   "outOf": 100,
-  "scoredLanguage": "en",
   "findings": [
     {
       "id": "quantified",
@@ -183,7 +186,7 @@ feeling. Nothing is mutated, so it is safe to call between every edit.
     }
   ],
   "passing": ["Contact details", "Email looks valid", "Skills listed"],
-  "notes": ["The action-verb check matches the first word against a fixed list…"]
+  "notes": ["The action-verb check matches a line's opening word against a fixed list…"]
 }
 ```
 
@@ -210,7 +213,10 @@ Three things to know before trusting the numbers:
 - **An `advisory` finding will never move the score.** `action-verbs` is the only one today. It
   matches the opening word against a fixed list rather than deciding a part of speech, so it misses
   verbs the list has not met (Instrumented, Containerised) and in Chinese cannot separate a verb from
-  a noun sharing its prefix — 管理團隊 and 管理層 both match 管理. The finding is still worth acting
+  a noun sharing its prefix — 管理團隊 and 管理層 both match 管理. Which list a line is judged
+  against is read off that line's own opening word, not off the locale the editor is showing, so an
+  English resume typed into the zh-Hant slot is measured against the English list — and a report
+  where every bullet is flagged means the resume, not a mismatched word list. The finding is still worth acting
   on, because an agent can read the flagged line and judge where the list cannot; it just carries no
   points, and an agent hill-climbing on `score` should not read a stubborn advisory finding as a
   failure to make progress.
