@@ -533,6 +533,7 @@ test.describe("WebMCP resume tools", () => {
     const bullets = [
       "Led the migration to Next.js 16 across four teams",
       "Rebuilt the design system and cut bundle size by 30%",
+      "Responsible for the weekly release process",
     ];
 
     await callTool(page, "update-entry", { section: "employmentHistory", index: 0, bullets });
@@ -542,6 +543,10 @@ test.describe("WebMCP resume tools", () => {
       .filter((finding) => finding.id === "action-verbs")
       .flatMap((finding) => finding.locations.map((location) => location.text));
 
+    /* The duty opener proves the check ran and read the English list — without it
+       every bullet passes, no finding is produced, and the two assertions below
+       would hold against an empty array however broken the check was. */
+    expect(flagged).toContain(bullets[2]);
     expect(flagged).not.toContain(bullets[0]);
     expect(flagged).not.toContain(bullets[1]);
     // The report no longer claims one language for the whole document.
