@@ -173,7 +173,7 @@ const RULES: Rule[] = [
         detail:
           duties.length > 0
             ? `${weak.length} bullets may not open with an action verb, and ${duties.length} describe a duty rather than a result. Leading with what you did reads stronger — check these, as this test is approximate.`
-            : `${weak.length} of ${bullets.length} bullets may not open with an action verb. This test matches the first word against a fixed list, so read them before rewriting — some will be fine.`,
+            : `${weak.length} of ${bullets.length} bullets may not open with an action verb. This test matches the first word against a fixed list — chosen by the language that line is written in — so read them before rewriting; some will be fine.`,
         evidence: sample(weak.map((bullet) => bullet.text)),
       };
     },

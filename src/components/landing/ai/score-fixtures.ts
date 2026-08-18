@@ -70,7 +70,7 @@ export const BEFORE_RESUME: Resume = {
 };
 
 /** Pure, so both reports are computed once at module load rather than per render. */
-const report = (resume: Resume) => scoreResume(measureResume(resume, "en"), resume);
+const report = (resume: Resume) => scoreResume(measureResume(resume), resume);
 
 export const BEFORE_REPORT = report(BEFORE_RESUME);
 export const AFTER_REPORT = report(AFTER_RESUME);

@@ -49,9 +49,9 @@ const ResumeEditorPage = () => {
   // appearance panel floating over the desktop preview, and the mobile dialog's
   // header. Both have to move the same sheet.
   const templateOptions = useTemplateOptions();
-  // Scored against the locale on screen, not the primary one — the rules read
-  // the words you are looking at.
-  const score = useResumeScore(resume, doc.activeLang);
+  // The rules read the words on screen: each line is judged by the script it is
+  // written in, so no locale is passed. See `classifyOpener`.
+  const score = useResumeScore(resume);
   /* Which of the two things the editing column is showing. A mode rather than a
      route: the form is never unmounted, so nothing it holds is lost while the
      appearance panel is up. */
