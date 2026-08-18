@@ -308,7 +308,16 @@ export type OpenerKind = "action" | "duty" | "other";
 /** Strips the bullet glyphs and whitespace a writer may have typed themselves. */
 const stripLeadingMarks = (line: string) => line.replace(/^[\s\-–—*•·・>]+/, "");
 
-const HAN = /[一-鿿㐀-䶿]/;
+/**
+ * What counts as Han, for both of the decisions that turn on it: which list
+ * judges a line's opener, and whether a character is counted as half a word in
+ * `countWords`. One definition because the two have to agree — a range added to
+ * one and not the other would split them apart with nothing failing.
+ *
+ * Unified Ideographs and Extension A. Ext B and beyond are outside the BMP and
+ * are Han to neither; a resume that needs them is not a case this scorer has met.
+ */
+export const HAN = /[一-鿿㐀-䶿]/;
 
 /**
  * Whether a line is judged against the Chinese lists rather than the English ones.

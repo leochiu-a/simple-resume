@@ -2,7 +2,7 @@ import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { toParagraphs } from "@/lib/paragraphs";
 import { Resume } from "@/types/resume";
 
-import { classifyOpener, OpenerKind } from "./verbs";
+import { classifyOpener, HAN, OpenerKind } from "./verbs";
 
 /**
  * One bullet, located well enough that a finding can name where it is.
@@ -52,6 +52,12 @@ export interface ResumeMetrics {
 }
 
 /**
+ * `HAN` over a whole string, built once. Both `String.match` and `String.replace`
+ * reset `lastIndex` when they finish, so one global instance is safe to share.
+ */
+const HAN_RUN = new RegExp(HAN, "g");
+
+/**
  * Words, for both scripts.
  *
  * Latin text is counted by whitespace runs. CJK is not spaced, so the same
@@ -63,12 +69,8 @@ export interface ResumeMetrics {
  * mixed CJK/Latin lines this app's users actually write ("導入 Kubernetes").
  */
 export const countWords = (text: string): number => {
-  const han = text.match(/[一-鿿㐀-䶿]/g)?.length ?? 0;
-  const latin = text
-    .replace(/[一-鿿㐀-䶿]/g, " ")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const han = text.match(HAN_RUN)?.length ?? 0;
+  const latin = text.replace(HAN_RUN, " ").trim().split(/\s+/).filter(Boolean).length;
   return Math.round(han / 2) + latin;
 };
 
