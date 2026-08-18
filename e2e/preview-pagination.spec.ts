@@ -136,6 +136,38 @@ test.describe("preview pagination", () => {
     });
   }
 
+  /*
+   * The templates whose entries are a *run* of unbreakable blocks rather than one —
+   * a headline bound to its first bullet, then a block per bullet. Those blocks are
+   * siblings in one list, so their spacing is a top margin on each block rather
+   * than a gap on the list, and a top margin is the same property pagination uses
+   * to push a block clear of a page edge.
+   *
+   * That collision is the bug this checks for: undoing a nudge by clearing
+   * `margin-top` also deleted the template's own gap, because the template's styles
+   * are inline styles too. A job that had ever been nudged came back flush against
+   * the last bullet of the job above it. Only single-column templates are listed —
+   * the gap below is measured geometrically, which says nothing about two blocks
+   * sitting side by side in a sidebar layout.
+   */
+  for (const label of ["Formal", "Compact", "Dated"]) {
+    test(`${label} keeps its own gaps between blocks after paginating`, async ({ page }) => {
+      await seedResume(page, MANY_ENTRIES);
+      await page.goto("/resume-editor");
+      await selectTemplate(page, label);
+      await expect(pager(page)).toBeVisible();
+
+      const boxes = await blockBoxes(page);
+      const touching = boxes.filter((box, index) => {
+        if (index === 0) return false;
+        const previous = boxes[index - 1];
+        return box.top - (previous.top + previous.height) < SUBPIXEL_SLACK_PX;
+      });
+
+      expect(touching).toEqual([]);
+    });
+  }
+
   test("every page is one click away, and the current one is marked", async ({ page }) => {
     await seedResume(page, MANY_ENTRIES);
     await page.goto("/resume-editor");

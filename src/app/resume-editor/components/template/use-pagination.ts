@@ -35,7 +35,10 @@ const AVOID_BREAK = "[data-avoid-break]";
 /** @react-pdf renders `Text` as this element; the preview reads it back. */
 const TEXT = "text";
 
-/** Marks an element carrying a pagination nudge, so the next pass can undo it. */
+/**
+ * Marks an element carrying a pagination nudge, so the next pass can undo it. Its
+ * value is the `margin-top` the template itself had written there — see `nudge`.
+ */
 const NUDGED = "data-page-nudged";
 
 /**
@@ -119,15 +122,34 @@ export const paginate = (content: HTMLElement, pageHeight: number): number => {
   // Start from a clean slate: last pass's margins would otherwise compound. A
   // nudge can land on an ancestor rather than the candidate itself, so the marker
   // is what tracks them down rather than the candidate list.
+  //
+  // Restoring the recorded value rather than clearing the property: a template's
+  // own spacing is an inline style too — the same style objects the PDF is built
+  // from are handed to React as `style` — so blanking `margin-top` here does not
+  // fall back to the template's gap, it deletes it. React will not put it back
+  // either, since the prop it rendered never changed. That is what used to make an
+  // entry that had once been nudged sit flush against the bullet above it.
   for (const nudged of content.querySelectorAll<HTMLElement>(`[${NUDGED}]`)) {
-    nudged.style.marginTop = "";
+    nudged.style.marginTop = nudged.getAttribute(NUDGED) ?? "";
     nudged.removeAttribute(NUDGED);
   }
   content.style.minHeight = "";
 
+  /**
+   * Pushes an element `by` pixels further down, on top of whatever margin it
+   * already carries — the template's gap, or an earlier nudge in this same pass
+   * (a shift target can be the block-level ancestor of more than one candidate,
+   * and each `by` is measured against the shifts already applied above it).
+   *
+   * The margin the template wrote is stashed on the marker so the next pass can
+   * hand it back untouched.
+   */
   const nudge = (element: HTMLElement, by: number) => {
-    element.style.marginTop = `${by}px`;
-    element.setAttribute(NUDGED, "");
+    const view = element.ownerDocument.defaultView;
+    const current = Number.parseFloat(view?.getComputedStyle(element).marginTop ?? "") || 0;
+
+    if (!element.hasAttribute(NUDGED)) element.setAttribute(NUDGED, element.style.marginTop);
+    element.style.marginTop = `${current + by}px`;
   };
 
   const sheetTop = content.getBoundingClientRect().top;
