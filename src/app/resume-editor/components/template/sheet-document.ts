@@ -13,10 +13,60 @@ export const SHEET_DOCUMENT = `
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <style>
+      /* The very files the PDF embeds, rather than Google's copies of the same
+         families: what the sheet is for is showing what will be downloaded, and
+         Google serves a variable face across 100..900 while the PDF has exactly
+         these three weights. It also means the sheet renders offline, which the
+         rest of this app already promises. */
+      @font-face {
+        font-family: "Noto Sans";
+        font-weight: 400;
+        src: url("/fonts/NotoSans-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: "Noto Sans";
+        font-weight: 700;
+        src: url("/fonts/NotoSans-Bold.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: "Noto Serif";
+        font-weight: 700;
+        src: url("/fonts/NotoSerif-Bold.ttf") format("truetype");
+      }
+
+      /* Chinese, attached to both Latin families so it is found whichever one a
+         template names — the same fallback @react-pdf makes per glyph on the PDF
+         side, expressed the way CSS does it.
+
+         The unicode-range is what keeps it lazy, and it has to be: the file is
+         5.7MB, and a browser only fetches a face when a character on the page
+         actually lands in its range. Doing it here rather than by naming the
+         family in a style is also what makes it independent of *when* the PDF
+         side notices the Chinese — a sheet already on screen picks the face up
+         on the character that needs it. */
+      @font-face {
+        font-family: "Noto Sans";
+        font-weight: 400;
+        src: url("/fonts/NotoSansTC-Regular.otf") format("opentype");
+        unicode-range: U+2E80-303F, U+3100-312F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF,
+          U+FE30-FE4F, U+FF00-FFEF;
+      }
+      @font-face {
+        font-family: "Noto Sans";
+        font-weight: 700;
+        src: url("/fonts/NotoSansTC-Bold.otf") format("opentype");
+        unicode-range: U+2E80-303F, U+3100-312F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF,
+          U+FE30-FE4F, U+FF00-FFEF;
+      }
+      @font-face {
+        font-family: "Noto Serif";
+        font-weight: 700;
+        src: url("/fonts/NotoSansTC-Bold.otf") format("opentype");
+        unicode-range: U+2E80-303F, U+3100-312F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF,
+          U+FE30-FE4F, U+FF00-FFEF;
+      }
+
       /* @react-pdf's primitives land here as unknown elements, so they carry no
          layout of their own. Letting the sheet stretch is what allows a template's
          full-height sidebar to reach the bottom of the last page instead of

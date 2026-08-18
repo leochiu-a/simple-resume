@@ -2,11 +2,11 @@ import { Text as PDFText, StyleSheet, Link as PDFLink } from "@react-pdf/rendere
 import type { Style } from "@react-pdf/types";
 import { ComponentProps, PropsWithChildren } from "react";
 
-import "../fonts";
+import { SANS, SERIF } from "../fonts";
 
 const styles = StyleSheet.create({
   title: {
-    fontFamily: "Noto Serif",
+    fontFamily: SERIF,
     fontWeight: "bold",
     fontSize: "13pt",
     lineHeight: 1.5,
@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     display: "flex",
   },
   subtitle: {
-    fontFamily: "Noto Serif",
+    fontFamily: SERIF,
     fontWeight: "bold",
     fontSize: "11pt",
     lineHeight: 1.5,
@@ -22,18 +22,18 @@ const styles = StyleSheet.create({
     display: "flex",
   },
   text: {
-    fontFamily: "Noto Sans",
+    fontFamily: SANS,
     fontSize: "9pt",
     lineHeight: 1.6,
   },
   smallText: {
-    fontFamily: "Noto Sans",
+    fontFamily: SANS,
     fontSize: "9pt",
     transform: "scale(0.9)",
     transformOrigin: "left",
   },
   subText: {
-    fontFamily: "Noto Sans",
+    fontFamily: SANS,
     color: "#818487",
     fontSize: "9pt",
     transform: "scale(0.7)",
@@ -55,7 +55,6 @@ const Typography = ({
   href,
   bold,
 }: PropsWithChildren<{
-  fontFamily?: "Noto Serif" | "Noto Sans";
   style?: Style;
   as?: "text" | "link";
   href?: string;

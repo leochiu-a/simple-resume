@@ -28,6 +28,11 @@ Only two fonts are available: **Noto Sans** (400/700) and **Noto Serif** (**bold
 [`fonts.ts`](../src/app/resume-editor/components/template/fonts.ts)). A serif template therefore uses
 Noto Serif for bold display text and Noto Sans for body copy, as Classic and Formal both do.
 
+Name them through `SANS` and `SERIF` rather than as the strings `"Noto Sans"` / `"Noto Serif"`. They
+are _stacks_, and what the second entry carries is Chinese — see below. A template that spells the
+family out gets a resume that renders in the editor and downloads with no Chinese in it at all, which
+is how Classic shipped for a while.
+
 Because each template tints a different area, switching template resets the colour to that template's
 own default rather than carrying over a choice made for another. Modern and Banner additionally flip
 their own text between ink and white depending on how dark the picked colour is, so the panel and the
@@ -44,6 +49,44 @@ padding on the `Page` and cancelling it with a matching negative margin, rather 
 padding and letting each block pad itself: @react-pdf reapplies a page's padding to every page it
 spills onto, and a `View`'s padding is not reapplied where it wraps, so the second route costs page
 two its top margin. [`e2e/page-margins.spec.ts`](../e2e/page-margins.spec.ts) is what holds that.
+
+## Chinese
+
+The two faces above are Noto's _latin_ subsets: about 3,000 characters, not one of them Han. A
+Chinese resume used to download as a PDF with every character missing, and missing in the way that
+does not look like missing — @react-pdf draws an absent glyph with a zero advance, so a whole word
+piled onto one x and the line ran straight through the wreckage.
+
+**Noto Sans TC** is the third face, and it is loaded only by the resumes that need it. That is not an
+optimisation to trade away: @react-pdf fetches _every_ family a style names before it can lay out a
+page, and the file is 5.7MB against the Latin subset's 0.6MB. `applyResumeFonts` reads the resume for
+Han before a template builds its tree and appends the face to both stacks the first time it finds
+any; the registry runs it inside every template's `render`, which is the one thing all four rendering
+paths go through. It is a script test rather than a language check on purpose — an English resume
+with one Chinese company name in it needs the face for exactly that name, which is the case any
+document-level answer gets wrong.
+
+The serif stack falls back to the same sans face. A second CJK file is another 8MB for what is only
+ever bold display type, and Chinese set in the sans beside serif Latin reads as a deliberate pair.
+
+Two more things follow from CJK that do not from Latin:
+
+- **Lines break between characters, not between words**, so `fonts.ts` owns a hyphenation callback
+  rather than the one-liner that used to disable hyphenation. It offers a break either side of every
+  Han character — minus a closing bracket or comma, which may not open a line, and an opening
+  bracket, which may not end one — and it offers them as _empty_ syllables. @react-pdf reads a gap
+  between two non-empty syllables as a hyphenation point and draws a hyphen at whichever one it
+  breaks on, so 「介面規-範」 is what the obvious version produces. An empty one is a zero-width break,
+  and it adds nothing to the string a parser extracts.
+- **A mixed Chinese/English paragraph comes out ragged** in the PDF, more so than in the preview. A
+  break between two Han characters has no elasticity, so @react-pdf's line breaker prefers any space
+  it can reach and ends the line early on the way to the next Latin word. The browser fills those
+  lines. It is a difference in the last inch of a line, not in where the pages break, which is what
+  `page-margins.spec.ts` holds the two renderings to.
+
+The preview loads the same five files from `public/fonts`, through `@font-face` rules in
+[`sheet-document.ts`](../src/app/resume-editor/components/template/sheet-document.ts) — the CJK ones
+carrying a `unicode-range`, which is what keeps them off a page that has no Chinese on it.
 
 ## Whether it survives a parser
 
@@ -125,6 +168,8 @@ Each template owns its builder — for example
 — with coverage in [`e2e/html-export.spec.ts`](../e2e/html-export.spec.ts).
 
 The only external reference is the Google Fonts stylesheet for Noto Sans/Noto Serif; every family
-falls back to a system stack, so the file still renders correctly offline. The layout stacks the
+falls back to a system stack, so the file still renders correctly offline. Chinese in an exported
+file is set by whatever the reader's system has — the 5.7MB face the PDF embeds is not something to
+put behind a link in a file meant to be opened from disk. The layout stacks the
 sidebar above the content below 700px, and `@media print` restores the A4 sheet — printing the
 exported file gives back a PDF.

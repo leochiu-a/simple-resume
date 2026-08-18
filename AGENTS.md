@@ -52,7 +52,7 @@ Each of these has already cost debugging time. They are silent — nothing throw
 | Doc                                          | Covers                                                                                                            |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | [docs/interface.md](docs/interface.md)       | The `--c-*` palette both surfaces alias, dark mode, typography, and the layout of the landing page and the editor |
-| [docs/templates.md](docs/templates.md)       | Adding a template, the two available fonts, and why the preview is not a rasterised PDF                           |
+| [docs/templates.md](docs/templates.md)       | Adding a template, the fonts (Latin and Chinese), and why the preview is not a rasterised PDF                     |
 | [docs/on-device-ai.md](docs/on-device-ai.md) | Translation, rewriting, the `ResumeDoc` shape and its write invariant                                             |
 | [docs/webmcp.md](docs/webmcp.md)             | The agent tool reference and conventions                                                                          |
 
