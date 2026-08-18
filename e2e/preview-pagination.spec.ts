@@ -38,7 +38,8 @@ const shownPage = async (page: Page) =>
 
 /**
  * Every unbreakable block's offset within the sheet, paired with its height, so
- * the test can check which page each one starts and ends on.
+ * the test can check which page each one starts and ends on. `left` comes along
+ * for the gap check below, which may only compare blocks in the same column.
  */
 const blockBoxes = (page: Page) =>
   preview(page)
@@ -48,7 +49,12 @@ const blockBoxes = (page: Page) =>
       const top = content.getBoundingClientRect().top;
       return Array.from(content.querySelectorAll("[data-avoid-break]")).map((block) => {
         const rect = block.getBoundingClientRect();
-        return { top: rect.top - top, height: rect.height, text: block.textContent?.slice(0, 40) };
+        return {
+          top: rect.top - top,
+          height: rect.height,
+          left: rect.left,
+          text: block.textContent?.slice(0, 40),
+        };
       });
     });
 
@@ -137,30 +143,61 @@ test.describe("preview pagination", () => {
   }
 
   /*
-   * The templates whose entries are a *run* of unbreakable blocks rather than one —
-   * a headline bound to its first bullet, then a block per bullet. Those blocks are
-   * siblings in one list, so their spacing is a top margin on each block rather
-   * than a gap on the list, and a top margin is the same property pagination uses
-   * to push a block clear of a page edge.
+   * Pagination and the templates write to the same property.
    *
-   * That collision is the bug this checks for: undoing a nudge by clearing
-   * `margin-top` also deleted the template's own gap, because the template's styles
-   * are inline styles too. A job that had ever been nudged came back flush against
-   * the last bullet of the job above it. Only single-column templates are listed —
-   * the gap below is measured geometrically, which says nothing about two blocks
-   * sitting side by side in a sidebar layout.
+   * A block is pushed clear of a page edge with a top margin, and in the templates
+   * whose entries are a *run* of unbreakable blocks — a headline bound to its first
+   * bullet, then a block per bullet — the spacing between those blocks is a top
+   * margin too, because they are siblings in one list and a gap on the list would
+   * space bullets as far apart as whole jobs. The template's styles reach the
+   * preview as inline styles, the same ones a nudge overwrites, so undoing a nudge
+   * by clearing `margin-top` deleted the template's gap rather than falling back to
+   * it: a job that had ever been nudged came back flush against the last bullet of
+   * the job above it.
+   *
+   * Five templates space entries this way and it is their gaps that vanished:
+   * Formal, Compact, Dated, Ledger and Banner all fail this without the fix.
+   * Modern and Timeline keep an entry whole, so their spacing is a gap on the list
+   * and nothing a nudge writes can touch it — they are here to hold that, since a
+   * template that moves to a per-block margin later would join the other five
+   * without anything else in the suite noticing.
+   *
+   * Classic is the exception, and deliberately: its bullets are *authored* flush —
+   * they carry no top margin at all and lean on their line height — so a zero gap
+   * there is the template's intent rather than a lost margin, and there is nothing
+   * for a geometric check to catch.
    */
-  for (const label of ["Formal", "Compact", "Dated"]) {
+  for (const label of ["Formal", "Compact", "Dated", "Ledger", "Banner", "Modern", "Timeline"]) {
     test(`${label} keeps its own gaps between blocks after paginating`, async ({ page }) => {
       await seedResume(page, MANY_ENTRIES);
       await page.goto("/resume-editor");
       await selectTemplate(page, label);
       await expect(pager(page)).toBeVisible();
 
+      /*
+       * Paginate a second time over the same blocks, which is the pass that used to
+       * lose the margins — the first one only adds nudges, the second undoes them
+       * first. Hiding the profile is what forces it: the sheet gets shorter, the
+       * `ResizeObserver` fires, and every break below moves. It has to be a section
+       * *above* the entries and not the entries themselves, so the blocks being
+       * measured are the same DOM nodes the first pass nudged rather than freshly
+       * mounted ones carrying freshly applied styles.
+       */
+      await page
+        .getByRole("heading", { name: "Profile" })
+        .getByRole("button", { name: "Hide section" })
+        .click();
+      await expect(preview(page).getByText("Frontend engineer with")).toBeHidden();
+
       const boxes = await blockBoxes(page);
       const touching = boxes.filter((box, index) => {
         if (index === 0) return false;
         const previous = boxes[index - 1];
+        // Only blocks in the same column can be compared: several templates put
+        // skills and links in a sidebar, and a sidebar block sits *beside* the
+        // entry before it in the DOM rather than below it.
+        if (Math.abs(previous.left - box.left) > SUBPIXEL_SLACK_PX) return false;
+
         return box.top - (previous.top + previous.height) < SUBPIXEL_SLACK_PX;
       });
 
