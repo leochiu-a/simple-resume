@@ -1,7 +1,6 @@
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { toParagraphs } from "@/lib/paragraphs";
 import { Resume } from "@/types/resume";
-import { ResumeLang } from "@/types/resume-doc";
 
 import { classifyOpener, OpenerKind } from "./verbs";
 
@@ -29,7 +28,6 @@ export interface BulletMetric {
  * so eleven rules do not each re-split the same strings.
  */
 export interface ResumeMetrics {
-  lang: ResumeLang;
   bullets: BulletMetric[];
   /** Entries with their bullets, so a rule can flag an entry with none. */
   entries: {
@@ -101,7 +99,7 @@ const toBullets = (description: string): string[] =>
  * honour, so a section the reader will never see must not be scored — otherwise
  * turning off Projects would quietly cost points for empty projects.
  */
-export const measureResume = (resume: Resume, lang: ResumeLang): ResumeMetrics => {
+export const measureResume = (resume: Resume): ResumeMetrics => {
   const { visibility } = resume;
   const bullets: BulletMetric[] = [];
   const entries: ResumeMetrics["entries"] = [];
@@ -120,7 +118,7 @@ export const measureResume = (resume: Resume, lang: ResumeLang): ResumeMetrics =
           entryLabel: item.label,
           bulletIndex,
           text,
-          opener: classifyOpener(text, lang),
+          opener: classifyOpener(text),
           hasNumber: hasNumber(text),
           wordCount: countWords(text),
         });
@@ -169,7 +167,6 @@ export const measureResume = (resume: Resume, lang: ResumeLang): ResumeMetrics =
   const bulletWords = bullets.reduce((sum, bullet) => sum + bullet.wordCount, 0);
 
   return {
-    lang,
     bullets,
     entries,
     profileWordCount,

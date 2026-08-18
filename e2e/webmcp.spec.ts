@@ -518,6 +518,36 @@ test.describe("WebMCP resume tools", () => {
     await expect(preview(page).getByText("MIT")).toBeVisible();
   });
 
+  /**
+   * The verb check used to be handed the editor's locale, so the English sample
+   * a fresh editor holds — its locale is zh-Hant — was measured against the
+   * Chinese verb list, which no English word can prefix. Every bullet came back
+   * flagged, a 100% hit rate that reads as the check being broken rather than the
+   * resume being weak. The script is now read off each line.
+   */
+  test("score-resume judges each bullet by its own script, not the editor's locale", async ({
+    page,
+  }) => {
+    expect(JSON.parse(textOf(await callTool(page, "get-resume"))).language.active).toBe("zh-Hant");
+
+    const bullets = [
+      "Led the migration to Next.js 16 across four teams",
+      "Rebuilt the design system and cut bundle size by 30%",
+    ];
+
+    await callTool(page, "update-entry", { section: "employmentHistory", index: 0, bullets });
+
+    const report = JSON.parse(textOf(await callTool(page, "score-resume")));
+    const flagged = (report.findings as { id: string; locations: { text: string }[] }[])
+      .filter((finding) => finding.id === "action-verbs")
+      .flatMap((finding) => finding.locations.map((location) => location.text));
+
+    expect(flagged).not.toContain(bullets[0]);
+    expect(flagged).not.toContain(bullets[1]);
+    // The report no longer claims one language for the whole document.
+    expect(report).not.toHaveProperty("scoredLanguage");
+  });
+
   test("update-resume patches one field and replaces both lists", async ({ page }) => {
     const result = await callTool(page, "update-resume", {
       profile: "Ships design systems.",

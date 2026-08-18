@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import { measureResume } from "@/lib/resume-score/metrics";
 import { scoreResume, ScoreReport } from "@/lib/resume-score/rules";
 import { Resume } from "@/types/resume";
-import { ResumeLang } from "@/types/resume-doc";
 
 /**
  * The score for the resume as it currently stands.
@@ -14,9 +13,10 @@ import { ResumeLang } from "@/types/resume-doc";
  * the thing it complained about, or the "+6%" is a promise the panel never
  * visibly keeps. The whole pass is string splitting over a few hundred words.
  *
- * `lang` is the *active* locale, not the primary: the rules that read text —
- * action verbs above all — have to judge the words on screen, and scoring an
- * English translation with the Chinese verb list would flag every line.
+ * No locale is passed in. The rules that read text — action verbs above all —
+ * judge each line by the script it is written in, so an English resume typed
+ * into the zh-Hant slot is measured against the English list, as is a single
+ * English bullet in an otherwise Chinese resume. See `classifyOpener`.
  */
-export const useResumeScore = (resume: Resume, lang: ResumeLang): ScoreReport =>
-  useMemo(() => scoreResume(measureResume(resume, lang), resume), [resume, lang]);
+export const useResumeScore = (resume: Resume): ScoreReport =>
+  useMemo(() => scoreResume(measureResume(resume), resume), [resume]);

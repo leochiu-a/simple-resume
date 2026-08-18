@@ -51,7 +51,7 @@ const ResumeEditorPage = () => {
   const templateOptions = useTemplateOptions();
   // Scored against the locale on screen, not the primary one — the rules read
   // the words you are looking at.
-  const score = useResumeScore(resume, doc.activeLang);
+  const score = useResumeScore(resume);
   /* Which of the two things the editing column is showing. A mode rather than a
      route: the form is never unmounted, so nothing it holds is lost while the
      appearance panel is up. */

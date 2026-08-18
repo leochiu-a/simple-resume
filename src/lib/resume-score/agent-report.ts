@@ -1,8 +1,8 @@
 import { Resume } from "@/types/resume";
-import { ResumeLang } from "@/types/resume-doc";
 
 import { BulletMetric, measureResume } from "./metrics";
 import { CheckResult, potentialGain, scoreResume } from "./rules";
+import { opensWithHan } from "./verbs";
 
 /**
  * Where a finding is, in the coordinates the write tools take.
@@ -43,7 +43,6 @@ export interface AgentScoreReport {
   band: "weak" | "fair" | "strong";
   /** What the score is out of once hidden sections are excluded. Always 100. */
   outOf: 100;
-  scoredLanguage: ResumeLang;
   findings: AgentFinding[];
   passing: string[];
   notes: string[];
@@ -89,16 +88,27 @@ const locate = (id: string, bullets: BulletMetric[]): FindingLocation[] => {
  * with the same characters (管理團隊 against 管理層). An agent reading the flagged
  * line can make that judgement where the list cannot — but only if it is told
  * the check is fallible, which is what this note is for.
+ *
+ * Which caveat applies is read off the flagged lines themselves, for the same
+ * reason `classifyOpener` reads the script off the line: the editor's locale is
+ * not evidence of what language the resume is written in.
  */
-const noteFor = (id: string, lang: ResumeLang): string | null => {
+const noteFor = (id: string, locations: FindingLocation[]): string | null => {
   if (id !== "action-verbs") return null;
 
-  const shared =
-    "It is advisory: it carries no points, so fixing it will not move the score, and a line you judge to be fine can be left alone.";
+  const caveats = [
+    locations.some((location) => opensWithHan(location.text)) &&
+      "In Chinese it cannot separate a verb from a noun sharing the same prefix — 管理團隊 and 管理層 both match 管理.",
+    locations.some((location) => !opensWithHan(location.text)) &&
+      "In English it flags verbs the list does not know (Instrumented, Containerised, Deprecated).",
+  ].filter((caveat): caveat is string => typeof caveat === "string");
 
-  return lang === "zh-Hant"
-    ? `The action-verb check matches opening words against a fixed list. In Chinese it cannot separate a verb from a noun sharing the same prefix — 管理團隊 and 管理層 both match 管理 — so read each flagged line before rewriting it. ${shared}`
-    : `The action-verb check matches the first word against a fixed list, so it flags verbs the list does not know (Instrumented, Containerised, Deprecated). Read each flagged line before rewriting it. ${shared}`;
+  return [
+    "The action-verb check matches a line's opening word against a fixed list, chosen per line by the script that line is written in.",
+    ...caveats,
+    "Read each flagged line before rewriting it.",
+    "It is advisory: it carries no points, so fixing it will not move the score, and a line you judge to be fine can be left alone.",
+  ].join(" ");
 };
 
 /**
@@ -111,8 +121,8 @@ const noteFor = (id: string, lang: ResumeLang): string | null => {
  * runs instructions found in tool output carries that habit to every other site
  * it visits. Facts leave the plan where it belongs.
  */
-export const buildAgentReport = (resume: Resume, lang: ResumeLang): AgentScoreReport => {
-  const metrics = measureResume(resume, lang);
+export const buildAgentReport = (resume: Resume): AgentScoreReport => {
+  const metrics = measureResume(resume);
   const { score, checks, issues, applicableWeight } = scoreResume(metrics, resume);
 
   const findings = issues.map(
@@ -127,15 +137,14 @@ export const buildAgentReport = (resume: Resume, lang: ResumeLang): AgentScoreRe
     }),
   );
 
-  const notes = issues
-    .map((check) => noteFor(check.id, lang))
+  const notes = findings
+    .map((finding) => noteFor(finding.id, finding.locations))
     .filter((note): note is string => note !== null);
 
   return {
     score,
     band: score >= 80 ? "strong" : score >= 55 ? "fair" : "weak",
     outOf: 100,
-    scoredLanguage: lang,
     findings,
     passing: checks.filter((check) => check.status === "pass").map((check) => check.title),
     notes,

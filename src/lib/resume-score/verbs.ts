@@ -1,5 +1,3 @@
-import { ResumeLang } from "@/types/resume-doc";
-
 /**
  * The opening words that make a bullet read as work done rather than a duty
  * held. This is the one rule in the scorer that cannot be written as a shape
@@ -310,6 +308,29 @@ export type OpenerKind = "action" | "duty" | "other";
 /** Strips the bullet glyphs and whitespace a writer may have typed themselves. */
 const stripLeadingMarks = (line: string) => line.replace(/^[\s\-–—*•·・>]+/, "");
 
+const HAN = /[一-鿿㐀-䶿]/;
+
+/**
+ * Whether a line is judged against the Chinese lists rather than the English ones.
+ *
+ * Read off the line's own opening word, never off the editor's locale. A locale
+ * is a slot in the document; it says nothing about the script someone typed into
+ * it. An English resume written while the editor sat on zh-Hant used to be
+ * measured against the Chinese verb list, which no English word can prefix — so
+ * every bullet came back flagged, a 100% hit rate that reads as the check being
+ * broken rather than the resume being weak. Per line also means a document that
+ * mixes the two is measured correctly line by line, which no document-level
+ * language could manage.
+ *
+ * The opening word, not the whole line: 「導入 Kubernetes」 is Chinese and
+ * "Led the 台北 rollout" is not, and only the opener decides this rule.
+ */
+export const opensWithHan = (line: string) => {
+  const [first = ""] = stripLeadingMarks(line).trim().split(/\s+/);
+
+  return HAN.test(first);
+};
+
 /**
  * Classifies how a single bullet opens.
  *
@@ -318,11 +339,11 @@ const stripLeadingMarks = (line: string) => line.replace(/^[\s\-–—*•·・>
  * a line that opens with a duty phrase should always report as a duty — that is
  * the finding with something to say.
  */
-export const classifyOpener = (line: string, lang: ResumeLang): OpenerKind => {
+export const classifyOpener = (line: string): OpenerKind => {
   const text = stripLeadingMarks(line).trim();
   if (text === "") return "other";
 
-  if (lang === "zh-Hant") {
+  if (opensWithHan(text)) {
     if (ZH_DUTY_OPENERS.some((opener) => text.startsWith(opener))) return "duty";
     // Longest-first so 「標準化」 wins over a hypothetical shorter prefix.
     const matched = [...ZH_ACTION_VERBS]
