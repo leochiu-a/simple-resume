@@ -14,7 +14,7 @@ Write it, style it, export it.
 
 1. **Write** your resume in a form that saves as you type. The grip on a section heading floats
    the running order over it, to drag into the shape you want.
-2. **Style** it with one of [four templates](#templates), tinted in a colour you pick.
+2. **Style** it with one of [eight templates](#templates), tinted in a colour you pick.
 3. **Export** it as a PDF, as a [standalone HTML file](#html-export), or
    [copy it as Markdown](#markdown-for-agents) to paste into an AI agent.
 
@@ -32,16 +32,20 @@ the second language yourself.
 ## Templates
 
 The palette button floating over the preview opens the appearance panel: six preset swatches, a
-custom colour picker behind **Custom…**, and thumbnails of the four layouts rendered from your own
-resume, at a size worth comparing. All four render the same resume to all three outputs — the live
+custom colour picker behind **Custom…**, and thumbnails of the eight layouts rendered from your own
+resume, at a size worth comparing. All eight render the same resume to all three outputs — the live
 preview, the PDF, and the HTML export.
 
-| Template     | Layout                                                                                              | The colour picker tints |
-| ------------ | --------------------------------------------------------------------------------------------------- | ----------------------- |
-| **Classic**  | Two columns, serif headings on a full-height colour sidebar                                         | the sidebar             |
-| **Modern**   | Two columns, tinted contact panel on the left, uppercase headings on hairline rules                 | the panel               |
-| **Formal**   | Single column, centered serif header over a dashed rule                                             | the name                |
-| **Timeline** | Banded header, 70/30 columns with the rail on the **right**, dated timeline entries and pill skills | the name and job titles |
+| Template     | Layout                                                                                              | The colour picker tints        |
+| ------------ | --------------------------------------------------------------------------------------------------- | ------------------------------ |
+| **Classic**  | Two columns, serif headings on a full-height colour sidebar                                         | the sidebar                    |
+| **Modern**   | Two columns, tinted contact panel on the left, uppercase headings on hairline rules                 | the panel                      |
+| **Formal**   | Single column, centered serif header over a dashed rule                                             | the name                       |
+| **Timeline** | Banded header, 70/30 columns with the rail on the **right**, dated timeline entries and pill skills | the name and job titles        |
+| **Ledger**   | Single column, section titles set in a left gutter with the content beside them                     | the titles and the header rule |
+| **Banner**   | Single column under a full-width colour band carrying the header                                    | the band                       |
+| **Compact**  | Dense single column, no sidebar, headings on ruled lines — the one that fits the most on a page     | the section titles             |
+| **Dated**    | Single column with every entry's dates in a left margin, the entry beside them                      | the section titles             |
 
 **[Adding a template, and the preview's @react-pdf pitfalls → docs/templates.md](docs/templates.md)**
 

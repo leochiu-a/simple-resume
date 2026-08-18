@@ -14,9 +14,9 @@ const BLOCK: Style = { display: "flex", flexDirection: "column" };
 /**
  * The profile, rendered as the paragraphs it was typed as.
  *
- * Shared by all four templates because the fix is the same in each and the bug
- * was too: every one of them passed the raw string to a single `Text`, which
- * collapses the newlines. Only the type styling differs, so that is the prop.
+ * Shared by every template but Classic, which sets the profile inside its own
+ * sidebar layout. The fix is the same in each and the bug was too: every one of
+ * them passed the raw string to a single `Text`, which collapses the newlines. Only the type styling differs, so that is the prop.
  *
  * A paragraph is its own block, and so is each line the writer typed within it.
  * @react-pdf would honour a literal `\n` inside a single `Text`, so this is not

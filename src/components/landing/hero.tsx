@@ -94,7 +94,7 @@ const Hero = () => {
             className="landing-rise mt-12 flex flex-wrap gap-x-8 gap-y-4 border-t border-[var(--rule)] pt-6"
           >
             {[
-              ["5", "templates"],
+              ["8", "templates"],
               ["2", "export formats"],
               ["0", "bytes uploaded"],
             ].map(([figure, label]) => (

@@ -26,7 +26,7 @@ const SWATCHES = [
  * How the sheet looks — which template, and what colour it is tinted.
  *
  * This takes over the editing column rather than floating over the sheet. It was
- * a popover first, and that was wrong for what it holds: four template
+ * a popover first, and that was wrong for what it holds: eight template
  * thumbnails want to be looked at and compared, and a 320px panel perched over
  * the preview both crowds them and covers the very thing they are previews of.
  * Given the whole column they can be large enough to actually judge, and the

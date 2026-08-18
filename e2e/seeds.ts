@@ -96,7 +96,7 @@ const jobs = (count: number, bullets: number) =>
     description: Array.from(
       { length: bullets },
       (_, i) =>
-        `Achievement ${i + 1} at company ${n + 1}, written long enough that the line has to wrap onto a second line in every one of the four templates.`,
+        `Achievement ${i + 1} at company ${n + 1}, written long enough that the line has to wrap onto a second line in every one of the templates.`,
     ).join("|"),
   }));
 
@@ -172,7 +172,7 @@ export const OVERSIZED_ENTRY: SeedResume = {
       description: Array.from(
         { length: 26 },
         (_, i) =>
-          `Achievement ${i + 1}, written long enough that the line has to wrap onto a second line in every one of the four templates.`,
+          `Achievement ${i + 1}, written long enough that the line has to wrap onto a second line in every one of the templates.`,
       ).join("|"),
     },
   ],

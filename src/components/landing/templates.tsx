@@ -10,13 +10,16 @@ import { useAccent } from "./accent";
 import TemplateSheet from "./template-sheet";
 
 /**
- * All five templates at once, each rendering the real thing.
+ * Every registered template at once, each rendering the real thing.
  *
- * This replaces the tab strip the templates used to live in inside the hero. Five
- * templates is real, indexable content, and a row of tabs showed one of them while
- * claiming there were five — the grid is both the honest version and the densest
- * thing on the page, which is what stops a product page from being nothing but
- * headline-and-paragraph beats.
+ * This replaces the tab strip the templates used to live in inside the hero. A grid
+ * of the whole set is real, indexable content, and a row of tabs showed one of them
+ * while claiming there were several — the grid is both the honest version and the
+ * densest thing on the page, which is what stops a product page from being nothing
+ * but headline-and-paragraph beats.
+ *
+ * It maps `TEMPLATES`, so adding a ninth adds a card here. The heading above says
+ * the count in words, and that is the one line to keep in step with the registry.
  *
  * Every card is the same fixed A4 ratio with the metadata row in the same shape
  * underneath, because the craft in a grid like this shows up in whether the small
@@ -34,7 +37,7 @@ const Templates = () => {
               Templates
             </p>
             <h2 className="mt-3 max-w-[24ch] font-display text-[clamp(1.9rem,3.4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.028em]">
-              Five to choose from, all print-ready.
+              Eight to choose from, all print-ready.
             </h2>
           </div>
           <p className="max-w-[38ch] text-[0.9375rem] leading-[1.6] text-[var(--graphite-soft)]">
@@ -94,8 +97,8 @@ const Templates = () => {
             );
           })}
 
-          {/* The grid is 5 across a 3-col layout, so the last cell is free. Rather
-              than leave a hole, it carries the action the grid is arguing for. */}
+          {/* One more cell than the templates fill, carrying the action the grid is
+              arguing for rather than leaving a hole at the end of the last row. */}
           <li className="flex">
             <div className="flex w-full flex-col justify-center gap-4 rounded-[var(--r-lg)] border border-dashed border-[var(--rule-strong)] p-8">
               <p className="font-display text-[1.0625rem] font-semibold tracking-[-0.01em]">

@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  * It sits on the preview because that is what it changes — the control and its
  * result in one place. Clicking it does not open a popover here; it swaps the
  * editing column beside it for the panel, which is where there is actually room
- * to compare four templates. The panel's own ✕ is the way back.
+ * to compare eight templates. The panel's own ✕ is the way back.
  */
 const AppearanceTrigger = ({
   onOpen,

@@ -65,7 +65,7 @@ export const DEFAULT_RESUME: Resume = {
     {
       name: "Open Resume",
       url: "https://github.com/open-resume",
-      description: "Built a local-first resume editor with four print-ready templates",
+      description: "Built a local-first resume editor with eight print-ready templates",
     },
   ],
   visibility: {

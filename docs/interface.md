@@ -40,7 +40,7 @@ Two things are worth knowing before editing [`src/components/landing/`](../src/c
 - **The colour picked for the sheet is the whole page's accent.** `AccentProvider` publishes it as
   the CSS variable `--ink` on a `[data-ink]` wrapper, which is why every section below the hero can
   tint itself while staying a server component. Read `--ink-display` rather than `--ink` for anything
-  that is not the sheet: two of the four templates default to near-black, and dark paper lifts that
+  that is not the sheet: two of the eight templates default to near-black, and dark paper lifts that
   towards white so it does not disappear.
 
 **The hero is never invisible, even if its entrance never runs.** `.landing-rise` is a CSS animation

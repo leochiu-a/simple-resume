@@ -24,7 +24,7 @@ import Summary from "../summary";
  * impression — ten years that have to fit on one sheet, or an application read by
  * a parser before a person. A single top-to-bottom column with plain headings is
  * the shape those read most reliably; a sidebar is the layout they most often get
- * wrong, and five of the other templates have one.
+ * wrong, and three of the other templates have one.
  *
  * One column means every section is in the flow, so all six are the user's to
  * arrange.
