@@ -94,11 +94,14 @@ const AppearancePanel = ({
             aria-pressed={isCurrentColor(hex)}
             onClick={() => selectColor(hex)}
             style={{ backgroundColor: hex }}
+            // The hero's swatch row, at the editor's size: the same grow on hover
+            // and the same offset ring on the chosen one, so the control reads as
+            // one control across the two surfaces. The hairline stays on every
+            // swatch here because this row has a near-white one and the hero
+            // does not.
             className={cn(
-              "size-8 rounded-full border transition-transform hover:scale-110",
-              isCurrentColor(hex)
-                ? "border-foreground ring-2 ring-foreground/25"
-                : "border-foreground/20",
+              "size-8 rounded-full border border-foreground/20 transition-transform duration-200 hover:scale-110 motion-reduce:transition-none",
+              isCurrentColor(hex) && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
             )}
           />
         ))}
@@ -152,30 +155,46 @@ const AppearancePanel = ({
               title={entry.description}
               aria-label={`${entry.label} — ${entry.description}`}
               aria-pressed={isCurrent}
-              className="flex flex-col items-stretch gap-2 text-left"
+              className="group flex flex-col items-stretch text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
             >
+              {/* The same card the landing page's gallery is made of: a one-pixel
+                  frame that becomes the brand ramp on the chosen one, the sheet
+                  mounted on the wash inside it, and a lift on hover. It was a
+                  hairline border plus a brand ring here, which is the shadcn way
+                  of saying "selected" and looked like a different product from the
+                  gallery a visitor had just picked a template in. */}
               <div
                 className={cn(
-                  "overflow-hidden rounded-sm border transition-colors",
-                  isCurrent
-                    ? "border-brand ring-2 ring-brand/25"
-                    : "border-border hover:border-foreground/40",
+                  "rounded-lg p-px transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none",
+                  isCurrent ? "bg-[image:var(--gradient)]" : "bg-border",
                 )}
               >
-                {/* The one on show keeps the colour you picked; the rest preview
-                    the colour they would switch to, since picking a template
-                    resets it to that template's own default. */}
-                <TemplateThumbnail
-                  template={entry}
-                  resume={resume}
-                  backgroundColor={isCurrent ? backgroundColor : entry.defaultColor}
-                />
+                <div className="overflow-hidden rounded-[calc(var(--radius)-1px)] bg-secondary p-2 shadow-sm transition-shadow duration-200 group-hover:shadow-md motion-reduce:transition-none">
+                  {/* The one on show keeps the colour you picked; the rest preview
+                      the colour they would switch to, since picking a template
+                      resets it to that template's own default. */}
+                  <TemplateThumbnail
+                    template={entry}
+                    resume={resume}
+                    backgroundColor={isCurrent ? backgroundColor : entry.defaultColor}
+                  />
+                </div>
               </div>
-              <span className="flex items-center gap-1.5 text-sm font-medium">
-                <CheckIcon
-                  className={cn("size-3.5 shrink-0 text-brand", !isCurrent && "opacity-0")}
-                />
-                {entry.label}
+
+              {/* Name left, state right, in the gallery's own shape. The check is
+                  decoration — `aria-pressed` is what carries the state — so it goes
+                  with the word rather than in front of the name. */}
+              <span className="mt-3 flex items-baseline justify-between gap-3">
+                <span className="text-sm font-medium">{entry.label}</span>
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.14em]",
+                    isCurrent ? "text-brand" : "text-muted-foreground",
+                  )}
+                >
+                  {isCurrent && <CheckIcon aria-hidden className="size-3 shrink-0" />}
+                  {isCurrent ? "Selected" : "Select"}
+                </span>
               </span>
             </button>
           );

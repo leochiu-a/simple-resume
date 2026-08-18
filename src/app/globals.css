@@ -135,6 +135,20 @@
      * inputs and popovers pick up the same softness as the marketing pages.
      */
     --radius: 0.625rem;
+
+    /**
+     * The signature ramp, composed at the root because both surfaces draw with it.
+     *
+     * It was the landing page's alone until the appearance panel started marking its
+     * chosen template the way the landing page's gallery marks its chosen card — the
+     * same one-pixel gradient edge, so the control a visitor met on the way in is the
+     * control they meet in the editor. Composed once here rather than twice, since a
+     * ramp that exists in two places eventually runs at two angles.
+     */
+    --g1: hsl(var(--c-g1));
+    --g2: hsl(var(--c-g2));
+    --g3: hsl(var(--c-g3));
+    --gradient: linear-gradient(100deg, var(--g1), var(--g2) 46%, var(--g3));
   }
 }
 
@@ -247,22 +261,18 @@
     --rule-strong: color-mix(in oklab, hsl(var(--c-rule)) 55%, hsl(var(--c-graphite-soft)));
 
     /**
-     * The signature ramp, composed here from the root's three stops.
+     * The signature ramp is inherited from the root rather than restated here.
      *
      * Reused as a system — the nav mark, the badge, one highlighted word in the
-     * headline, the active gallery card's edge and the closing band all pull from it.
-     * That reuse is the difference between a brand gradient and the undesigned purple
-     * wash this look is usually accused of: a defined three-stop ramp doing a job in
-     * several places, never a blob.
+     * headline, the active gallery card's edge, the editor's chosen template and the
+     * closing band all pull from it. That reuse is the difference between a brand
+     * gradient and the undesigned purple wash this look is usually accused of: a
+     * defined three-stop ramp doing a job in several places, never a blob.
      *
      * It starts at emerald because the product's old accent was pine, and a redesign
      * that keeps a thread back to the thing it replaced reads as the same product in
      * new clothes rather than an unrelated site.
      */
-    --g1: hsl(var(--c-g1));
-    --g2: hsl(var(--c-g2));
-    --g3: hsl(var(--c-g3));
-    --gradient: linear-gradient(100deg, var(--g1), var(--g2) 46%, var(--g3));
 
     /* The solid pulled out of the ramp, for anything that needs one flat fill:
        buttons, links, focus rings. White type clears 4.5:1 on it. */
