@@ -60,9 +60,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Both Playwright projects use the Desktop Chrome device, so Chromium is
-      # the only browser worth downloading.
+      # the only browser worth downloading -- and both run headless, so
+      # `--only-shell` skips the 184 MB full Chrome that nothing ever launches.
+      #
+      # No `--with-deps`: the runner image already has every browser library
+      # (apt reported them all as up to date), so all it added was xvfb, which
+      # headless does not use, and fonts, which nothing asserts on -- no test
+      # compares pixels, and the PDF embeds its own fonts. It cost 5 minutes,
+      # nearly all of it apt fetching 21 MB from a slow mirror. The browser
+      # download itself takes seconds, which is also why caching
+      # ~/.cache/ms-playwright would not pay for itself here.
       - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install --only-shell chromium
 
       # Playwright's webServer builds as well, but building here first means a
       # broken build reads as a failed build rather than a webServer timeout.
