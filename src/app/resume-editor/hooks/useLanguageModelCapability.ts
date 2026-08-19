@@ -2,6 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 
+import { trackCapability } from "@/lib/analytics";
 import {
   ensureLanguageModel,
   getLanguageModelStatus,
@@ -37,6 +38,10 @@ export const useLanguageModelCapability = (): UseLanguageModelCapabilityResult =
   useEffect(() => {
     void probeLanguageModel();
   }, []);
+
+  useEffect(() => {
+    trackCapability("language_model", status.state);
+  }, [status.state]);
 
   return { ...status, enable: ensureLanguageModel };
 };

@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import { trackEvent } from "@/lib/analytics";
 import { LangPair } from "@/lib/translator";
 import { countStale, listFieldStatuses } from "@/lib/translation/status";
 import { translateResume, TranslateProgress } from "@/lib/translation/translate-resume";
@@ -64,6 +65,12 @@ export const useResumeTranslation = (doc: UseResumeDocResult): UseResumeTranslat
 
   const translate = useCallback(
     async (overwrite: readonly FieldPath[], force: boolean) => {
+      /* Which of the three ways a translation gets started, and whether it
+         finished. Nothing about the resume travels with it — not the languages
+         either, since a source/target pair is a decent guess at where somebody
+         lives and works. */
+      const mode = force ? "retranslate" : secondaryResume ? "update" : "translate";
+
       setError(null);
       setRunning(true);
       setProgress(null);
@@ -80,7 +87,9 @@ export const useResumeTranslation = (doc: UseResumeDocResult): UseResumeTranslat
         });
 
         doc.writeLocale(secondaryLang, resume, meta);
+        trackEvent("translate_run", { mode, outcome: "ok" });
       } catch (cause) {
+        trackEvent("translate_run", { mode, outcome: "error" });
         setError(
           cause instanceof Error && cause.message
             ? cause.message

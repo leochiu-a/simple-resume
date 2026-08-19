@@ -3,6 +3,8 @@
  * See src/types/webmcp.d.ts for the spec reference.
  */
 
+import { trackEvent } from "./analytics";
+
 export type WebMcpStatus = "checking" | "unsupported" | "ready" | "error";
 
 /**
@@ -48,6 +50,26 @@ export const toolError = (text: string): ModelContextToolResult => ({
 });
 
 /**
+ * Wraps a tool so a call is counted before it runs.
+ *
+ * Here rather than in each of the twelve tools: this is the one place every
+ * agent call passes through, and a tool added later is counted without anyone
+ * remembering to. Only the tool's own name goes out — the arguments are the
+ * resume, and the result is the resume.
+ *
+ * The count is taken before `execute` rather than after, so a tool that throws
+ * still shows up. What is being measured is agents reaching for a tool at all.
+ */
+const counted = (tool: WebMcpTool): WebMcpTool => ({
+  ...tool,
+  execute: ((args: never) => {
+    trackEvent("webmcp_tool_called", { tool: tool.name });
+
+    return tool.execute(args);
+  }) as WebMcpTool["execute"],
+});
+
+/**
  * Registers every tool for as long as `signal` is unaborted. Registration is
  * per-document, so this must run after mount and be torn down on unmount.
  */
@@ -57,6 +79,6 @@ export const registerTools = async (tools: WebMcpTool[], signal: AbortSignal) =>
 
   for (const tool of tools) {
     if (signal.aborted) return;
-    await modelContext.registerTool(tool, { signal });
+    await modelContext.registerTool(counted(tool), { signal });
   }
 };

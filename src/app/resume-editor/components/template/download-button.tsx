@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/components/ui/spinner";
+import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { buildResumeMarkdown } from "@/lib/resume-markdown";
 import { buildShareUrl } from "@/lib/share-link";
@@ -116,6 +117,7 @@ const DownloadButton = ({
   useEffect(() => () => clearTimeout(copiedTimer.current), []);
 
   const downloadPdf = () => {
+    trackEvent("resume_exported", { format: "pdf", template: template.id });
     setStartDownload(true);
     update(template.render({ resume, backgroundColor }));
   };
@@ -131,6 +133,8 @@ const DownloadButton = ({
   }, [instance.loading, instance.url, startDownload]);
 
   const downloadHtml = () => {
+    trackEvent("resume_exported", { format: "html", template: template.id });
+
     const html = template.buildHtml({ resume, backgroundColor });
     const url = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
 
@@ -151,6 +155,12 @@ const DownloadButton = ({
   const confirmCopy = async (what: "markdown" | "link", text: () => Promise<string> | string) => {
     try {
       await navigator.clipboard.writeText(await text());
+      /* After the write, not before: a denied clipboard permission means nothing
+         was copied, and an export the user never got is not an export. */
+      trackEvent("resume_exported", {
+        format: what === "markdown" ? "markdown" : "share_link",
+        template: template.id,
+      });
       setCopied(what);
       clearTimeout(copiedTimer.current);
       copiedTimer.current = setTimeout(() => setCopied(null), 2000);

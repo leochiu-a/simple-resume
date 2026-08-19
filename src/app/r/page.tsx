@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { trackEvent } from "@/lib/analytics";
 import { decodeSharePayload, SharePayload } from "@/lib/share-link";
 import { getTemplate } from "@/app/resume-editor/components/template/registry";
 import ResumeSheetsCSR from "@/app/resume-editor/components/template/resume-sheets";
@@ -57,6 +58,11 @@ const SharedResumePage = () => {
         .then((payload) => {
           if (generation !== current) return;
           setState(payload ? { status: "ready", payload } : { status: "invalid" });
+          /* Which template a link was shared in, and nothing else — the payload
+             next to it is somebody's whole resume, and the point of this page is
+             that it stays in the fragment. `beforeSend` in `components/analytics`
+             is what keeps the fragment out of the pageview this sits beside. */
+          if (payload) trackEvent("shared_resume_viewed", { template: payload.templateId });
         })
         .catch(() => {
           if (generation === current) setState({ status: "invalid" });

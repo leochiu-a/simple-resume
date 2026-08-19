@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 
+import { trackCapability } from "@/lib/analytics";
 import { AgentReview } from "@/lib/resume-score/review";
 import { isWebMcpSupported, registerTools, WebMcpStatus } from "@/lib/webmcp";
 import { Resume } from "@/types/resume";
@@ -72,6 +73,10 @@ export const useResumeMcp = (
 
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    trackCapability("webmcp", status);
+  }, [status]);
 
   return { status, toolCount };
 };

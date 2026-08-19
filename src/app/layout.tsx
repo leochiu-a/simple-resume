@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Instrument_Sans, Schibsted_Grotesk } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
-import { Analytics } from "@vercel/analytics/react";
 
+import Analytics from "@/components/analytics";
 import MotionProvider from "@/components/motion-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/constants/site";

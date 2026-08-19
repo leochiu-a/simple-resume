@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { trackEvent } from "@/lib/analytics";
 import { decodeShareInput } from "@/lib/share-link";
 import { Resume } from "@/types/resume";
 
@@ -42,6 +43,10 @@ const ImportLinkDialog = ({
   const [input, setInput] = useState("");
   const [resume, setResume] = useState<Resume | null>(null);
   const [checking, setChecking] = useState(false);
+  /* At most one failure reported per opening of the dialog. The box decodes on
+     every keystroke, so a link typed rather than pasted would otherwise report a
+     failure for every prefix of a link that ends up working. */
+  const failureReported = useRef(false);
 
   // Nothing is kept between openings: a stale link in the box, or worse a stale
   // preview of someone else's resume, is not something to reopen onto.
@@ -50,6 +55,7 @@ const ImportLinkDialog = ({
       setInput("");
       setResume(null);
       setChecking(false);
+      failureReported.current = false;
     }
   }, [open]);
 
@@ -88,6 +94,13 @@ const ImportLinkDialog = ({
   }, [input]);
 
   const showError = !!input.trim() && !checking && !resume;
+
+  useEffect(() => {
+    if (!showError || failureReported.current) return;
+
+    failureReported.current = true;
+    trackEvent("resume_imported", { outcome: "invalid" });
+  }, [showError]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -151,6 +164,7 @@ const ImportLinkDialog = ({
             disabled={!resume}
             onClick={() => {
               if (!resume) return;
+              trackEvent("resume_imported", { outcome: "ok" });
               onImport(resume);
               onOpenChange(false);
             }}
