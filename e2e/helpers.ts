@@ -161,6 +161,25 @@ export const languageButton = (page: Page, label: string): Locator =>
   page.getByRole("tab", { name: new RegExp(`^${label}`) });
 
 /**
+ * The offer to start a second language, which is a dashed `＋` slot beside the
+ * tabs rather than one of them — a document with one language has one tab.
+ *
+ * Takes the label in its own script (`中文`, `English`), because that is what the
+ * accessible name is built from: it has to contain the text on the button.
+ */
+export const addLanguageButton = (page: Page, label: string): Locator =>
+  page.getByRole("button", { name: `Add ${label} version` });
+
+/**
+ * The lone chip a single-language document has instead of tabs, which says what
+ * language it is written in and is the only way to correct that.
+ *
+ * Takes the label in its own script, for the same reason as `addLanguageButton`.
+ */
+export const soleLanguageButton = (page: Page, label: string): Locator =>
+  page.getByRole("button", { name: `Written in ${label}` });
+
+/**
  * The resume preview is rendered inside an iframe via react-frame-component. The
  * template picker's thumbnails are iframes too, so the sheet is addressed by its
  * title — `frameLocator` is strict, and an open picker would otherwise match five.

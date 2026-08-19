@@ -43,7 +43,17 @@ const readLegacyResume = (): Resume | null => {
   }
 };
 
-export const createResumeDoc = (resume: Resume, lang: ResumeLang = "zh-Hant"): ResumeDoc => ({
+/**
+ * `en` because that is what `DEFAULT_RESUME` is written in, and this is the label
+ * on it. It was `zh-Hant` for long enough to ship an English sample resume that
+ * the header called Chinese and then offered to translate *into* English.
+ *
+ * Still a guess for anyone who clears it and types their own, which is why the
+ * label is not final: a document with one language says which in the header, and
+ * `setSoleLang` moves it. A default that can be corrected in one click is a
+ * starting point; one that cannot is a decision made on the user's behalf.
+ */
+export const createResumeDoc = (resume: Resume, lang: ResumeLang = "en"): ResumeDoc => ({
   version: 2,
   primaryLang: lang,
   activeLang: lang,
@@ -56,8 +66,9 @@ export const createResumeDoc = (resume: Resume, lang: ResumeLang = "zh-Hant"): R
  * lazy initialiser so the legacy read only happens when there is no v2 document.
  *
  * The old key held a bare `Resume`, which by definition was the only version the
- * user had — so it becomes the primary locale. No attempt is made to guess which
- * language it is in: guessing wrong makes the primary the translation.
+ * user had — so it becomes the primary locale. It takes the same default label as
+ * a fresh document, and for the same reason it is only a label: guessing wrong
+ * would make the primary a translation, so the header lets it be corrected.
  */
 export const buildInitialDoc = (fallback: Resume) => (): ResumeDoc =>
   createResumeDoc(readLegacyResume() ?? fallback);

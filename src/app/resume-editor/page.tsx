@@ -97,7 +97,9 @@ const ResumeEditorPage = () => {
         options={templateOptions}
         activeLang={doc.activeLang}
         primaryLang={doc.primaryLang}
+        presentLangs={doc.presentLangs}
         onSwitchLang={doc.switchLang}
+        onSetSoleLang={doc.setSoleLang}
         mcpStatus={mcpStatus}
         mcpToolCount={mcpToolCount}
         pair={translation.pair}
@@ -162,6 +164,7 @@ const ResumeEditorPage = () => {
                       hasLocale={doc.hasActiveLocale}
                       translation={translation}
                       onMakePrimary={() => doc.setPrimaryLang(doc.activeLang)}
+                      onRemove={() => doc.removeLocale(doc.activeLang)}
                     />
                   )}
 

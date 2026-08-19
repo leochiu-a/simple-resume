@@ -10,10 +10,40 @@ device.
 
 ## Two languages
 
+### Which language it is written in
+
+Nobody has told the editor what language a new resume is in, and something has to
+say. `createResumeDoc` labels it `en`, which is what the sample resume it ships with is written in —
+it said `zh-Hant` for long enough to offer to translate an English sample _into_ English. Matching
+the sample is the best a default can do; it is still wrong for anyone who clears it and types 中文.
+
+The fix is not a better guess. A single-language document has no tabs at all: its lone chip in the
+header is a menu of the two languages, and picking one moves the resume to that key
+(`setSoleLang`). A tablist with one tab was never a control anyway — it was a statement nobody had
+been asked to agree with.
+
+That control disappears the moment a second language exists. With two, saying which is which is
+`setPrimaryLang`, which has provenance to reseed, and it is asked from the translation panel where
+the consequences are on screen.
+
+### The second one is opted into
+
+A resume has one language until you ask for another. The switcher in the header shows a tab per
+language the document actually has — none at all while there is one, per above — and the language it
+does not have is a dashed `＋` slot beside them: an offer, not a view. Both used to be solid tabs, which said the other version existed and was merely
+elsewhere; the majority who write in one language read a half-empty control, pressed the other half
+and landed in an empty document.
+
+It comes back off the same way. The empty slot has a "never mind", and a filled one has **Remove**
+in the translation panel — the locale and its provenance both go, and the original is not touched.
+An option you cannot take back is not an option, and a leftover provenance entry would describe a
+later translation as made from text it has never seen. The primary is refused outright: every other
+locale is a translation of it.
+
 ### What is in storage
 
-Local storage holds a [`ResumeDoc`](../src/types/resume-doc.ts): one `Resume` per language, plus a
-`primaryLang` that names the source of truth. `Resume` itself is untouched by any of it, so the
+Local storage holds a [`ResumeDoc`](../src/types/resume-doc.ts): one `Resume` per language — usually
+one, and at most both — plus a `primaryLang` that names the source of truth. `Resume` itself is untouched by any of it, so the
 templates, the PDF and the WebMCP tools keep seeing exactly the shape they always have.
 
 One invariant holds the whole thing up, and it lives in

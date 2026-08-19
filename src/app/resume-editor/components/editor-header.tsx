@@ -36,7 +36,9 @@ interface EditorHeaderProps {
   options: ReturnType<typeof useTemplateOptions>;
   activeLang: ResumeLang;
   primaryLang: ResumeLang;
+  presentLangs: readonly ResumeLang[];
   onSwitchLang: (lang: ResumeLang) => void;
+  onSetSoleLang: (lang: ResumeLang) => void;
   mcpStatus: WebMcpStatus;
   mcpToolCount: number;
   pair: LangPair | null;
@@ -77,7 +79,9 @@ const EditorHeader: FC<EditorHeaderProps> = ({
   options,
   activeLang,
   primaryLang,
+  presentLangs,
   onSwitchLang,
+  onSetSoleLang,
   mcpStatus,
   mcpToolCount,
   pair,
@@ -110,7 +114,9 @@ const EditorHeader: FC<EditorHeaderProps> = ({
         <LanguageSwitcher
           activeLang={activeLang}
           primaryLang={primaryLang}
+          presentLangs={presentLangs}
           onSwitch={onSwitchLang}
+          onSetSoleLang={onSetSoleLang}
         />
 
         <div className="flex items-center justify-end gap-2">

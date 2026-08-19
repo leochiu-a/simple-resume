@@ -5,7 +5,13 @@ import { UseFormReturn } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 import debounce from "lodash/debounce";
 
-import { buildInitialDoc, createEmptyResume, DOC_STORAGE_KEY, otherLang } from "@/lib/resume-doc";
+import {
+  buildInitialDoc,
+  createEmptyResume,
+  DOC_STORAGE_KEY,
+  otherLang,
+  RESUME_LANGS,
+} from "@/lib/resume-doc";
 import { seedProvenance } from "@/lib/translation/status";
 import { Resume } from "@/types/resume";
 import { ResumeDoc, ResumeLang, TranslationMeta } from "@/types/resume-doc";
@@ -18,6 +24,8 @@ export interface UseResumeDocResult {
   secondaryLang: ResumeLang;
   /** True when the active locale has a resume; false while it is still an empty slot. */
   hasActiveLocale: boolean;
+  /** The languages the document is actually written in — one until a second is added. */
+  presentLangs: readonly ResumeLang[];
   /** The primary locale, which is the only thing a translation is ever made from. */
   primaryResume: Resume;
   activeMeta: TranslationMeta | undefined;
@@ -29,6 +37,10 @@ export interface UseResumeDocResult {
   writeLocale: (lang: ResumeLang, resume: Resume, meta: TranslationMeta) => void;
   /** Replaces the active locale with an imported resume, clearing its provenance. */
   importIntoActiveLocale: (resume: Resume) => void;
+  /** Drops a secondary locale and returns to the original. Never touches the primary. */
+  removeLocale: (lang: ResumeLang) => void;
+  /** Relabels a single-language document. Refused once a second language exists. */
+  setSoleLang: (lang: ResumeLang) => void;
 }
 
 /**
@@ -49,6 +61,13 @@ export const useResumeDoc = (formMethods: UseFormReturn<Resume>): UseResumeDocRe
 
   const { activeLang, primaryLang } = doc;
   const secondaryLang = otherLang(primaryLang);
+
+  // Which languages exist, not what order to show them in — the switcher orders
+  // its tabs by role, so the original leads whichever language that turns out to be.
+  const presentLangs = useMemo(
+    () => RESUME_LANGS.filter((lang) => !!doc.locales[lang]),
+    [doc.locales],
+  );
 
   // The form is read through a ref for the same reason useResumeMcp does it: the
   // callbacks below must not be rebuilt on every keystroke.
@@ -190,6 +209,93 @@ export const useResumeDoc = (formMethods: UseFormReturn<Resume>): UseResumeDocRe
     [setDoc, write],
   );
 
+  /**
+   * Removes a secondary locale, leaving a single-language document.
+   *
+   * The counterpart to adding one: the second language is something you opt into,
+   * and an option you cannot take back is not an option. The primary is refused
+   * outright — it is the source of truth, and deleting it would leave every
+   * remaining locale a translation of nothing.
+   *
+   * Also the way out of a slot that was opened and never filled, which is why it
+   * does not require the locale to exist: deleting nothing and returning to the
+   * original is exactly what "never mind" means there.
+   */
+  const removeLocale = useCallback(
+    (lang: ResumeLang) => {
+      // The pending write would otherwise land in the locale being deleted and,
+      // worse, recreate it — `write` only skips slots that are empty *now*.
+      write.flush();
+
+      // Checked twice, and neither is redundant. Here, because the form must not
+      // be reset over a document that is not going to change — the reset is a
+      // side effect and cannot live inside the updater, which StrictMode runs
+      // twice. And again below, where the state is authoritative.
+      const { primaryLang: primary, locales } = docRef.current;
+      if (lang === primary) return;
+
+      // `docRef` is a render behind the flush above, but the primary is the one
+      // locale that flush cannot have touched: the write it committed was aimed
+      // at the locale being removed, which is by definition not this one.
+      formRef.current.reset(locales[primary] ?? createEmptyResume());
+
+      setDoc((prev) => {
+        // Refused here rather than against `docRef`, which the two would
+        // otherwise be free to disagree about: deleting `prev.primaryLang` would
+        // leave `activeLang` pointing at a locale that no longer exists and
+        // `primaryResume` quietly falling back to the sample resume.
+        if (lang === prev.primaryLang) return prev;
+
+        const { [lang]: _removed, ...remaining } = prev.locales;
+        const { [lang]: _meta, ...remainingMeta } = prev.translation;
+
+        return {
+          ...prev,
+          activeLang: prev.primaryLang,
+          locales: remaining,
+          translation: remainingMeta,
+        };
+      });
+    },
+    [setDoc, write],
+  );
+
+  /**
+   * Says what language the one locale is written in, when there is only one.
+   *
+   * Something has to name the language of a document nobody has told us about,
+   * and until now that was a constant: `createResumeDoc` labels the starting
+   * resume `zh-Hant`. `buildInitialDoc` already refuses to guess for a migrated
+   * one, on the grounds that guessing wrong makes the primary a translation —
+   * but a default is a guess with the same consequence, and the shipped sample
+   * resume is in English, so it was wrong the moment it was read.
+   *
+   * A move, not a copy: there is one resume and this changes what it is called.
+   * That is why it is refused once a second locale exists — with two, changing
+   * which is which is `setPrimaryLang`, and that has provenance to reseed.
+   */
+  const setSoleLang = useCallback(
+    (lang: ResumeLang) => {
+      write.flush();
+
+      setDoc((prev) => {
+        const [only, ...rest] = RESUME_LANGS.filter((candidate) => !!prev.locales[candidate]);
+        if (rest.length || !only || only === lang) return prev;
+
+        return {
+          ...prev,
+          primaryLang: lang,
+          activeLang: lang,
+          locales: { [lang]: prev.locales[only] },
+          // Nothing to carry: a document with one language has no translation to
+          // describe, so there is no provenance to move with it.
+          translation: {},
+        };
+      });
+    },
+    [setDoc, write],
+  );
+
   useEffect(() => () => write.flush(), [write]);
 
   return {
@@ -198,6 +304,7 @@ export const useResumeDoc = (formMethods: UseFormReturn<Resume>): UseResumeDocRe
     primaryLang,
     secondaryLang,
     hasActiveLocale: !!doc.locales[activeLang],
+    presentLangs,
     primaryResume: doc.locales[primaryLang] ?? DEFAULT_RESUME,
     activeMeta: doc.translation[activeLang],
     switchLang,
@@ -205,5 +312,7 @@ export const useResumeDoc = (formMethods: UseFormReturn<Resume>): UseResumeDocRe
     saveActiveLocale,
     writeLocale,
     importIntoActiveLocale,
+    removeLocale,
+    setSoleLang,
   };
 };
