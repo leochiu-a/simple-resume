@@ -91,14 +91,14 @@ Two more things follow from CJK that do not from Latin:
   lines. It is a difference in the last inch of a line, not in where the pages break, which is what
   `page-margins.spec.ts` holds the two renderings to.
 
-The preview loads the same five files, through `@font-face` rules in
-[`sheet-document.ts`](../src/app/resume-editor/components/template/sheet-document.ts) — the same URLs
-`fonts.ts` registers, so the sheet and the download share one fetch and one cache entry. The CJK
-rules carry a `unicode-range`, which is what keeps them off a page that has no Chinese on it, and
-every rule carries `font-display: swap`, without which a 5.7MB face means three seconds of a sheet
-with no Chinese on it. Those ranges are the CSS half of the `CJK` test in `fonts.ts`: edit one and
-edit the other, because the two disagreeing is a character the PDF renders and the sheet does not,
-and nothing in the suite fails on that.
+The preview loads the same five files. `fonts.ts` also builds the sheet's `@font-face` rules —
+`SHEET_FONT_FACES`, which
+[`sheet-document.ts`](../src/app/resume-editor/components/template/sheet-document.ts) drops into its
+`<style>` — so the URLs, the weights and the CJK range are written once and both consumers read them.
+The sheet and the download therefore share one fetch and one cache entry. The CJK rules carry a
+`unicode-range`, which is what keeps them off a page with no Chinese on it, and every rule carries
+`font-display: swap`, without which a 5.7MB face means about three seconds of blank lines where the
+Chinese should be.
 
 ## Whether it survives a parser
 

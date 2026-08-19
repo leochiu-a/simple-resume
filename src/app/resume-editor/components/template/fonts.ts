@@ -13,26 +13,6 @@ import { Resume } from "@/types/resume";
  * `applyResumeFonts`.
  */
 
-Font.register({
-  family: "Noto Serif",
-  src: "/fonts/NotoSerif-Bold.ttf",
-  fontWeight: "bold",
-});
-Font.register({
-  family: "Noto Sans",
-  fonts: [
-    {
-      src: "/fonts/NotoSans-Regular.ttf",
-    },
-    {
-      src: "/fonts/NotoSans-Bold.ttf",
-      fontWeight: "bold",
-    },
-  ],
-});
-
-const CJK_SANS = "Noto Sans TC";
-
 /**
  * The CJK face is the one font this app does not ship.
  *
@@ -46,7 +26,28 @@ const CJK_SANS = "Noto Sans TC";
  * meets a Chinese character, and a Chinese resume cannot be exported offline.
  * The Latin faces stay in `public/`, so an English one still can.
  */
-const CJK_SANS_DIR = "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@Sans2.004/Sans/SubsetOTF/TC";
+const CJK_DIR = "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@Sans2.004/Sans/SubsetOTF/TC";
+
+/** Every file behind a face, named once for the two consumers that need them. */
+const FILES = {
+  sansRegular: "/fonts/NotoSans-Regular.ttf",
+  sansBold: "/fonts/NotoSans-Bold.ttf",
+  serifBold: "/fonts/NotoSerif-Bold.ttf",
+  cjkRegular: `${CJK_DIR}/NotoSansTC-Regular.otf`,
+  cjkBold: `${CJK_DIR}/NotoSansTC-Bold.otf`,
+} as const;
+
+Font.register({
+  family: "Noto Serif",
+  src: FILES.serifBold,
+  fontWeight: "bold",
+});
+Font.register({
+  family: "Noto Sans",
+  fonts: [{ src: FILES.sansRegular }, { src: FILES.sansBold, fontWeight: "bold" }],
+});
+
+const CJK_SANS = "Noto Sans TC";
 
 export const SANS = ["Noto Sans"];
 export const SERIF = ["Noto Serif"];
@@ -67,10 +68,7 @@ export const SERIF = ["Noto Serif"];
 const registerCjk = () => {
   Font.register({
     family: CJK_SANS,
-    fonts: [
-      { src: `${CJK_SANS_DIR}/NotoSansTC-Regular.otf` },
-      { src: `${CJK_SANS_DIR}/NotoSansTC-Bold.otf`, fontWeight: "bold" },
-    ],
+    fonts: [{ src: FILES.cjkRegular }, { src: FILES.cjkBold, fontWeight: "bold" }],
   });
 
   SANS.push(CJK_SANS);
@@ -98,6 +96,67 @@ const registerCjk = () => {
  * zhuyin. The ellipsis and the em dash stay out: the Latin files have both.
  */
 const CJK = /[\p{scx=Han}\p{scx=Bopomofo}\u3000-\u303F\uFF00-\uFFEF]/u;
+
+/**
+ * The same set as a CSS `unicode-range`, for the sheet's `@font-face` rules.
+ *
+ * Two halves of one decision, which is why they sit together: a range in one and
+ * not the other is a character the PDF renders and the preview does not, and
+ * nothing in the suite fails on that. The regex covers the ideographs through
+ * `scx=Han`, which CSS has no equivalent of, so the blocks are spelled out here —
+ * Extension A, the unified block, the compatibility forms, and the same
+ * punctuation, radicals and Bopomofo. Extension B and beyond are outside the BMP,
+ * and the face has no glyphs for them either way.
+ */
+const CJK_RANGE = [
+  "U+2E80-303F",
+  "U+3100-312F",
+  "U+31A0-31BF",
+  "U+3400-4DBF",
+  "U+4E00-9FFF",
+  "U+F900-FAFF",
+  "U+FE30-FE4F",
+  "U+FF00-FFEF",
+].join(", ");
+
+/**
+ * The `@font-face` rules the preview sheet declares.
+ *
+ * The sheet is its own document — that isolation is the point of the iframe — so
+ * the app's own stylesheet, and anything `next/font` sets up in it, cannot reach
+ * it. It gets these instead, built from the same files @react-pdf registers
+ * above, so the screen shows the faces the download embeds.
+ *
+ * The CJK face is attached to both Latin families rather than named as a third,
+ * which is the same per-glyph fallback the stacks make on the PDF side expressed
+ * the way CSS does it. `unicode-range` is what keeps it lazy — a browser only
+ * fetches a face when a character on the page lands in its range — and doing it
+ * here rather than in a style is what makes the sheet independent of *when* the
+ * PDF side notices the Chinese.
+ *
+ * `font-display: swap` on every rule: `auto` means about three seconds of the
+ * text being drawn invisibly, which on a 5.7MB face is a sheet with blank lines
+ * where the Chinese should be. The Google stylesheet these replaced asked for
+ * `swap` too.
+ */
+const face = (family: string, weight: 400 | 700, src: string, range?: string) => `
+      @font-face {
+        font-family: "${family}";
+        font-weight: ${weight};
+        font-display: swap;
+        src: url("${src}") format("${src.endsWith(".otf") ? "opentype" : "truetype"}");${
+          range ? `\n        unicode-range: ${range};` : ""
+        }
+      }`;
+
+export const SHEET_FONT_FACES = [
+  face("Noto Sans", 400, FILES.sansRegular),
+  face("Noto Sans", 700, FILES.sansBold),
+  face("Noto Serif", 700, FILES.serifBold),
+  face("Noto Sans", 400, FILES.cjkRegular, CJK_RANGE),
+  face("Noto Sans", 700, FILES.cjkBold, CJK_RANGE),
+  face("Noto Serif", 700, FILES.cjkBold, CJK_RANGE),
+].join("");
 
 /**
  * Puts the CJK face in the stacks the first time a resume contains a character
