@@ -9,7 +9,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LANG_LABEL, LANG_NAME_EN, otherLang, RESUME_LANGS } from "@/lib/resume-doc";
+import { LANG_LABEL, otherLang, RESUME_LANGS } from "@/lib/resume-doc";
 import { cn } from "@/lib/utils";
 import { ResumeLang } from "@/types/resume-doc";
 
@@ -46,7 +46,10 @@ const SoleLanguage: FC<{ lang: ResumeLang; onChange: (lang: ResumeLang) => void 
     <DropdownMenuTrigger asChild>
       <button
         type="button"
-        aria-label={`Written in ${LANG_NAME_EN[lang]}`}
+        // `LANG_LABEL`, not `LANG_NAME_EN`: the accessible name has to contain the
+        // text on screen (WCAG 2.5.3), and the text on screen is 中文. Named in
+        // English it was a string no reader of this chip could say out loud.
+        aria-label={`Written in ${LANG_LABEL[lang]}`}
         className="flex h-9 items-center gap-1.5 rounded-md bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
       >
         {LANG_LABEL[lang]}
@@ -166,8 +169,9 @@ const LanguageSwitcher: FC<LanguageSwitcherProps> = ({
           key={lang}
           type="button"
           // The visible label is the language alone, which beside a tab of the
-          // same name says nothing about what pressing it does.
-          aria-label={`Add ${LANG_NAME_EN[lang]} version`}
+          // same name says nothing about what pressing it does. Built from
+          // `LANG_LABEL` so the name still contains that label — see `SoleLanguage`.
+          aria-label={`Add ${LANG_LABEL[lang]} version`}
           onClick={() => onSwitch(lang)}
           className="flex h-9 items-center gap-1 whitespace-nowrap rounded-md border border-dashed px-2.5 text-sm text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
         >

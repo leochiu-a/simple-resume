@@ -164,22 +164,20 @@ export const languageButton = (page: Page, label: string): Locator =>
  * The offer to start a second language, which is a dashed `＋` slot beside the
  * tabs rather than one of them — a document with one language has one tab.
  *
- * Named in English (`Add English version`) because that is the button's
- * accessible name: the visible label is the language in its own script, which
- * beside a tab of the same name says nothing about what pressing it does.
+ * Takes the label in its own script (`中文`, `English`), because that is what the
+ * accessible name is built from: it has to contain the text on the button.
  */
-export const addLanguageButton = (page: Page, name: string): Locator =>
-  page.getByRole("button", { name: `Add ${name} version` });
+export const addLanguageButton = (page: Page, label: string): Locator =>
+  page.getByRole("button", { name: `Add ${label} version` });
 
 /**
  * The lone chip a single-language document has instead of tabs, which says what
  * language it is written in and is the only way to correct that.
  *
- * Named in English for the same reason as `addLanguageButton`: the visible label
- * is the language in its own script, and the accessible name is the sentence.
+ * Takes the label in its own script, for the same reason as `addLanguageButton`.
  */
-export const soleLanguageButton = (page: Page, name: string): Locator =>
-  page.getByRole("button", { name: `Written in ${name}` });
+export const soleLanguageButton = (page: Page, label: string): Locator =>
+  page.getByRole("button", { name: `Written in ${label}` });
 
 /**
  * The resume preview is rendered inside an iframe via react-frame-component. The
