@@ -1,11 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
 import {
+  addLanguageButton,
   collectConsoleErrors,
   DOC_STORAGE_KEY,
   languageButton,
   onDeviceAiPanel,
   openOnDeviceAiPanel,
   preview,
+  soleLanguageButton,
 } from "./helpers";
 
 /**
@@ -242,110 +244,194 @@ test.describe("Resume translation", () => {
   test("translates the primary into the secondary and leaves the original alone", async ({
     page,
   }) => {
-    await languageButton(page, "English").click();
-    await expect(page.getByRole("heading", { name: "No English version yet" })).toBeVisible();
+    await addLanguageButton(page, "Chinese").click();
+    await expect(page.getByRole("heading", { name: "No 中文 version yet" })).toBeVisible();
 
-    await page.getByRole("button", { name: "Translate from 中文" }).click();
+    await page.getByRole("button", { name: "Translate from English" }).click();
 
     // The profile is translatable; the name is not, so it is copied verbatim.
-    await expect(preview(page).getByText(/^\[en\] Lorem Ipsum/)).toBeVisible();
+    await expect(preview(page).getByText(/^\[zh-Hant\] Lorem Ipsum/)).toBeVisible();
     await expect(preview(page).getByText("My Name")).toBeVisible();
 
     const doc = await readDoc(page);
 
-    expect(doc.primaryLang).toBe("zh-Hant");
-    expect(doc.locales.en.profile).toMatch(/^\[en\] /);
+    expect(doc.primaryLang).toBe("en");
+    expect(doc.locales["zh-Hant"].profile).toMatch(/^\[zh-Hant\] /);
     expect(doc.locales.en.name).toBe("My Name");
     // The whole point: the original is untouched by any of this.
-    expect(doc.locales["zh-Hant"].profile).not.toMatch(/^\[en\] /);
+    expect(doc.locales.en.profile).not.toMatch(/^\[zh-Hant\] /);
   });
 
   test("an edit to the translation never reaches the original", async ({ page }) => {
-    await languageButton(page, "English").click();
-    await page.getByRole("button", { name: "Translate from 中文" }).click();
-    await expect(preview(page).getByText(/^\[en\] Lorem Ipsum/)).toBeVisible();
+    await addLanguageButton(page, "Chinese").click();
+    await page.getByRole("button", { name: "Translate from English" }).click();
+    await expect(preview(page).getByText(/^\[zh-Hant\] Lorem Ipsum/)).toBeVisible();
 
     const name = page.getByRole("textbox").nth(1);
     await name.fill("Ada Lovelace");
     await expect(preview(page).getByText("Ada Lovelace")).toBeVisible();
 
-    await languageButton(page, "中文").click();
+    await languageButton(page, "English").click();
 
     await expect(preview(page).getByText("My Name")).toBeVisible();
     await expect(preview(page).getByText("Ada Lovelace")).toBeHidden();
 
     const doc = await readDoc(page);
 
-    expect(doc.locales.en.name).toBe("Ada Lovelace");
-    expect(doc.locales["zh-Hant"].name).toBe("My Name");
+    expect(doc.locales["zh-Hant"].name).toBe("Ada Lovelace");
+    expect(doc.locales.en.name).toBe("My Name");
   });
 
   test("changing the original marks the translation stale without overwriting it", async ({
     page,
   }) => {
-    await languageButton(page, "English").click();
-    await page.getByRole("button", { name: "Translate from 中文" }).click();
-    await expect(preview(page).getByText(/^\[en\] Lorem Ipsum/)).toBeVisible();
+    await addLanguageButton(page, "Chinese").click();
+    await page.getByRole("button", { name: "Translate from English" }).click();
+    await expect(preview(page).getByText(/^\[zh-Hant\] Lorem Ipsum/)).toBeVisible();
 
-    await languageButton(page, "中文").click();
+    await languageButton(page, "English").click();
     // The first field is the job title, which is translatable — unlike the
     // e-mail and phone below it, which are copied through untouched.
     await page.getByRole("textbox").nth(0).fill("Principal Engineer");
 
-    await languageButton(page, "English").click();
+    await languageButton(page, "中文").click();
 
     await expect(page.getByText(/field has changed in the original/)).toBeVisible();
     // Still the old translation until the update is asked for.
-    await expect(preview(page).getByText("[en] Senior job")).toBeVisible();
+    await expect(preview(page).getByText("[zh-Hant] Senior job")).toBeVisible();
 
     await page.getByRole("button", { name: "Update translation" }).click();
 
-    await expect(preview(page).getByText("[en] Principal Engineer")).toBeVisible();
+    await expect(preview(page).getByText("[zh-Hant] Principal Engineer")).toBeVisible();
     await expect(page.getByText(/changed in the original/)).toBeHidden();
   });
 
   test("re-translating replaces a hand-edited field the update would have kept", async ({
     page,
   }) => {
-    await languageButton(page, "English").click();
-    await page.getByRole("button", { name: "Translate from 中文" }).click();
-    await expect(preview(page).getByText("[en] Senior job")).toBeVisible();
+    await addLanguageButton(page, "Chinese").click();
+    await page.getByRole("button", { name: "Translate from English" }).click();
+    await expect(preview(page).getByText("[zh-Hant] Senior job")).toBeVisible();
 
     // Rewrite the wanted job here. "Update translation" exists to protect this;
     // re-translating is the way to say you want it gone.
     await page.getByRole("textbox").nth(0).fill("Staff Engineer");
     await expect(preview(page).getByText("Staff Engineer")).toBeVisible();
 
-    await page.getByRole("button", { name: "Re-translate from 中文" }).click();
+    await page.getByRole("button", { name: "Re-translate from English" }).click();
     await expect(page.getByText(/1 field you rewrote will be replaced/)).toBeVisible();
     await page.getByRole("button", { name: "Re-translate", exact: true }).click();
 
     // Back to the machine's wording, from the untouched Chinese original.
-    await expect(preview(page).getByText("[en] Senior job")).toBeVisible();
+    await expect(preview(page).getByText("[zh-Hant] Senior job")).toBeVisible();
     await expect(preview(page).getByText("Staff Engineer")).toBeHidden();
 
     const doc = await readDoc(page);
 
-    expect(doc.locales.en.wantedJob).toBe("[en] Senior job");
-    expect(doc.locales["zh-Hant"].wantedJob).toBe("Senior job");
+    expect(doc.locales["zh-Hant"].wantedJob).toBe("[zh-Hant] Senior job");
+    expect(doc.locales.en.wantedJob).toBe("Senior job");
   });
 
   test("re-translating can be backed out of, and changes nothing when it is", async ({ page }) => {
-    await languageButton(page, "English").click();
-    await page.getByRole("button", { name: "Translate from 中文" }).click();
-    await expect(preview(page).getByText("[en] Senior job")).toBeVisible();
+    await addLanguageButton(page, "Chinese").click();
+    await page.getByRole("button", { name: "Translate from English" }).click();
+    await expect(preview(page).getByText("[zh-Hant] Senior job")).toBeVisible();
 
     await page.getByRole("textbox").nth(0).fill("Staff Engineer");
     await expect(preview(page).getByText("Staff Engineer")).toBeVisible();
 
-    await page.getByRole("button", { name: "Re-translate from 中文" }).click();
+    await page.getByRole("button", { name: "Re-translate from English" }).click();
     await page.getByRole("button", { name: "Cancel" }).click();
 
     await expect(preview(page).getByText("Staff Engineer")).toBeVisible();
     // Polled, not read once: the edit reaches storage through a 300ms debounce,
     // and cancelling — unlike a translation — never flushes it.
     await expect
-      .poll(async () => (await readDoc(page)).locales.en.wantedJob)
+      .poll(async () => (await readDoc(page)).locales["zh-Hant"].wantedJob)
       .toBe("Staff Engineer");
+  });
+
+  /**
+   * The second language is something you ask for. These three cases are the
+   * whole of that promise: it is not there until you ask, asking can be undone,
+   * and having asked can be undone too.
+   */
+  test("offers the second language rather than pretending it is already there", async ({
+    page,
+  }) => {
+    await expect(soleLanguageButton(page, "English")).toBeVisible();
+    // Neither language is a tab while there is only one. A tab for English would
+    // say that version exists and is merely elsewhere, which is what sent
+    // single-language users into an empty document.
+    await expect(page.getByRole("tab")).toHaveCount(0);
+    await expect(addLanguageButton(page, "Chinese")).toBeVisible();
+  });
+
+  test("says what the one language is, and can be told it is wrong", async ({ page }) => {
+    // A new document is labelled `en`, which is what the sample resume is written
+    // in — but nobody asked the person who cleared it and typed 中文, so the label
+    // has to be correctable.
+    await soleLanguageButton(page, "English").click();
+    await page.getByRole("menuitemradio", { name: "中文" }).click();
+
+    await expect(soleLanguageButton(page, "Chinese")).toBeVisible();
+    // The offer flips with it: the language you do not have is the one on offer.
+    await expect(addLanguageButton(page, "English")).toBeVisible();
+
+    const doc = await readDoc(page);
+
+    expect(doc.primaryLang).toBe("zh-Hant");
+    expect(doc.activeLang).toBe("zh-Hant");
+    // A move, not a copy — there is one resume and this renamed it.
+    expect(Object.keys(doc.locales)).toEqual(["zh-Hant"]);
+    expect(doc.locales["zh-Hant"].name).toBe("My Name");
+  });
+
+  test("relabelling then translating goes the other way round", async ({ page }) => {
+    await soleLanguageButton(page, "English").click();
+    await page.getByRole("menuitemradio", { name: "中文" }).click();
+
+    await addLanguageButton(page, "English").click();
+    await page.getByRole("button", { name: "Translate from 中文" }).click();
+    await expect(preview(page).getByText(/^\[en\] Lorem Ipsum/)).toBeVisible();
+
+    const doc = await readDoc(page);
+
+    // The relabelled locale is the source of truth, so the translation runs into
+    // English — the opposite of what a default document does.
+    expect(doc.primaryLang).toBe("zh-Hant");
+    expect(doc.locales.en.profile).toMatch(/^\[en\] /);
+    expect(doc.locales["zh-Hant"].profile).not.toMatch(/^\[en\] /);
+  });
+
+  test("an empty second language can be backed out of", async ({ page }) => {
+    await addLanguageButton(page, "Chinese").click();
+    await expect(page.getByRole("heading", { name: "No 中文 version yet" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Never mind, stay in English only" }).click();
+
+    await expect(addLanguageButton(page, "Chinese")).toBeVisible();
+    // Back in the original with its content intact, not in an empty form.
+    await expect(preview(page).getByText("My Name")).toBeVisible();
+  });
+
+  test("removing the translation leaves the original untouched", async ({ page }) => {
+    await addLanguageButton(page, "Chinese").click();
+    await page.getByRole("button", { name: "Translate from English" }).click();
+    await expect(preview(page).getByText(/^\[zh-Hant\] Lorem Ipsum/)).toBeVisible();
+
+    await page.getByRole("button", { name: "Remove 中文 version" }).click();
+    await page.getByRole("button", { name: "Remove version" }).click();
+
+    await expect(addLanguageButton(page, "Chinese")).toBeVisible();
+    await expect(preview(page).getByText("My Name")).toBeVisible();
+
+    const doc = await readDoc(page);
+
+    expect(Object.keys(doc.locales)).toEqual(["en"]);
+    // The provenance goes with it: left behind, a later 中文 version would read
+    // as a translation of text it has never seen.
+    expect(doc.translation["zh-Hant"]).toBeUndefined();
+    expect(doc.locales.en.profile).not.toMatch(/^\[zh-Hant\] /);
   });
 });

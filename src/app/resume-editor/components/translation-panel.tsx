@@ -13,6 +13,8 @@ interface TranslationPanelProps {
   hasLocale: boolean;
   translation: UseResumeTranslationResult;
   onMakePrimary: () => void;
+  /** Drops this locale and returns to the original. Also the way out of an empty slot. */
+  onRemove: () => void;
 }
 
 const Progress = ({ translation }: { translation: UseResumeTranslationResult }) => {
@@ -49,11 +51,13 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
   hasLocale,
   translation,
   onMakePrimary,
+  onRemove,
 }) => {
   const { translator, running, staleCount, editedCount, error, run, retranslate } = translation;
   const unsupported = translator.state === "unsupported";
   const busy = running || translator.state === "downloading";
   const [confirmingRedo, setConfirmingRedo] = useState(false);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
 
   if (!hasLocale) {
     return (
@@ -90,6 +94,20 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
                   : "The model is already on this device."}
             </p>
           </>
+        )}
+
+        {/* The slot is empty because it was just asked for, and asking for it is
+            the only way to be here. Somewhere to say "never mind" is the other
+            half of making the second language optional — without it the offer is
+            a trapdoor, and the way back is a tab you have to guess at. */}
+        {!busy && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="mt-4 block text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            Never mind, stay in {LANG_LABEL[primaryLang]} only
+          </button>
         )}
 
         {error && <p className="mt-3 text-[11px] text-destructive">{error}</p>}
@@ -170,6 +188,45 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
           >
             Make {LANG_LABEL[secondaryLang]} the original
           </button>
+
+          {/* The second language is opted into, so it has to be droppable — an
+              option you cannot take back is not one. Confirmed like
+              "Re-translate" and for a stronger reason: this discards the whole
+              locale, and the original is not a copy of it. */}
+          {confirmingRemove ? (
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <span className="text-[11px] text-muted-foreground">
+                Delete this {LANG_LABEL[secondaryLang]} version? Your {LANG_LABEL[primaryLang]}{" "}
+                resume is not touched.
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  setConfirmingRemove(false);
+                  onRemove();
+                }}
+              >
+                Remove version
+              </Button>
+              <button
+                type="button"
+                onClick={() => setConfirmingRemove(false)}
+                className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                Cancel
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingRemove(true)}
+              className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Remove {LANG_LABEL[secondaryLang]} version
+            </button>
+          )}
         </div>
       )}
 

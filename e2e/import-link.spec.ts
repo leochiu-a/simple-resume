@@ -66,7 +66,12 @@ test.describe("Import from a share link", () => {
     const stored = await page.evaluate(() => {
       const raw = window.localStorage.getItem("resume-doc");
 
-      return raw ? JSON.parse(raw).locales["zh-Hant"].name : null;
+      if (!raw) return null;
+      // Through the primary rather than a hard-coded key: this test is about the
+      // import landing, not about which language a fresh document is labelled.
+      const doc = JSON.parse(raw);
+
+      return doc.locales[doc.primaryLang].name;
     });
     expect(stored).toBe("My Name");
 

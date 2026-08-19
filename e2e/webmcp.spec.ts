@@ -148,8 +148,8 @@ test.describe("WebMCP resume tools", () => {
     // The form holds one Resume, so this block is the only thing telling the
     // agent which of the document's locales it is looking at.
     expect(resume.language).toEqual({
-      active: "zh-Hant",
-      primary: "zh-Hant",
+      active: "en",
+      primary: "en",
       isTranslation: false,
       exists: true,
     });
@@ -166,16 +166,16 @@ test.describe("WebMCP resume tools", () => {
     await page.addInitScript(() => {
       const stored = JSON.parse(window.localStorage.getItem("resume-doc") as string);
 
-      // Primary is Chinese and no English locale exists.
-      stored.activeLang = "en";
+      // Primary is English and no Chinese locale exists.
+      stored.activeLang = "zh-Hant";
       window.localStorage.setItem("resume-doc", JSON.stringify(stored));
     });
     await page.goto("/resume-editor");
     await waitForRegistration(page);
 
     expect(JSON.parse(textOf(await callTool(page, "get-resume"))).language).toEqual({
-      active: "en",
-      primary: "zh-Hant",
+      active: "zh-Hant",
+      primary: "en",
       isTranslation: true,
       exists: false,
     });
@@ -183,13 +183,13 @@ test.describe("WebMCP resume tools", () => {
     const result = await callTool(page, "update-resume", { name: "Ada Lovelace" });
 
     expect(result.isError).toBe(true);
-    expect(textOf(result)).toContain("no English version");
+    expect(textOf(result)).toContain("no Chinese version");
     // The refusal is the point: the locale is still absent either way, but the
     // agent now knows the edit did not happen.
     const stored = await page.evaluate(
       () => JSON.parse(window.localStorage.getItem("resume-doc") as string) as ResumeDocShape,
     );
-    expect(stored.locales.en).toBeUndefined();
+    expect(stored.locales["zh-Hant"]).toBeUndefined();
     expect(errors).toEqual([]);
   });
 
@@ -198,8 +198,8 @@ test.describe("WebMCP resume tools", () => {
     await page.addInitScript(() => {
       const stored = JSON.parse(window.localStorage.getItem("resume-doc") as string);
 
-      stored.locales.en = stored.locales[stored.primaryLang];
-      stored.activeLang = "en";
+      stored.locales["zh-Hant"] = stored.locales[stored.primaryLang];
+      stored.activeLang = "zh-Hant";
       window.localStorage.setItem("resume-doc", JSON.stringify(stored));
     });
     await page.goto("/resume-editor");
@@ -208,7 +208,7 @@ test.describe("WebMCP resume tools", () => {
     const result = await callTool(page, "update-resume", { name: "Ada Lovelace" });
 
     expect(result.isError).toBeFalsy();
-    expect(textOf(result)).toContain("English translation");
+    expect(textOf(result)).toContain("Chinese translation");
     await expect(preview(page).getByText("Ada Lovelace")).toBeVisible();
 
     // It reached the translation and left the source of truth alone.
@@ -218,7 +218,7 @@ test.describe("WebMCP resume tools", () => {
           () => JSON.parse(window.localStorage.getItem("resume-doc") as string) as ResumeDocShape,
         );
 
-        return [stored.locales.en?.name, stored.locales["zh-Hant"]?.name];
+        return [stored.locales["zh-Hant"]?.name, stored.locales.en?.name];
       })
       .toEqual(["Ada Lovelace", "My Name"]);
   });
@@ -519,15 +519,35 @@ test.describe("WebMCP resume tools", () => {
   });
 
   /**
-   * The verb check used to be handed the editor's locale, so the English sample
-   * a fresh editor holds — its locale is zh-Hant — was measured against the
-   * Chinese verb list, which no English word can prefix. Every bullet came back
-   * flagged, a 100% hit rate that reads as the check being broken rather than the
-   * resume being weak. The script is now read off each line.
+   * The verb check used to be handed the editor's locale, so English bullets in a
+   * document labelled zh-Hant were measured against the Chinese verb list, which
+   * no English word can prefix. Every bullet came back flagged, a 100% hit rate
+   * that reads as the check being broken rather than the resume being weak. The
+   * script is now read off each line.
+   *
+   * That mismatch used to be the default — the sample resume is English and new
+   * documents were labelled zh-Hant — so the case needs it built on purpose now
+   * that the label starts as `en`. Without the seed this test asserts nothing:
+   * English content in an English locale is the case that always worked.
    */
   test("score-resume judges each bullet by its own script, not the editor's locale", async ({
     page,
   }) => {
+    await waitForStoredResume(page);
+    await page.addInitScript(() => {
+      const stored = JSON.parse(window.localStorage.getItem("resume-doc") as string);
+
+      // Read before the label moves: `stored.primaryLang` is the key on the way in.
+      const resume = stored.locales[stored.primaryLang];
+
+      stored.primaryLang = "zh-Hant";
+      stored.activeLang = "zh-Hant";
+      stored.locales = { "zh-Hant": resume };
+      window.localStorage.setItem("resume-doc", JSON.stringify(stored));
+    });
+    await page.goto("/resume-editor");
+    await waitForRegistration(page);
+
     expect(JSON.parse(textOf(await callTool(page, "get-resume"))).language.active).toBe("zh-Hant");
 
     const bullets = [
