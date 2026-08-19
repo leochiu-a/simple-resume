@@ -23,11 +23,12 @@ const beforeSend = async (page: Page, url: string) =>
   page.evaluate((candidate) => {
     const queue = (window as unknown as { vaq?: [string, unknown?][] }).vaq ?? [];
     const entry = queue.find(([name]) => name === "beforeSend");
-    if (!entry) return { registered: false, url: null };
+    if (!entry) return { registered: false, cancelled: false, url: null };
 
     const sanitize = entry[1] as (event: { type: string; url: string }) => { url: string } | null;
+    const sent = sanitize({ type: "pageview", url: candidate });
 
-    return { registered: true, url: sanitize({ type: "pageview", url: candidate })?.url ?? null };
+    return { registered: true, cancelled: sent === null, url: sent?.url ?? null };
   }, url);
 
 test.describe("analytics", () => {
@@ -51,5 +52,18 @@ test.describe("analytics", () => {
     );
 
     expect(sent.url).toBe("https://example.com/resume-editor");
+  });
+
+  /* Fails closed. `beforeSend` runs inside the analytics script, and what that
+     script does with a thrown exception is its business, not this repo's — so a
+     URL that cannot be parsed is cancelled rather than left to it. */
+  test("cancels the event rather than passing a URL it could not parse", async ({ page }) => {
+    await page.goto("/resume-editor");
+
+    const sent = await beforeSend(page, "not-a-url#r=a-payload-standing-in-for-a-resume");
+
+    expect(sent.registered).toBe(true);
+    expect(sent.cancelled).toBe(true);
+    expect(sent.url).toBeNull();
   });
 });

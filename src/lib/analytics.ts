@@ -82,6 +82,21 @@ export const trackCapability = (
   trackEvent("ai_capability", { feature, state });
 };
 
+/*
+   Read defensively, because the argument is typed `Resume` and is not one.
+
+   It comes from the `resume-doc` key, which `useResumeDoc` pulls out of local
+   storage with no validation at all, and a pre-v2 document reaches it having
+   passed only `"name" in value && "employmentHistory" in value` — so `profile`,
+   `educations` and `skills` may simply not be there. A bare `.trim()` on that
+   throws inside the editor's effect, React unmounts the tree, and the editor
+   goes blank because of a number nobody asked for.
+
+   That is the general rule for this file: nothing here may throw into a render
+   or an effect. Whatever is being measured matters more than the measurement. */
+const text = (value: string | undefined) => !!value?.trim();
+const count = (list: readonly unknown[] | undefined) => list?.length ?? 0;
+
 /**
  * How far along a resume is, in three buckets.
  *
@@ -93,18 +108,18 @@ export const trackCapability = (
  */
 export const resumeFill = (resume: Resume): Fill => {
   const written =
-    !!resume.name.trim() ||
-    !!resume.profile.trim() ||
-    resume.employmentHistory.length > 0 ||
-    resume.educations.length > 0 ||
-    resume.skills.length > 0;
+    text(resume.name) ||
+    text(resume.profile) ||
+    count(resume.employmentHistory) > 0 ||
+    count(resume.educations) > 0 ||
+    count(resume.skills) > 0;
 
   if (!written) return "empty";
 
   const complete =
-    !!resume.name.trim() &&
-    !!resume.profile.trim() &&
-    (resume.employmentHistory.length > 0 || resume.educations.length > 0);
+    text(resume.name) &&
+    text(resume.profile) &&
+    (count(resume.employmentHistory) > 0 || count(resume.educations) > 0);
 
   return complete ? "full" : "started";
 };

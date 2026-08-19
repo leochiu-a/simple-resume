@@ -18,13 +18,25 @@ import { Analytics as VercelAnalytics, type BeforeSendEvent } from "@vercel/anal
  * as a real event anyway, and an allowlist would be one more thing to remember
  * to update the next time a parameter is added.
  *
+ * A URL this cannot parse is dropped rather than passed along. `beforeSend` runs
+ * inside the third-party script's own send path, and what that script does with
+ * a thrown exception — swallow it and send the original, or lose the event — is
+ * not something this repo pins. Returning `null` cancels the event, which is the
+ * right answer either way: a lost pageview costs nothing, and an uncut one costs
+ * the promise the whole app is built on.
+ *
  * This is a client component because `beforeSend` is a function, and a server
  * component cannot hand a function to a client one.
  */
-const sanitize = (event: BeforeSendEvent): BeforeSendEvent => {
-  const url = new URL(event.url);
+const sanitize = (event: BeforeSendEvent): BeforeSendEvent | null => {
+  try {
+    const url = new URL(event.url);
 
-  return { ...event, url: `${url.origin}${url.pathname}` };
+    return { ...event, url: `${url.origin}${url.pathname}` };
+  } catch {
+    // A URL this cannot read is a URL it cannot prove is safe to send.
+    return null;
+  }
 };
 
 const Analytics = () => <VercelAnalytics beforeSend={sanitize} />;

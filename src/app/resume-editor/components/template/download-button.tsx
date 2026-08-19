@@ -117,7 +117,6 @@ const DownloadButton = ({
   useEffect(() => () => clearTimeout(copiedTimer.current), []);
 
   const downloadPdf = () => {
-    trackEvent("resume_exported", { format: "pdf", template: template.id });
     setStartDownload(true);
     update(template.render({ resume, backgroundColor }));
   };
@@ -128,9 +127,14 @@ const DownloadButton = ({
       a.href = instance.url;
       a.download = "resume.pdf";
       a.click();
+      /* Counted here rather than on the click that started it, for the same
+         reason the clipboard copies are counted after the write: the file only
+         exists once @react-pdf has finished rendering it, and a render that
+         never finishes is not an export. */
+      trackEvent("resume_exported", { format: "pdf", template: template.id });
       setStartDownload(false);
     }
-  }, [instance.loading, instance.url, startDownload]);
+  }, [instance.loading, instance.url, startDownload, template.id]);
 
   const downloadHtml = () => {
     trackEvent("resume_exported", { format: "html", template: template.id });
