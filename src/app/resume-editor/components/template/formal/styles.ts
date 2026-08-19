@@ -171,6 +171,7 @@ export const styles = StyleSheet.create({
   summary: {
     fontFamily: SANS,
     paddingLeft: BODY_INDENT,
+    fontSize: pt(14),
     lineHeight: 1.4,
   },
 

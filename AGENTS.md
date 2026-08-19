@@ -44,14 +44,15 @@ select.
 
 Each of these has already cost debugging time. They are silent — nothing throws and the tests pass.
 
-| Do not                                 | Because                                                                                      |
-| -------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `h-screen` on the editor shell         | `100vh` is the _largest_ mobile viewport; the page hides under the address bar. Use `h-dvh`. |
-| Bare numbers for sizes in a template   | Points in the PDF, **pixels** in the preview — the layout shrinks by a quarter. Use `pt()`.  |
-| A bordered element without `boxSizing` | Yoga borders are inside the box, the browser's are outside. Preview-only size bug.           |
-| Driving the hero's entrance from JS    | An interrupted animation strands the landing page at `opacity: 0`. `.landing-rise` is CSS.   |
-| Reusing the Prompt API session         | The profile stays in context while a description is rewritten. Clone per run.                |
-| Tinting the resume sheet               | It is paper-white in both themes because that is what the PDF is.                            |
+| Do not                                              | Because                                                                                                                          |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `h-screen` on the editor shell                      | `100vh` is the _largest_ mobile viewport; the page hides under the address bar. Use `h-dvh`.                                     |
+| Bare numbers for sizes in a template                | Points in the PDF, **pixels** in the preview — the layout shrinks by a quarter. Use `pt()`.                                      |
+| A bordered element without `boxSizing`              | Yoga borders are inside the box, the browser's are outside. Preview-only size bug.                                               |
+| Driving the hero's entrance from JS                 | An interrupted animation strands the landing page at `opacity: 0`. `.landing-rise` is CSS.                                       |
+| Reusing the Prompt API session                      | The profile stays in context while a description is rewritten. Clone per run.                                                    |
+| Tinting the resume sheet                            | It is paper-white in both themes because that is what the PDF is.                                                                |
+| `lineHeight` without a `fontSize` in the same block | @react-pdf measures it against its own 18pt default, not the inherited size. Correct in the preview, ~165% too loose in the PDF. |
 
 ## Where the detail lives
 

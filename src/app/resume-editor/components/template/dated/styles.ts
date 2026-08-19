@@ -349,8 +349,17 @@ export const styles = StyleSheet.create({
    * measure of any template, so the same profile is more lines here than anywhere
    * else, and each one costs.
    */
+  /*
+   * `fontSize` restates the page's, and is load-bearing: a `lineHeight` in a style
+   * block that does not also name a size is resolved by @react-pdf against its own
+   * default of 18pt, not against the size the text is actually drawn at. The
+   * preview inherits `font-size` the way CSS does, so it looked right there while
+   * the PDF printed this paragraph at nearly twice the leading. See
+   * `template/summary.tsx`.
+   */
   summary: {
     fontFamily: SANS,
+    fontSize: pt(13.5),
     lineHeight: 1.4,
   },
 
