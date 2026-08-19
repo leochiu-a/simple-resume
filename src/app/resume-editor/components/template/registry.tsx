@@ -22,6 +22,7 @@ import CompactTemplate from "./compact/compact-template";
 import buildCompactResumeHtml from "./compact/build-compact-resume-html";
 import DatedTemplate from "./dated/dated-template";
 import buildDatedResumeHtml from "./dated/build-dated-resume-html";
+import { applyResumeFonts } from "./fonts";
 
 /**
  * Every template the editor can render. A template owns both of its outputs — the
@@ -73,7 +74,7 @@ export interface TemplateDefinition {
   buildHtml: (props: TemplateProps) => string;
 }
 
-export const TEMPLATES: TemplateDefinition[] = [
+const DEFINITIONS: TemplateDefinition[] = [
   {
     id: "classic",
     label: "Classic",
@@ -159,6 +160,26 @@ export const TEMPLATES: TemplateDefinition[] = [
     buildHtml: buildDatedResumeHtml,
   },
 ];
+
+/**
+ * Every definition above, with the font stacks brought up to date before its tree
+ * is built.
+ *
+ * `render` is the one thing every rendering path goes through — the editor's
+ * preview, a share link, a picker thumbnail and the PDF download all call it — so
+ * it is where the resume gets read for Chinese. Leaving that to the callers would
+ * mean a new one could forget, and what it would lose is not obvious on screen:
+ * the preview would still show the characters in a system font while the PDF came
+ * out with none of them.
+ */
+export const TEMPLATES: TemplateDefinition[] = DEFINITIONS.map((template) => ({
+  ...template,
+  render: (props) => {
+    applyResumeFonts(props.resume);
+
+    return template.render(props);
+  },
+}));
 
 export const DEFAULT_TEMPLATE_ID = TEMPLATES[0].id;
 

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { downloadMenu, downloadPdf, readPdfFacts } from "./helpers";
+import { CHINESE, seedResume } from "./seeds";
 
 /**
  * @react-pdf/renderer generates the PDF entirely in the browser via usePDF, so
@@ -61,5 +62,40 @@ test.describe("PDF download", () => {
     expect(pdf.header).toBe("%PDF-1.3");
     expect(pdf.hasEof).toBe(true);
     expect(pdf.pages).toBe(1);
+  });
+
+  /**
+   * The Latin files are Noto's *latin* subsets and have no Han in them at all, so
+   * a Chinese resume used to download as a page of `.notdef` — drawn with a zero
+   * advance, which piles a whole word onto one x rather than leaving a visible
+   * gap. Embedding is the thing to assert: the CJK face is only registered when
+   * the text needs it, and a subset that never got fetched cannot be in the file.
+   *
+   * The English test above is the other half of this pair. It pins the count at
+   * three, which is what keeps the 5.7MB face off every resume that has no
+   * Chinese in it.
+   *
+   * The long deadline is the CJK face coming from a CDN. @react-pdf cannot lay
+   * the page out until it has the whole 11.5MB, every worker fetches it into its
+   * own context, and 30s is not enough for all of them at once — this is the one
+   * test in the suite whose clock is a download rather than a render.
+   */
+  test("embeds the CJK face for a resume written in Chinese", async ({ page }) => {
+    // Past the 30s a test gets by default, which the download alone can spend.
+    test.setTimeout(120_000);
+
+    await seedResume(page, CHINESE);
+    await page.goto("/resume-editor");
+
+    await expect(downloadMenu(page)).toBeEnabled();
+
+    const downloadPromise = page.waitForEvent("download", { timeout: 90_000 });
+    await downloadPdf(page);
+    const download = await downloadPromise;
+
+    const pdf = readPdfFacts((await download.path())!);
+
+    expect(pdf.hasEof).toBe(true);
+    expect(pdf.embeddedFonts.some((f) => f.endsWith("NotoSansTC-Regular"))).toBe(true);
   });
 });

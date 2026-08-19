@@ -1,3 +1,5 @@
+import { SHEET_FONT_FACES } from "./fonts";
+
 /**
  * The document every rendered sheet lives in.
  *
@@ -13,10 +15,9 @@ export const SHEET_DOCUMENT = `
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <style>
+${SHEET_FONT_FACES}
+
       /* @react-pdf's primitives land here as unknown elements, so they carry no
          layout of their own. Letting the sheet stretch is what allows a template's
          full-height sidebar to reach the bottom of the last page instead of
