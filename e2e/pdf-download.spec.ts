@@ -74,14 +74,22 @@ test.describe("PDF download", () => {
    * The English test above is the other half of this pair. It pins the count at
    * three, which is what keeps the 5.7MB face off every resume that has no
    * Chinese in it.
+   *
+   * The long deadline is the CJK face coming from a CDN. @react-pdf cannot lay
+   * the page out until it has the whole 11.5MB, every worker fetches it into its
+   * own context, and 30s is not enough for all of them at once — this is the one
+   * test in the suite whose clock is a download rather than a render.
    */
   test("embeds the CJK face for a resume written in Chinese", async ({ page }) => {
+    // Past the 30s a test gets by default, which the download alone can spend.
+    test.setTimeout(120_000);
+
     await seedResume(page, CHINESE);
     await page.goto("/resume-editor");
 
     await expect(downloadMenu(page)).toBeEnabled();
 
-    const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
+    const downloadPromise = page.waitForEvent("download", { timeout: 90_000 });
     await downloadPdf(page);
     const download = await downloadPromise;
 

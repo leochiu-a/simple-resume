@@ -139,24 +139,46 @@ const CJK_RANGE = [
  * where the Chinese should be. The Google stylesheet these replaced asked for
  * `swap` too.
  */
-const face = (family: string, weight: 400 | 700, src: string, range?: string) => `
+export const SHEET_FONT_FACES = `
       @font-face {
-        font-family: "${family}";
-        font-weight: ${weight};
+        font-family: "Noto Sans";
+        font-weight: 400;
         font-display: swap;
-        src: url("${src}") format("${src.endsWith(".otf") ? "opentype" : "truetype"}");${
-          range ? `\n        unicode-range: ${range};` : ""
-        }
+        src: url("${FILES.sansRegular}") format("truetype");
+      }
+      @font-face {
+        font-family: "Noto Sans";
+        font-weight: 700;
+        font-display: swap;
+        src: url("${FILES.sansBold}") format("truetype");
+      }
+      @font-face {
+        font-family: "Noto Serif";
+        font-weight: 700;
+        font-display: swap;
+        src: url("${FILES.serifBold}") format("truetype");
+      }
+      @font-face {
+        font-family: "Noto Sans";
+        font-weight: 400;
+        font-display: swap;
+        src: url("${FILES.cjkRegular}") format("opentype");
+        unicode-range: ${CJK_RANGE};
+      }
+      @font-face {
+        font-family: "Noto Sans";
+        font-weight: 700;
+        font-display: swap;
+        src: url("${FILES.cjkBold}") format("opentype");
+        unicode-range: ${CJK_RANGE};
+      }
+      @font-face {
+        font-family: "Noto Serif";
+        font-weight: 700;
+        font-display: swap;
+        src: url("${FILES.cjkBold}") format("opentype");
+        unicode-range: ${CJK_RANGE};
       }`;
-
-export const SHEET_FONT_FACES = [
-  face("Noto Sans", 400, FILES.sansRegular),
-  face("Noto Sans", 700, FILES.sansBold),
-  face("Noto Serif", 700, FILES.serifBold),
-  face("Noto Sans", 400, FILES.cjkRegular, CJK_RANGE),
-  face("Noto Sans", 700, FILES.cjkBold, CJK_RANGE),
-  face("Noto Serif", 700, FILES.cjkBold, CJK_RANGE),
-].join("");
 
 /**
  * Puts the CJK face in the stacks the first time a resume contains a character
