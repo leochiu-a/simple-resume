@@ -66,6 +66,13 @@ paths go through. It is a script test rather than a language check on purpose �
 with one Chinese company name in it needs the face for exactly that name, which is the case any
 document-level answer gets wrong.
 
+It is also the one font this app does not ship. 11.5MB of upstream release artifacts do not belong in
+a repository, so both weights are loaded from jsDelivr, pinned to the `Sans2.004` **tag** — a
+released version whose bytes cannot move under us, which a `main` URL's could. Two things follow, and
+neither is hidden: the editor reaches a third party the first time it meets a Chinese character, and
+a Chinese resume cannot be exported with no network. The Latin faces stay in `public/`, so an English
+one still can.
+
 The serif stack falls back to the same sans face. A second CJK file is another 8MB for what is only
 ever bold display type, and Chinese set in the sans beside serif Latin reads as a deliberate pair.
 
@@ -84,9 +91,14 @@ Two more things follow from CJK that do not from Latin:
   lines. It is a difference in the last inch of a line, not in where the pages break, which is what
   `page-margins.spec.ts` holds the two renderings to.
 
-The preview loads the same five files from `public/fonts`, through `@font-face` rules in
-[`sheet-document.ts`](../src/app/resume-editor/components/template/sheet-document.ts) — the CJK ones
-carrying a `unicode-range`, which is what keeps them off a page that has no Chinese on it.
+The preview loads the same five files, through `@font-face` rules in
+[`sheet-document.ts`](../src/app/resume-editor/components/template/sheet-document.ts) — the same URLs
+`fonts.ts` registers, so the sheet and the download share one fetch and one cache entry. The CJK
+rules carry a `unicode-range`, which is what keeps them off a page that has no Chinese on it, and
+every rule carries `font-display: swap`, without which a 5.7MB face means three seconds of a sheet
+with no Chinese on it. Those ranges are the CSS half of the `CJK` test in `fonts.ts`: edit one and
+edit the other, because the two disagreeing is a character the PDF renders and the sheet does not,
+and nothing in the suite fails on that.
 
 ## Whether it survives a parser
 

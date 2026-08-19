@@ -33,6 +33,21 @@ Font.register({
 
 const CJK_SANS = "Noto Sans TC";
 
+/**
+ * The CJK face is the one font this app does not ship.
+ *
+ * The two files behind it are 5.7MB and 5.8MB — four times everything else in
+ * `public/` put together — and they are upstream release artifacts that never
+ * change, which is the shape a CDN is for and the shape a repository is not. The
+ * ref is a *tag*, not a branch: `Sans2.004` is a released version of Noto Sans
+ * CJK and its bytes cannot move under us, which a `main` URL's could.
+ *
+ * The cost, stated plainly: the editor reaches a third party the first time it
+ * meets a Chinese character, and a Chinese resume cannot be exported offline.
+ * The Latin faces stay in `public/`, so an English one still can.
+ */
+const CJK_SANS_DIR = "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@Sans2.004/Sans/SubsetOTF/TC";
+
 export const SANS = ["Noto Sans"];
 export const SERIF = ["Noto Serif"];
 
@@ -53,8 +68,8 @@ const registerCjk = () => {
   Font.register({
     family: CJK_SANS,
     fonts: [
-      { src: "/fonts/NotoSansTC-Regular.otf" },
-      { src: "/fonts/NotoSansTC-Bold.otf", fontWeight: "bold" },
+      { src: `${CJK_SANS_DIR}/NotoSansTC-Regular.otf` },
+      { src: `${CJK_SANS_DIR}/NotoSansTC-Bold.otf`, fontWeight: "bold" },
     ],
   });
 
@@ -105,7 +120,7 @@ export const applyResumeFonts = (resume: Resume) => {
   if (CJK.test(JSON.stringify(resume))) registerCjk();
 };
 
-const NO_BREAK_BEFORE = /[，。、；：？！）］｝」』】〕》〉‧・…—～　%]/;
+const NO_BREAK_BEFORE = /[，。、；：？！）］｝」』】〕》〉‧・…—～　%％]/;
 const NO_BREAK_AFTER = /[（［｛「『【〔《〈]/;
 
 /**
@@ -128,7 +143,7 @@ const NO_BREAK_AFTER = /[（［｛「『【〔《〈]/;
  * extractor pulls back out. It is the same shape as the Latin case's `["", word,
  * ""]`, which is what has been disabling hyphenation here all along.
  */
-export const hyphenate = (word: string) => {
+const hyphenate = (word: string) => {
   if (!CJK.test(word)) return ["", word, ""];
 
   const characters = [...word];
