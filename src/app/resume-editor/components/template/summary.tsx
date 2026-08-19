@@ -26,6 +26,13 @@ const BLOCK: Style = { display: "flex", flexDirection: "column" };
  * and a page's margins cannot be opened inside it. Split per line, the same
  * profile is a grid of blocks a break can fall between.
  *
+ * Whatever `style` a template passes must name a `fontSize` if it names a
+ * `lineHeight`. @react-pdf resolves a unitless line height against its own 18pt
+ * default when the same block does not declare a size — inheritance supplies the
+ * size the glyphs are drawn at, but not the one the leading is measured from. CSS
+ * has no such split, so the preview stays right while the PDF sets this paragraph
+ * at nearly twice its intended leading. `e2e/template-leading.spec.ts` guards it.
+ *
  * The `View` around each line is what makes it a block. @react-pdf lays a `Text`
  * out as one either way, but the preview renders that same tree as HTML, where an
  * unknown `<text>` element is inline — and a margin, which is how the preview
