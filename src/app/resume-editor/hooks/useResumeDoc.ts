@@ -227,11 +227,25 @@ export const useResumeDoc = (formMethods: UseFormReturn<Resume>): UseResumeDocRe
       // worse, recreate it — `write` only skips slots that are empty *now*.
       write.flush();
 
+      // Checked twice, and neither is redundant. Here, because the form must not
+      // be reset over a document that is not going to change — the reset is a
+      // side effect and cannot live inside the updater, which StrictMode runs
+      // twice. And again below, where the state is authoritative.
       const { primaryLang: primary, locales } = docRef.current;
       if (lang === primary) return;
 
+      // `docRef` is a render behind the flush above, but the primary is the one
+      // locale that flush cannot have touched: the write it committed was aimed
+      // at the locale being removed, which is by definition not this one.
       formRef.current.reset(locales[primary] ?? createEmptyResume());
+
       setDoc((prev) => {
+        // Refused here rather than against `docRef`, which the two would
+        // otherwise be free to disagree about: deleting `prev.primaryLang` would
+        // leave `activeLang` pointing at a locale that no longer exists and
+        // `primaryResume` quietly falling back to the sample resume.
+        if (lang === prev.primaryLang) return prev;
+
         const { [lang]: _removed, ...remaining } = prev.locales;
         const { [lang]: _meta, ...remainingMeta } = prev.translation;
 

@@ -56,8 +56,10 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
   const { translator, running, staleCount, editedCount, error, run, retranslate } = translation;
   const unsupported = translator.state === "unsupported";
   const busy = running || translator.state === "downloading";
-  const [confirmingRedo, setConfirmingRedo] = useState(false);
-  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  /* One question at a time. Two booleans let both prompts stand at once — two
+     destructive buttons and two `Cancel`s in the same wrapping row — because
+     nothing made opening one close the other. A single value cannot hold both. */
+  const [confirming, setConfirming] = useState<"redo" | "remove" | null>(null);
 
   if (!hasLocale) {
     return (
@@ -142,7 +144,7 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
 
           {/* Distinct from "Update translation": that one protects your
               rewrites, this one throws them away. Hence the confirm step. */}
-          {confirmingRedo ? (
+          {confirming === "redo" ? (
             <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span className="text-[11px] text-muted-foreground">
                 {editedCount > 0
@@ -156,7 +158,7 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
                 size="sm"
                 variant="destructive"
                 onClick={() => {
-                  setConfirmingRedo(false);
+                  setConfirming(null);
                   void retranslate();
                 }}
               >
@@ -164,7 +166,7 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
               </Button>
               <button
                 type="button"
-                onClick={() => setConfirmingRedo(false)}
+                onClick={() => setConfirming(null)}
                 className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
               >
                 Cancel
@@ -174,7 +176,7 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
             <button
               type="button"
               disabled={unsupported}
-              onClick={() => setConfirmingRedo(true)}
+              onClick={() => setConfirming("redo")}
               className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
             >
               Re-translate from {LANG_LABEL[primaryLang]}
@@ -193,7 +195,7 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
               option you cannot take back is not one. Confirmed like
               "Re-translate" and for a stronger reason: this discards the whole
               locale, and the original is not a copy of it. */}
-          {confirmingRemove ? (
+          {confirming === "remove" ? (
             <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span className="text-[11px] text-muted-foreground">
                 Delete this {LANG_LABEL[secondaryLang]} version? Your {LANG_LABEL[primaryLang]}{" "}
@@ -204,7 +206,7 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
                 size="sm"
                 variant="destructive"
                 onClick={() => {
-                  setConfirmingRemove(false);
+                  setConfirming(null);
                   onRemove();
                 }}
               >
@@ -212,7 +214,7 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
               </Button>
               <button
                 type="button"
-                onClick={() => setConfirmingRemove(false)}
+                onClick={() => setConfirming(null)}
                 className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
               >
                 Cancel
@@ -221,7 +223,7 @@ const TranslationPanel: FC<TranslationPanelProps> = ({
           ) : (
             <button
               type="button"
-              onClick={() => setConfirmingRemove(true)}
+              onClick={() => setConfirming("remove")}
               className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Remove {LANG_LABEL[secondaryLang]} version
