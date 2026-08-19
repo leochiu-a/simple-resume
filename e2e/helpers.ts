@@ -38,8 +38,8 @@ export const downloadMenu = (page: Page): Locator =>
  * way to the button, and it is what makes the button clickable.
  *
  * Below the desktop breakpoint there is no preview pane — the controls live in
- * the mobile dialog's toolbar, where the button is always solid — so the hover is
- * skipped rather than waited for.
+ * the mobile dialog's toolbar, where the button is rendered without the reveal at
+ * all — so the hover is skipped rather than waited for.
  */
 export const openAppearanceMenu = async (page: Page) => {
   const pane = previewPane(page);

@@ -42,10 +42,12 @@ const PreviewControls = ({
     <div className="flex items-center gap-3">
       <AppearanceTrigger
         onOpen={onOpenAppearance}
-        // Always solid here: the fade is a desktop affordance keyed off hovering
-        // the preview pane, and this dialog only exists below that breakpoint.
+        // The fade is a desktop affordance keyed off hovering the preview pane,
+        // and there is no such pane here — `reveal={false}` rather than an
+        // `opacity-100` class, because the reveal also removes pointer events.
+        reveal={false}
         // `size-9` to match the row it sits in.
-        className="size-9 opacity-100 shadow-none"
+        className="size-9 shadow-none"
         // A tooltip here would swallow the Escape that should close the dialog —
         // see the note on the prop itself.
         tooltip={false}

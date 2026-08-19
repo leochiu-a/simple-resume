@@ -31,10 +31,26 @@ const AppearanceTrigger = ({
    * having; in a labelled toolbar row beside Download it is not.
    */
   tooltip = true,
+  /**
+   * Whether the button hides itself until the preview pane is hovered.
+   *
+   * On by default, because that is what it is for on the desktop preview: the
+   * resting state there is the sheet and nothing else. Off in the mobile
+   * dialog's toolbar, where the button is a row item like Download and there is
+   * no pane to hover.
+   *
+   * A prop rather than something a caller can turn off with a class, because the
+   * reveal is `opacity-0` *and* `pointer-events-none`: overriding only the
+   * opacity left a fully visible button that silently took no clicks — a pointer
+   * that reports no hover (`[@media(hover:none)]`) was the only thing restoring
+   * them, so a narrow desktop window got a dead palette button.
+   */
+  reveal = true,
 }: {
   onOpen: () => void;
   className?: string;
   tooltip?: boolean;
+  reveal?: boolean;
 }) => {
   const button = (
     <Button
@@ -58,10 +74,12 @@ const AppearanceTrigger = ({
           hover to give, and `(hover: none)` pins it visible on touch, which has
           no hover at all and would otherwise have no way into the panel.
         */
-        "pointer-events-none opacity-0",
-        "group-hover:pointer-events-auto group-hover:opacity-100",
-        "group-focus-within:pointer-events-auto group-focus-within:opacity-100",
-        "[@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100",
+        reveal && [
+          "pointer-events-none opacity-0",
+          "group-hover:pointer-events-auto group-hover:opacity-100",
+          "group-focus-within:pointer-events-auto group-focus-within:opacity-100",
+          "[@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100",
+        ],
         className,
       )}
     >

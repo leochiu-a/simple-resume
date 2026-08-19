@@ -89,6 +89,25 @@ test.describe("mobile preview dialog", () => {
     await expect(city).toHaveValue("Kaohsiung");
   });
 
+  test("the palette button opens the appearance panel", async ({ page }) => {
+    /*
+      A real click, not `dispatchEvent`. On the desktop preview the palette
+      button is `opacity-0 pointer-events-none` until the pane is hovered, and
+      the dialog's toolbar used to cancel that with an `opacity-100` class —
+      which left the button plainly visible and completely dead to the pointer,
+      restored only on a `hover: none` device. This viewport reports hover, like
+      a narrow desktop window does, so it is the case that was broken.
+    */
+    await page.getByRole("button", { name: "Preview & Download" }).click();
+
+    const dialog = previewDialog(page);
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Template and colour" }).click();
+
+    await expect(dialog.getByRole("button", { name: "Close appearance" })).toBeVisible();
+  });
+
   test("downloads the PDF from inside the dialog", async ({ page }) => {
     await page.getByRole("button", { name: "Preview & Download" }).click();
 
