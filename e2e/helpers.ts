@@ -54,6 +54,58 @@ export const openAppearanceMenu = async (page: Page) => {
 };
 
 /**
+ * Waits until the preview sheet has stopped moving under its own steam.
+ *
+ * Two things reflow it after the content is on screen, both asynchronous with
+ * respect to the click that caused them, and a test that measures between them
+ * reads a layout the user never sees:
+ *
+ * - pagination, which nudges blocks clear of the page margins *after* the browser
+ *   has laid the sheet out. A template swap reuses the content node, so the pass
+ *   is driven by a `ResizeObserver` rather than by React;
+ * - the sheet's webfonts, which arrive later still and rewrap every line. The
+ *   Latin faces are local and usually beat the first measurement; the CJK face is
+ *   5.7MB from a CDN and reliably does not.
+ *
+ * So: the fonts first, then the sheet's own pass counter until it stops going up.
+ * Waiting for the counter alone would let a font-driven reflow land afterwards,
+ * and waiting for the fonts alone says nothing about whether the pass they
+ * trigger has run yet.
+ */
+export const waitForSheetSettled = async (page: Page) => {
+  const content = preview(page).locator("[data-resume-page] > div").first();
+  await content.waitFor();
+
+  // `document.fonts.ready` is resolved against the loads pending when it is read,
+  // and the CJK face is only requested once a glyph in its `unicode-range` is laid
+  // out — which can be after the first read. Re-reading until the set is quiet
+  // covers the face that starts loading late.
+  await content.evaluate(async (element) => {
+    const { fonts } = element.ownerDocument;
+
+    for (let attempt = 0; attempt < 50 && fonts.status !== "loaded"; attempt += 1) {
+      await fonts.ready;
+    }
+  });
+
+  await expect
+    .poll(
+      async () => {
+        const first = await content.getAttribute("data-pagination-pass");
+        await page.waitForTimeout(120);
+
+        // Equal *and* present: two nulls would report a sheet that has not been
+        // paginated once as settled, which is the state this exists to exclude.
+        return first !== null && first === (await content.getAttribute("data-pagination-pass"))
+          ? first
+          : null;
+      },
+      { message: "the preview sheet never stopped repaginating" },
+    )
+    .not.toBeNull();
+};
+
+/**
  * Selects a template, then leaves the panel.
  *
  * Closing again matters: the panel replaces the form in the editing column, so a
@@ -69,6 +121,10 @@ export const selectTemplate = async (page: Page, label: string) => {
   // The panel stays open on select; the chosen page is the one marked pressed.
   await expect(card).toHaveAttribute("aria-pressed", "true");
   await closeAppearance(page);
+  // The swap reuses the sheet's content node, so nothing React does marks the
+  // point where the new template has been paginated. Every caller measures the
+  // sheet afterwards, so they all need this and none of them should repeat it.
+  await waitForSheetSettled(page);
 };
 
 /** The presets live in the panel; this opens the full picker under them. */

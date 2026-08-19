@@ -50,6 +50,24 @@ const NUDGED = "data-page-nudged";
 const OVERSHOOT_TOLERANCE_PX = 2;
 
 /**
+ * Counts the passes this content node has been through, so an observer outside
+ * can tell a sheet that has been paginated from one that merely exists.
+ *
+ * A pass is asynchronous with respect to everything that causes it: a template
+ * swap keeps this node and changes its children, so the effect below does not
+ * re-run and the work is left to the `ResizeObserver`; the webfont pass arrives
+ * later again. Between the change and the pass the sheet is laid out with the
+ * previous pass's nudges, or none at all — a real state, just not one worth
+ * measuring, and the tests that measure it had no way to know they were in it.
+ *
+ * A count rather than a flag, because "has been paginated" is not the question.
+ * The node is reused, so a flag set by the first pass stays true through every
+ * later change; what tells you the sheet has stopped moving is the number no
+ * longer going up.
+ */
+export const PAGINATION_PASS = "data-pagination-pass";
+
+/**
  * The band each page keeps clear at its top and bottom, read off the sheet rather
  * than configured here.
  *
@@ -235,6 +253,10 @@ export const paginate = (content: HTMLElement, pageHeight: number): number => {
   // sidebar stops where the text ends, leaving a pale stub on the last page.
   content.style.minHeight = `${pageCount * pageHeight}px`;
 
+  // Last, so the count only moves once the sheet it describes has stopped.
+  const pass = Number(content.getAttribute(PAGINATION_PASS) ?? 0);
+  content.setAttribute(PAGINATION_PASS, `${pass + 1}`);
+
   return pageCount;
 };
 
@@ -252,20 +274,53 @@ const usePagination = (pageHeight: number) => {
   useLayoutEffect(() => {
     if (!content) return;
 
-    // Re-measuring on every render would mean a setState with no dependencies —
-    // an open invitation to an update loop. Watching the sheet's size instead
-    // reacts to the thing that actually matters: the resume growing or shrinking.
-    const observer = new ResizeObserver(() => measure());
+    /*
+      Two observers, because the sheet changes in two ways and neither one sees
+      both.
+
+      A `ResizeObserver` on its own cannot: the pass ends by pinning `minHeight`
+      to a whole number of pages, so a resume that *shrinks* leaves the observed
+      box exactly the size it was and the observer stays silent. That hole was
+      invisible because of a second bug sitting on top of it — `observe()` reports
+      the element it is handed whatever its size (a fresh observation has no
+      recorded size to compare against), and the pass re-observed at the end, so
+      every pass scheduled the next one. The sheet repaginated about sixty times a
+      second for as long as it was on screen: idempotent, so nothing looked wrong,
+      a core burnt per open preview, and shrinking happened to be noticed by the
+      next tick of a loop that should not have been running.
+
+      So the resume's own changes are watched where they happen. Pagination writes
+      nothing but attributes — inline margins, its markers, `minHeight` — and this
+      observer is not told about attributes, so it hears React and never itself.
+      The `ResizeObserver` stays for what it is actually good at: the sheet being
+      given a different amount of room.
+    */
+    const changes = new MutationObserver(() => measure());
+
+    // Its own echo, and only that: exactly one callback is delivered for the
+    // element handed to `observe()` at the end of each pass.
+    let echo = false;
+
+    const observer = new ResizeObserver(() => {
+      if (echo) {
+        echo = false;
+        return;
+      }
+
+      measure();
+    });
 
     const measure = () => {
       // Paginating moves margins around, which would retrigger the observer, so
       // it stays detached for the duration of the pass.
       observer.disconnect();
       setPageCount(paginate(content, pageHeight));
+      echo = true;
       observer.observe(content);
     };
 
     measure();
+    changes.observe(content, { childList: true, subtree: true, characterData: true });
 
     // The sheet's webfonts arrive after first paint, and different metrics mean
     // different line wrapping — so the first measurement is taken against fallback
@@ -280,6 +335,7 @@ const usePagination = (pageHeight: number) => {
     return () => {
       cancelled = true;
       observer.disconnect();
+      changes.disconnect();
     };
   }, [content, pageHeight]);
 
