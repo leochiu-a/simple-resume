@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 
+import { trackCapability } from "@/lib/analytics";
 import {
   ensureTranslator,
   getServerTranslatorStatus,
@@ -47,6 +48,10 @@ export const useTranslatorCapability = (pair: LangPair | null): UseTranslatorCap
   useEffect(() => {
     if (source && target) void probeAvailability({ source, target });
   }, [source, target]);
+
+  useEffect(() => {
+    trackCapability("translator", status.state);
+  }, [status.state]);
 
   const enable = useCallback(
     () =>

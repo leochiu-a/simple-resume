@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { ColorResult } from "@uiw/react-color";
 
+import { trackEvent } from "@/lib/analytics";
 import { readAppearanceRequest } from "@/lib/appearance-link";
 
 import { DEFAULT_TEMPLATE_ID, getTemplate, TEMPLATES } from "../components/template/registry";
@@ -99,6 +100,30 @@ const useTemplateOptions = () => {
     // template still carrying the previous one's colour.
     setStored(defaultAppearance(id));
     setDisplayColorPicker(false);
+    trackEvent("template_selected", { template: id });
+  };
+
+  /* The colour goes out as which template it was chosen for and whether it came
+     from a swatch or the picker — never the hex. A custom colour is a handful of
+     bits about one person's taste, and this is the app that does not collect
+     things about one person. Which templates people reach past the presets for
+     is the question worth asking anyway.
+
+     Once per visit to the picker, not once per change: the picker fires on every
+     frame of a drag across the saturation square, and a hundred identical events
+     for one colour is both noise and a bill. The flag resets when the picker is
+     opened again, so a second colour later in the session still counts. */
+  const pickerTracked = useRef(false);
+
+  const changeColor = (color: string, source: "swatch" | "custom") => {
+    setBackgroundColor(color);
+
+    if (source === "custom") {
+      if (pickerTracked.current) return;
+      pickerTracked.current = true;
+    }
+
+    trackEvent("color_changed", { template: templateId, source });
   };
 
   return {
@@ -106,10 +131,15 @@ const useTemplateOptions = () => {
     selectTemplate,
     backgroundColor,
     /** For the preset swatches, which already know their own hex. */
-    selectColor: setBackgroundColor,
+    selectColor: (color: string) => changeColor(color, "swatch"),
     displayColorPicker,
-    toggleColorPicker: () => setDisplayColorPicker((shown) => !shown),
-    changeBackgroundColor: (color: ColorResult) => setBackgroundColor(color.hex),
+    toggleColorPicker: () =>
+      setDisplayColorPicker((shown) => {
+        if (!shown) pickerTracked.current = false;
+
+        return !shown;
+      }),
+    changeBackgroundColor: (color: ColorResult) => changeColor(color.hex, "custom"),
   };
 };
 

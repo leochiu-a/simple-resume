@@ -20,7 +20,7 @@ CI runs typecheck, lint, format:check, build and the Playwright suite. A Husky h
 Commits follow [conventional commits](https://www.conventionalcommits.org/) — commitlint enforces it.
 Use a scope that reads as a place in the product (`fix(month-picker)`, `docs(readme)`), not a number.
 
-## Two rules that must not be broken
+## Three rules that must not be broken
 
 **Never give the editor's form an `action`, a `method`, or a submit handler.** Nothing here is ever
 submitted — the `<form>` only groups the fields and gives react-hook-form something to own, and every
@@ -29,6 +29,12 @@ button, and a programmatic click on one serialises every field into the query st
 phone and profile reach the server in the request line and stay in browser history. For an app whose
 whole promise is that the resume stays in the browser, that is the one navigation that must not be
 possible. Every button carries `type="button"`; the `preventDefault` on the form is the backstop.
+
+**Nothing may send a URL, or anything a user typed, to an analytics endpoint.** A share link carries
+the whole resume in its fragment, and analytics scripts report `location.href` — which includes it.
+`beforeSend` in `components/analytics` cuts every reported URL back to a path, and every event goes
+through the typed `EventMap` in `lib/analytics`, where no property accepts a free string. Do not
+import `track` from `@vercel/analytics` anywhere else. See [docs/analytics.md](docs/analytics.md).
 
 **Nothing in the editor's bar may have an accessible name containing "Open Resume"** other than the
 wordmark itself. Two links in one bar whose names overlap are ambiguous both to read out and to
@@ -55,6 +61,7 @@ Each of these has already cost debugging time. They are silent — nothing throw
 | [docs/templates.md](docs/templates.md)       | Adding a template, the fonts (Latin and Chinese), and why the preview is not a rasterised PDF                     |
 | [docs/on-device-ai.md](docs/on-device-ai.md) | Translation, rewriting, the `ResumeDoc` shape and its write invariant                                             |
 | [docs/webmcp.md](docs/webmcp.md)             | The agent tool reference and conventions                                                                          |
+| [docs/analytics.md](docs/analytics.md)       | Every event the app sends, and the rule that keeps resume content out of them                                     |
 
 Design rationale belongs next to the code it defends. If a paragraph only matters while someone is
 editing one file, it is a comment in that file — not a section of the README.

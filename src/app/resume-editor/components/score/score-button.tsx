@@ -4,6 +4,7 @@ import { FC, useState } from "react";
 import { GaugeIcon } from "@/components/icons/gauge";
 import { useIconHover } from "@/components/icons/use-icon-hover";
 
+import { trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -53,7 +54,16 @@ const ScoreButton: FC<ScoreButtonProps> = ({ report, resume, review, onClearRevi
   const [openedAt, setOpenedAt] = useState(0);
 
   return (
-    <Sheet onOpenChange={(open) => open && setOpenedAt(Date.now())}>
+    <Sheet
+      onOpenChange={(open) => {
+        if (!open) return;
+        setOpenedAt(Date.now());
+        /* The score is a number this app computed from the resume, not a piece
+           of it — two people with the same 74 have nothing in common. It is the
+           one figure that says whether the panel is worth opening. */
+        trackEvent("score_opened", { band, score: report.score });
+      }}
+    >
       <SheetTrigger asChild>
         <Button
           variant="outline"

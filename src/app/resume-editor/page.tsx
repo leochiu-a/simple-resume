@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useMediaQuery } from "usehooks-ts";
 
+import { resumeFill, trackEvent } from "@/lib/analytics";
 import { LANG_NAME_EN } from "@/lib/resume-doc";
 import { cn } from "@/lib/utils";
 import { Resume } from "@/types/resume";
@@ -74,6 +75,25 @@ const ResumeEditorPage = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  /* One event per visit to the editor — the denominator every other rate here is
+     measured against. It reads the stored document rather than the watched form:
+     the form is still on its defaults during this effect, and a returning user
+     with a full resume would otherwise be counted as arriving empty.
+
+     `templateOptions.template.id` and a three-way bucket are all that goes with
+     it. Deliberately nothing about the languages: a locale pair is a decent
+     guess at where somebody lives. */
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current) return;
+
+    opened.current = true;
+    trackEvent("editor_opened", {
+      template: templateOptions.template.id,
+      fill: resumeFill(doc.primaryResume),
+    });
+  }, [doc.primaryResume, templateOptions.template.id]);
 
   if (!mounted) return null;
 

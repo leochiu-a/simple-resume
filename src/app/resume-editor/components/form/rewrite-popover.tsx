@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -92,6 +93,9 @@ const RewritePopover = ({ section, getValue, onApply, className }: RewritePopove
     setLastAction(action);
     setDraft("");
     setError(null);
+    /* The action's id, which is one of a fixed few — never the text being
+       rewritten, and never the draft that comes back. */
+    trackEvent("rewrite_run", { section, action: action.id });
 
     // Deliberately not awaited: the click's user activation has to reach
     // `create()` inside this call, and awaiting here would not change that but
@@ -124,6 +128,10 @@ const RewritePopover = ({ section, getValue, onApply, className }: RewritePopove
 
   const apply = () => {
     if (!draft) return;
+    /* Paired with `rewrite_run`: a run that is never applied is a draft the user
+       looked at and rejected, and the ratio between the two is the only honest
+       read on whether the rewrites are any good. */
+    trackEvent("rewrite_applied", { section, action: lastAction?.id ?? "unknown" });
     onApply(draft);
     handleOpenChange(false);
   };
