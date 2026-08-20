@@ -44,3 +44,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Ticket scratchpad — planning notes, not part of the app
+.scratch

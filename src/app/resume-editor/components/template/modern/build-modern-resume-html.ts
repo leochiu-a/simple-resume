@@ -1,10 +1,15 @@
 import formatDateRange from "@/lib/formatDateRange";
-import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { sectionsHtml } from "@/lib/resume-sections";
-import { Resume } from "@/types/resume";
+import { CustomSection, Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
 
-import { escapeHtml, paragraphsHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
+import {
+  GOOGLE_FONTS_LINKS,
+  bulletItemsHtml,
+  escapeHtml,
+  paragraphsHtml,
+  safeHref,
+} from "../html-utils";
 import panelColors from "./panel-color";
 
 /**
@@ -291,11 +296,7 @@ const summarySection = (profile: string) => `
 const experienceSection = (resume: Resume) => {
   const entries = resume.employmentHistory
     .map(({ company, jobTitle, timeline, description }) => {
-      const bullets = description
-        .split(SPLIT_TEXT)
-        .filter((item) => item.trim() !== "")
-        .map((item) => `<li>${escapeHtml(item)}</li>`)
-        .join("");
+      const bullets = bulletItemsHtml(description);
 
       return `
             <article class="entry">
@@ -321,11 +322,7 @@ const projectsSection = (resume: Resume) => {
   const entries = filledProjects(resume.projects)
     .map(({ name, url, description }) => {
       const href = safeHref(url);
-      const bullets = description
-        .split(SPLIT_TEXT)
-        .filter((item) => item.trim() !== "")
-        .map((item) => `<li>${escapeHtml(item)}</li>`)
-        .join("");
+      const bullets = bulletItemsHtml(description);
 
       return `
             <article class="entry">
@@ -370,6 +367,17 @@ const educationSection = (resume: Resume) => {
         </section>`;
 };
 
+/**
+ * A section the user named. Untitled prints nothing at all, exactly as it draws
+ * nothing on the sheet — see the template's `custom-section.tsx`.
+ */
+const customSection = (custom: CustomSection) => `
+        <section>
+          <h2>${escapeHtml(custom.title)}</h2>
+          <hr class="rule" />
+          <ul class="description">${bulletItemsHtml(custom.description)}</ul>
+        </section>`;
+
 const buildModernResumeHtml = ({
   resume,
   backgroundColor,
@@ -394,12 +402,16 @@ const buildModernResumeHtml = ({
 ${sidebar(resume)}
 
       <div class="content">
-${sectionsHtml(resume, {
-  profile: () => summarySection(resume.profile),
-  employmentHistory: () => experienceSection(resume),
-  projects: () => projectsSection(resume),
-  educations: () => educationSection(resume),
-})}
+${sectionsHtml(
+  resume,
+  {
+    profile: () => summarySection(resume.profile),
+    employmentHistory: () => experienceSection(resume),
+    projects: () => projectsSection(resume),
+    educations: () => educationSection(resume),
+  },
+  customSection,
+)}
       </div>
     </main>
   </body>

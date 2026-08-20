@@ -2,11 +2,12 @@ import { View, Text, Link } from "@react-pdf/renderer";
 import { Fragment } from "react";
 
 import { Project } from "@/types/resume";
-import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
 import Section from "./section";
-import { styles } from "./styles";
+import { bulletStyles, styles } from "./styles";
 import AvoidBreak from "../avoid-break";
+import { toBulletLines } from "../bullets";
+import { BulletMarks, BulletRow } from "../bullet-row";
 
 /**
  * A project has no timeline, so the right of the headline row is where its url
@@ -23,9 +24,7 @@ const Projects = ({ projects }: { projects: Project[] }) => {
     <Section title="Projects">
       <View style={styles.splitEntryList}>
         {projects.map(({ name, url, description }, index) => {
-          const [firstBullet, ...restBullets] = description
-            .split(SPLIT_TEXT)
-            .filter((item) => item.trim() !== "");
+          const [firstBullet, ...restBullets] = toBulletLines(description);
 
           return (
             <Fragment key={index}>
@@ -46,17 +45,17 @@ const Projects = ({ projects }: { projects: Project[] }) => {
                 </View>
 
                 {firstBullet !== undefined && (
-                  <View style={styles.descriptionRow}>
-                    <Text style={styles.bullet}>•</Text>
-                    <Text style={styles.bulletText}>{firstBullet}</Text>
-                  </View>
+                  <BulletRow
+                    line={firstBullet}
+                    style={styles.descriptionRow}
+                    styles={bulletStyles}
+                  />
                 )}
               </AvoidBreak>
 
               {restBullets.map((item, itemIndex) => (
                 <AvoidBreak style={styles.entryBullet} key={item + itemIndex}>
-                  <Text style={styles.bullet}>•</Text>
-                  <Text style={styles.bulletText}>{item}</Text>
+                  <BulletMarks line={item} styles={bulletStyles} />
                 </AvoidBreak>
               ))}
             </Fragment>

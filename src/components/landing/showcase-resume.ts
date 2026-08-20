@@ -93,6 +93,7 @@ export const SHOWCASE_RESUME: Resume = {
       ),
     },
   ],
+  customSections: [],
   visibility: {
     profile: true,
     socialLinks: true,

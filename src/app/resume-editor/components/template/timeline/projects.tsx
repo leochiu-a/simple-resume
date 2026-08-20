@@ -1,12 +1,13 @@
 import { View, Text, Link } from "@react-pdf/renderer";
 
 import { Project } from "@/types/resume";
-import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
 import Section from "./section";
 import Marker from "./marker";
-import { styles } from "./styles";
+import { bulletStyles, styles } from "./styles";
 import AvoidBreak from "../avoid-break";
+import { toBulletLines } from "../bullets";
+import { BulletMarks } from "../bullet-row";
 
 /**
  * A project has no timeline, so the date column that other entries fill sits
@@ -18,7 +19,7 @@ const Projects = ({ projects, accent }: { projects: Project[]; accent: string })
     <Section title="Projects">
       <View style={styles.entryList}>
         {projects.map(({ name, url, description }, index) => {
-          const bullets = description.split(SPLIT_TEXT).filter((item) => item.trim() !== "");
+          const bullets = toBulletLines(description);
 
           return (
             <AvoidBreak style={styles.entry} key={index}>
@@ -41,8 +42,7 @@ const Projects = ({ projects, accent }: { projects: Project[]; accent: string })
                   <View style={styles.description}>
                     {bullets.map((item, itemIndex) => (
                       <View style={styles.descriptionRow} key={item + itemIndex}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{item}</Text>
+                        <BulletMarks line={item} styles={bulletStyles} />
                       </View>
                     ))}
                   </View>

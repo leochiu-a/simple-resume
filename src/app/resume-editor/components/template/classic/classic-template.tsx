@@ -10,9 +10,15 @@ import Projects from "./projects";
 import Education from "./education";
 import Info from "./info";
 import { A4_HEIGHT_PT } from "../constants";
-import { Resume } from "@/types/resume";
+import { isCustomSectionId, Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
-import { MAIN_COLUMN_SECTIONS, MainColumnSection, sectionsToRender } from "@/lib/resume-sections";
+import {
+  MAIN_COLUMN_SECTIONS,
+  MainColumnSection,
+  customSectionById,
+  sectionsToRender,
+} from "@/lib/resume-sections";
+import CustomSectionBlock from "./custom-section";
 
 /**
  * The Classic template: a full-height tinted panel of identity, contacts, links
@@ -75,7 +81,13 @@ const ClassicTemplate = ({
             }}
           >
             {sectionsToRender(resume, MAIN_COLUMN_SECTIONS).map((id) => (
-              <Fragment key={id}>{sections[id]}</Fragment>
+              <Fragment key={id}>
+                {isCustomSectionId(id) ? (
+                  <CustomSectionBlock section={customSectionById(resume, id)} />
+                ) : (
+                  sections[id]
+                )}
+              </Fragment>
             ))}
           </View>
         </View>

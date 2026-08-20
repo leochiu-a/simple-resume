@@ -1,6 +1,7 @@
 /** Helpers shared by the standalone HTML builders. */
 
 import { toParagraphs } from "@/lib/paragraphs";
+import { toBulletLines } from "./bullets";
 
 export const escapeHtml = (value: string) =>
   value
@@ -47,3 +48,17 @@ export const GOOGLE_FONTS_LINKS = `<link rel="preconnect" href="https://fonts.go
       href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />`;
+
+/**
+ * A description as `<li>` items, ready for the list element the template wraps
+ * them in.
+ *
+ * The wrapper stays with the caller because the class it carries is the
+ * template's own, and because a section with no bullets renders no list at all
+ * rather than an empty one. Sixteen builders had this same escape-and-join
+ * chain; what they differ in is the `<li>` class, so that is the parameter.
+ */
+export const bulletItemsHtml = (description: string | undefined, className?: string) =>
+  toBulletLines(description)
+    .map((line) => `<li${className ? ` class="${className}"` : ""}>${escapeHtml(line)}</li>`)
+    .join("");

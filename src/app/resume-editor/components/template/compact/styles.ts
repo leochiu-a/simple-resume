@@ -290,3 +290,9 @@ export const styles = StyleSheet.create({
     textDecoration: "underline",
   },
 });
+
+/**
+ * The pair every bullet on this sheet is drawn with — see `../bullet-row`, which
+ * owns the markup so the eight templates only state their own styles.
+ */
+export const bulletStyles = { bullet: styles.bullet, text: styles.bulletText };

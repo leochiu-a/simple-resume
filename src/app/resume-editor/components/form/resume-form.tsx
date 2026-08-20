@@ -3,8 +3,21 @@
 import { PointerEvent, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { applySubsetOrder, normaliseSectionOrder } from "@/lib/resume-sections";
-import { Resume, SECTION_IDS, SectionId } from "@/types/resume";
+import {
+  applySubsetOrder,
+  customSectionsOf,
+  isSectionVisible,
+  resumeSectionOrder,
+  sectionLabel,
+} from "@/lib/resume-sections";
+import {
+  CUSTOM_SECTION_PREFIX,
+  CustomSectionId,
+  isCustomSectionId,
+  Resume,
+  SectionId,
+  SectionKey,
+} from "@/types/resume";
 
 import type { TemplateDefinition } from "../template/registry";
 import Information from "./information";
@@ -16,6 +29,9 @@ import Profile from "./profile";
 import Projects from "./projects";
 import SectionOrderPopover, { type Grab } from "./section-order-popover";
 import { SectionSlotProvider } from "./section";
+import CustomSectionFields from "./custom-section";
+import { PlusIcon } from "@/components/icons/plus";
+import { IconButton } from "@/components/ui/icon-button";
 
 const SECTION_COMPONENTS: Record<SectionId, ReactNode> = {
   profile: <Profile />,
@@ -48,9 +64,10 @@ const pad = (position: number) => String(position).padStart(2, "0");
  * is a separate and equally load-bearing thing — `section-order-popover.tsx` has it.
  */
 const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
-  const { control, setValue } = useFormContext<Resume>();
+  const { control, getValues, setValue } = useFormContext<Resume>();
   const resume = useWatch({ control }) as Resume;
-  const order = normaliseSectionOrder(resume.sectionOrder);
+  const order = resumeSectionOrder(resume);
+  const customSections = customSectionsOf(resume);
 
   const [grab, setGrab] = useState<Grab | null>(null);
 
@@ -79,8 +96,11 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
    * the ref is what the listeners below read, since they are registered once and
    * would otherwise close over the draft as it stood when the press began.
    */
-  const [draft, setDraft] = useState<SectionId[] | null>(null);
-  const draftRef = useRef<SectionId[] | null>(null);
+  /** The section just added, so its heading opens focused — see `custom-section.tsx`. */
+  const [addedId, setAddedId] = useState<CustomSectionId | null>(null);
+
+  const [draft, setDraft] = useState<SectionKey[] | null>(null);
+  const draftRef = useRef<SectionKey[] | null>(null);
 
   /**
    * False only for as long as the press that opened the popover is still down.
@@ -101,7 +121,13 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
      On a two-column template that is four of the six, and the other two are not
      merely tagged but absent — a row you can drag in a list that cannot move it is a
      control that lies. Their heading says where they went instead. */
-  const sortable = order.filter((id) => template.orderedSections.includes(id));
+  /* A custom section is always in the flow — no template draws one in a sidebar,
+     because a sidebar's contents are that template's design and a section the user
+     invented is not part of it. */
+  const isSortable = (id: SectionKey) =>
+    isCustomSectionId(id) || template.orderedSections.includes(id as SectionId);
+
+  const sortable = order.filter(isSortable);
 
   /**
    * Applies whatever the popover ended up showing, and puts it away.
@@ -146,7 +172,35 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
     };
   }, [grab, latched]);
 
-  const startGrab = (id: SectionId) => (event: PointerEvent<HTMLElement>) => {
+  /**
+   * Appends a section and puts it at the bottom of the running order.
+   *
+   * Both writes happen here rather than one being left to the normaliser: appended
+   * to `customSections` alone it would still reach the bottom of the sheet, but only
+   * after a read had noticed the gap, and the form would have rendered once without
+   * it. Deleting is the other way round on purpose — see `custom-section.tsx`.
+   */
+  const addSection = () => {
+    const id: CustomSectionId = `${CUSTOM_SECTION_PREFIX}${crypto.randomUUID()}`;
+
+    setValue(
+      "customSections",
+      [
+        ...(getValues("customSections") ?? []),
+        {
+          id,
+          title: "",
+          description: "",
+          visible: true,
+        },
+      ],
+      { shouldDirty: true },
+    );
+    setValue("sectionOrder", [...order, id], { shouldDirty: true });
+    setAddedId(id);
+  };
+
+  const startGrab = (id: SectionKey) => (event: PointerEvent<HTMLElement>) => {
     // Or the browser starts a text selection across everything the drag passes over.
     event.preventDefault();
     setLatched(false);
@@ -168,15 +222,29 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
             /* No grip on a section this template draws in its sidebar, because the
                popover does not carry it either. A handle is a promise that the
                section can be moved, and here it cannot be. */
-            onGrab: template.orderedSections.includes(id) ? startGrab(id) : undefined,
-            pinnedNote: template.orderedSections.includes(id)
+            onGrab: isSortable(id) ? startGrab(id) : undefined,
+            pinnedNote: isSortable(id)
               ? undefined
               : `${template.label} lays this out in its sidebar, so the running order does not place it.`,
           }}
         >
-          {SECTION_COMPONENTS[id]}
+          {isCustomSectionId(id) ? (
+            <CustomSectionFields
+              index={customSections.findIndex((section) => section.id === id)}
+              autoFocusHeading={id === addedId}
+            />
+          ) : (
+            SECTION_COMPONENTS[id]
+          )}
         </SectionSlotProvider>
       ))}
+
+      {/* Under the last section, where the thing it adds will appear. */}
+      <div className="pb-8 pt-4">
+        <IconButton variant="outline" onClick={addSection} type="button" icon={PlusIcon}>
+          Add a section
+        </IconButton>
+      </div>
 
       {grab && (
         <SectionOrderPopover
@@ -184,7 +252,8 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
           /* The draft while one exists — the form below keeps rendering the
              committed order, so nothing behind the scrim moves until the drop. */
           order={draft ?? sortable}
-          hiddenSections={SECTION_IDS.filter((id) => !resume.visibility[id])}
+          hiddenSections={order.filter((id) => !isSectionVisible(resume, id))}
+          labelOf={(id) => sectionLabel(resume, id)}
           latched={latched}
           onReorder={(next) => {
             draftRef.current = next;

@@ -3,9 +3,14 @@
 import { Fragment } from "react";
 import { Page, View, Text, Document } from "@react-pdf/renderer";
 
-import { Resume } from "@/types/resume";
+import { isCustomSectionId, Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
-import { MAIN_COLUMN_SECTIONS, MainColumnSection, sectionsToRender } from "@/lib/resume-sections";
+import {
+  MAIN_COLUMN_SECTIONS,
+  MainColumnSection,
+  customSectionById,
+  sectionsToRender,
+} from "@/lib/resume-sections";
 
 import { styles } from "./styles";
 import Section from "./section";
@@ -14,6 +19,7 @@ import Projects from "./projects";
 import Education from "./education";
 import Rail from "./rail";
 import Summary from "../summary";
+import CustomSectionBlock from "./custom-section";
 
 /**
  * The Timeline template: a banded header across the full width, then a wide main
@@ -57,7 +63,13 @@ const TimelineTemplate = ({
         <View style={styles.columns}>
           <View style={styles.main}>
             {sectionsToRender(resume, MAIN_COLUMN_SECTIONS).map((id) => (
-              <Fragment key={id}>{sections[id]}</Fragment>
+              <Fragment key={id}>
+                {isCustomSectionId(id) ? (
+                  <CustomSectionBlock section={customSectionById(resume, id)} />
+                ) : (
+                  sections[id]
+                )}
+              </Fragment>
             ))}
           </View>
 

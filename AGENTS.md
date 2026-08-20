@@ -11,10 +11,16 @@ pnpm i          # Node 24, pnpm 10 (see engines / packageManager in package.json
 pnpm dev        # editor at http://localhost:3000/resume-editor
 pnpm lint       # oxlint
 pnpm format     # oxfmt  (pnpm format:check in CI)
+pnpm test       # Vitest, the pure functions under src/lib  (test:watch to re-run on save)
 pnpm test:e2e   # Playwright, specs in e2e/  (test:e2e:ui opens the runner)
 ```
 
-CI runs typecheck, lint, format:check, build and the Playwright suite. A Husky hook runs
+CI runs typecheck, lint, format:check, the unit suite, build and the Playwright suite.
+
+Which suite a thing belongs in is decided by whether it needs a browser. `src/lib` is pure functions —
+scoring, share links, storage migration, Markdown — and they are tested next to themselves as
+`*.test.ts`, with no jsdom and no React, so the whole suite answers in well under a second. Anything
+that needs a rendered page, a PDF or the on-device APIs is Playwright's. A Husky hook runs
 `oxlint --fix` and `oxfmt` over staged files, so a commit may amend your formatting.
 
 Commits follow [conventional commits](https://www.conventionalcommits.org/) — commitlint enforces it.

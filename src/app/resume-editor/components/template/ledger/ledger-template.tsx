@@ -3,9 +3,9 @@
 import { Fragment } from "react";
 import { Page, View, Document } from "@react-pdf/renderer";
 
-import { Resume, SectionId } from "@/types/resume";
+import { isCustomSectionId, Resume, SectionId } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
-import { ALL_SECTIONS, sectionsToRender } from "@/lib/resume-sections";
+import { ALL_SECTIONS, customSectionById, sectionsToRender } from "@/lib/resume-sections";
 
 import { styles } from "./styles";
 import Header from "./header";
@@ -16,6 +16,7 @@ import Education from "./education";
 import Skills from "./skills";
 import Links from "./links";
 import Summary from "../summary";
+import CustomSectionBlock from "./custom-section";
 
 /**
  * The Ledger template: every section is a row with its title in a narrow left
@@ -56,7 +57,16 @@ const LedgerTemplate = ({
 
         <View style={styles.body}>
           {sectionsToRender(resume, ALL_SECTIONS).map((id) => (
-            <Fragment key={id}>{sections[id]}</Fragment>
+            <Fragment key={id}>
+              {isCustomSectionId(id) ? (
+                <CustomSectionBlock
+                  section={customSectionById(resume, id)}
+                  titleColor={backgroundColor}
+                />
+              ) : (
+                sections[id]
+              )}
+            </Fragment>
           ))}
         </View>
       </Page>

@@ -18,6 +18,8 @@ Write it, style it, export it.
 3. **Export** it as a PDF, as a [standalone HTML file](#html-export), or
    [copy it as Markdown](#markdown-for-agents) to paste into an AI agent.
 
+Need a section the six do not cover? [Add one](#a-section-of-your-own) and name it yourself.
+
 Three more things run on the browser's own model, and so keep the same promise:
 
 - Keep the same resume in [two languages](#two-languages), translated on the device and corrected by
@@ -69,6 +71,15 @@ It follows the preview rather than the storage shape: hidden sections are left o
 never become empty headings, dates render as `Jan 2018 — Jan 2020` (`Present` for an ongoing entry),
 and job bullets become a list. Nothing lands on disk — the Markdown only ever exists on the
 clipboard.
+
+## A section of your own
+
+Six sections come with the resume; the seventh is yours. **Add a section** at the foot of the form
+gives you a heading to name — Certifications, Awards, Languages, Volunteering, Talks — and a list to
+fill, and from then on it behaves like any other section: it drags into place in the running order,
+it hides behind the same eye, and every one of the eight templates draws it in its own headings and
+bullets. It reaches the PDF, the HTML export and the Markdown copy with everything else. Until it has
+a heading it stays off the sheet — there is nothing to head it with.
 
 ## Two languages
 

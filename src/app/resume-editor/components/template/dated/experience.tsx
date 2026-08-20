@@ -3,11 +3,12 @@ import { Fragment } from "react";
 
 import { EmploymentHistory } from "@/types/resume";
 import formatMarginDateRange from "./format-date";
-import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 
 import Section from "./section";
-import { styles } from "./styles";
+import { bulletStyles, styles } from "./styles";
 import AvoidBreak from "../avoid-break";
+import { toBulletLines } from "../bullets";
+import { BulletMarks, BulletRow } from "../bullet-row";
 
 /**
  * The section the whole template is built around: the date range hangs in the
@@ -40,9 +41,7 @@ const Experience = ({
     <Section title="Experience" accent={accent}>
       <View style={styles.splitEntryList}>
         {employmentHistory.map(({ company, jobTitle, timeline, description }, index) => {
-          const [firstBullet, ...restBullets] = description
-            .split(SPLIT_TEXT)
-            .filter((item) => item.trim() !== "");
+          const [firstBullet, ...restBullets] = toBulletLines(description);
 
           return (
             // A fragment, not a View: a wrapper here would be one box again, and
@@ -56,10 +55,11 @@ const Experience = ({
                   <Text style={styles.entrySubline}>{company}</Text>
 
                   {firstBullet !== undefined && (
-                    <View style={styles.descriptionRow}>
-                      <Text style={styles.bullet}>•</Text>
-                      <Text style={styles.bulletText}>{firstBullet}</Text>
-                    </View>
+                    <BulletRow
+                      line={firstBullet}
+                      style={styles.descriptionRow}
+                      styles={bulletStyles}
+                    />
                   )}
                 </View>
               </AvoidBreak>
@@ -69,8 +69,7 @@ const Experience = ({
                   <View style={styles.dateColumnSpacer} />
 
                   <View style={styles.continuationBullet}>
-                    <Text style={styles.bullet}>•</Text>
-                    <Text style={styles.bulletText}>{item}</Text>
+                    <BulletMarks line={item} styles={bulletStyles} />
                   </View>
                 </AvoidBreak>
               ))}

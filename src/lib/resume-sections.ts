@@ -1,4 +1,12 @@
-import { Resume, SECTION_IDS, SectionId } from "@/types/resume";
+import {
+  CustomSection,
+  CustomSectionId,
+  isCustomSectionId,
+  Resume,
+  SECTION_IDS,
+  SectionId,
+  SectionKey,
+} from "@/types/resume";
 
 /**
  * The one place that knows what order the sections go in.
@@ -68,6 +76,52 @@ const isSectionId = (value: unknown): value is SectionId =>
   SECTION_IDS.includes(value as SectionId);
 
 /**
+ * The custom sections of a resume that may not have any.
+ *
+ * A document written before custom sections existed has no field, and so does one
+ * that arrived on a share link from such a release. Read through here rather than
+ * off the resume, exactly as `projects` is: this runs on every keystroke, and
+ * throwing takes the editor with it.
+ */
+export const customSectionsOf = (resume: Pick<Resume, "customSections">): CustomSection[] =>
+  resume.customSections ?? [];
+
+export const customSectionIds = (resume: Pick<Resume, "customSections">): CustomSectionId[] =>
+  customSectionsOf(resume).map((section) => section.id);
+
+/** The custom section an id names, if the resume still has it. */
+export const customSectionById = (
+  resume: Pick<Resume, "customSections">,
+  id: SectionKey,
+): CustomSection | undefined => customSectionsOf(resume).find((section) => section.id === id);
+
+/** What a section is called in the form and in the reorder list. */
+export const sectionLabel = (resume: Pick<Resume, "customSections">, id: SectionKey): string =>
+  isCustomSectionId(id)
+    ? customSectionById(resume, id)?.title?.trim() || "Untitled section"
+    : SECTION_LABELS[id];
+
+/** Whether a section is drawn at all — the six read `visibility`, the rest their own flag. */
+export const isSectionVisible = (resume: Resume, id: SectionKey): boolean =>
+  isCustomSectionId(id) ? (customSectionById(resume, id)?.visible ?? false) : resume.visibility[id];
+
+/**
+ * Whether a section reaches the sheet.
+ *
+ * Visibility plus the one thing a custom section can lack that a built-in one
+ * cannot: a name. An unnamed section is not drawn — a block of lines under no
+ * heading says less than nothing on a resume, and a heading is the one part of a
+ * section this open that nothing can supply a default for. The rule lives here so
+ * that the preview, the PDF and the HTML export cannot disagree about it.
+ */
+const isSectionRenderable = (resume: Resume, id: SectionKey): boolean => {
+  if (!isSectionVisible(resume, id)) return false;
+  if (!isCustomSectionId(id)) return true;
+
+  return !!customSectionById(resume, id)?.title.trim();
+};
+
+/**
  * Turns whatever was stored into an order that names every section exactly once.
  *
  * Not a migration — this runs on every read, because none of the three sources is
@@ -80,12 +134,33 @@ const isSectionId = (value: unknown): value is SectionId =>
  * product after an order was saved appears at the bottom rather than vanishing from
  * the sheet, which is the failure that actually matters here.
  */
-export const normaliseSectionOrder = (value: unknown): SectionId[] => {
-  const listed = Array.isArray(value) ? value.filter(isSectionId) : [];
-  const seen = new Set(listed);
+export const normaliseSectionOrder = (
+  value: unknown,
+  /**
+   * The custom sections this order is allowed to name. Passing none is what makes
+   * an order out of an older document — or one whose custom sections were all
+   * deleted — come back holding only the six.
+   */
+  customIds: readonly CustomSectionId[] = [],
+): SectionKey[] => {
+  const known = (id: unknown): id is SectionKey =>
+    isSectionId(id) || (isCustomSectionId(id) && customIds.includes(id));
 
-  return [...new Set(listed), ...DEFAULT_SECTION_ORDER.filter((id) => !seen.has(id))];
+  const listed = Array.isArray(value) ? value.filter(known) : [];
+  const seen = new Set<SectionKey>(listed);
+
+  return [
+    ...new Set(listed),
+    ...DEFAULT_SECTION_ORDER.filter((id) => !seen.has(id)),
+    // A section added since this order was stored goes to the bottom of the sheet
+    // rather than nowhere, which is the same rule the built-in six follow.
+    ...customIds.filter((id) => !seen.has(id)),
+  ];
 };
+
+/** The order of a whole resume, custom sections included. */
+export const resumeSectionOrder = (resume: Resume): SectionKey[] =>
+  normaliseSectionOrder(resume.sectionOrder, customSectionIds(resume));
 
 /**
  * The sections a template should render, in the order the user put them.
@@ -95,9 +170,17 @@ export const normaliseSectionOrder = (value: unknown): SectionId[] => {
  * which draws its own sidebar. Visibility is applied here too, so a caller maps
  * over the result without a guard of its own.
  */
-export const sectionsToRender = <T extends SectionId>(resume: Resume, owned: readonly T[]): T[] =>
-  normaliseSectionOrder(resume.sectionOrder).filter(
-    (id): id is T => (owned as readonly SectionId[]).includes(id) && resume.visibility[id],
+export const sectionsToRender = <T extends SectionId>(
+  resume: Resume,
+  owned: readonly T[],
+): (T | CustomSectionId)[] =>
+  resumeSectionOrder(resume).filter(
+    (id): id is T | CustomSectionId =>
+      isSectionRenderable(resume, id) &&
+      /* A custom section is in every template's flow. No template draws one in a
+         sidebar, because what a sidebar holds is that template's design and a
+         section the user invented is not part of it. */
+      (isCustomSectionId(id) || (owned as readonly SectionKey[]).includes(id)),
   );
 
 /**
@@ -110,9 +193,18 @@ export const sectionsToRender = <T extends SectionId>(resume: Resume, owned: rea
 export const sectionsHtml = <T extends SectionId>(
   resume: Resume,
   builders: Record<T, () => string>,
+  /** How this template writes a section the user named. */
+  custom: (section: CustomSection) => string,
 ): string =>
   sectionsToRender(resume, Object.keys(builders) as T[])
-    .map((id) => builders[id]())
+    .map((id) => {
+      if (!isCustomSectionId(id)) return builders[id]();
+
+      const section = customSectionById(resume, id);
+
+      return section ? custom(section) : "";
+    })
+    .filter(Boolean)
     .join("\n");
 
 /**
@@ -128,7 +220,7 @@ export const sectionsHtml = <T extends SectionId>(
  * So the sidebar's two keep their positions, and switching to a single-column
  * template afterwards finds them where they were left rather than pushed to the end.
  */
-export const applySubsetOrder = (full: SectionId[], subset: SectionId[]): SectionId[] => {
+export const applySubsetOrder = (full: SectionKey[], subset: SectionKey[]): SectionKey[] => {
   const next = [...full];
   const slots = full.flatMap((id, index) => (subset.includes(id) ? [index] : []));
 
