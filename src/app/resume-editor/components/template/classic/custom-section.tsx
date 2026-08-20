@@ -17,8 +17,8 @@ import { toBulletLines } from "../bullets";
  * template. `projects.tsx` beside it draws its bullets the same way.
  *
  * Untitled renders nothing at all: a block of text under no heading says less
- * than nothing on a resume, and a heading is the one thing a section this open
- * cannot be given a default for. It appears the moment it is named.
+ * than nothing on a resume. A new section arrives with a default name, so this is
+ * the case where the name was cleared; it comes back the moment there is one.
  */
 const CustomSectionBlock = ({ section }: { section: CustomSection | undefined }) => {
   /* Undefined when the order names a section that has since been deleted — the

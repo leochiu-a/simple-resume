@@ -29,7 +29,7 @@ import Profile from "./profile";
 import Projects from "./projects";
 import SectionOrderPopover, { type Grab } from "./section-order-popover";
 import { SectionSlotProvider } from "./section";
-import CustomSectionFields from "./custom-section";
+import CustomSectionFields, { DEFAULT_CUSTOM_SECTION_TITLE } from "./custom-section";
 import { PlusIcon } from "@/components/icons/plus";
 import { IconButton } from "@/components/ui/icon-button";
 
@@ -189,7 +189,7 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
         ...(getValues("customSections") ?? []),
         {
           id,
-          title: "",
+          title: DEFAULT_CUSTOM_SECTION_TITLE,
           description: "",
           visible: true,
         },

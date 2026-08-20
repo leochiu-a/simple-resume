@@ -16,6 +16,22 @@ import { Section, SectionBody, SectionTitle } from "./section";
 const HEADING_PLACEHOLDER = "Certifications";
 
 /**
+ * What a section is called the moment it is added.
+ *
+ * A new section used to arrive with no name at all, which left the form showing an
+ * empty box where every other section shows a heading, and left the section itself
+ * off the sheet until it was named. A placeholder cannot carry that: it is not a
+ * value, so nothing downstream — the reorder list, the export, the sheet — can read
+ * it. This is a real title, so the section is a whole section from its first frame,
+ * and the input it opens on has it selected, so naming it is still one word typed
+ * over rather than a field to clear first. Deliberately not one of the names people
+ * actually use ("Certifications", "Awards"): a default that claims something is on
+ * the resume when nothing was typed is worse than one that plainly asks to be
+ * renamed.
+ */
+export const DEFAULT_CUSTOM_SECTION_TITLE = "New section";
+
+/**
  * One section the user named themselves.
  *
  * The six built-in sections each have their own component because each has its
@@ -38,9 +54,11 @@ const CustomSectionFields: FC<{ index: number; autoFocusHeading?: boolean }> = (
   const visible = watch(`customSections.${index}.visible`);
   const title = watch(`customSections.${index}.title`);
 
-  /* A section with no name yet opens on the input, because "Untitled section" and
-     a pencil is one more click to reach the only thing that can be done next. */
-  const [renaming, setRenaming] = useState(() => !title?.trim());
+  /* A section opens on the input when it was just added — the name it arrived with
+     is a default asking to be replaced — and whenever it has no name at all, since
+     a pencil beside "Untitled section" is one more click to reach the only thing
+     that can be done next. */
+  const [renaming, setRenaming] = useState(() => !title?.trim() || !!autoFocusHeading);
   const inputRef = useRef<HTMLInputElement>(null);
 
   /* Focus is taken only when the user asked for the input — by pressing Add or

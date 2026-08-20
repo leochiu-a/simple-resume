@@ -85,8 +85,11 @@ test.describe("custom sections", () => {
   test("adds a section, names it, and keeps it across a reload", async ({ page }) => {
     await addSection(page);
 
-    // A new one opens on its heading input, focused, with nothing to name it yet.
-    await expect(page.getByLabel("Section heading")).toBeFocused();
+    /* A new one arrives already named and opens on its heading input, focused, with
+       that default selected — so naming it is typing over it, not clearing a box. */
+    const heading = page.getByLabel("Section heading");
+    await expect(heading).toBeFocused();
+    await expect(heading).toHaveValue("New section");
 
     await nameSection(page, "Certifications");
     await expect(section(page, "Certifications")).toBeVisible();
@@ -190,6 +193,8 @@ test.describe("custom sections", () => {
 
   test("is left off the sheet until it has a heading", async ({ page }) => {
     await addSection(page);
+    // The default name has to go for there to be a section with no heading at all.
+    await page.getByLabel("Section heading").fill("");
     await fillLines(page, ["AWS Solutions Architect"]);
 
     const sheet = preview(page).locator("[data-resume-page]").first();

@@ -117,8 +117,8 @@ const section = (title: string, body: string) => (body ? `## ${title}\n\n${body}
  *
  * Unnamed prints nothing, lines and all. `section` already drops a heading with
  * no body under it, and this is the same rule from the other end — a list of
- * certifications under no heading says less than nothing, and a section being
- * named is the one thing this export cannot supply a default for.
+ * certifications under no heading says less than nothing. A new section is added
+ * with a default name, so unnamed means the name was cleared.
  */
 const customSectionBlock = (custom: CustomSection) => {
   const title = custom.title?.trim();

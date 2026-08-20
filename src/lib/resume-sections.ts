@@ -110,8 +110,8 @@ export const isSectionVisible = (resume: Resume, id: SectionKey): boolean =>
  *
  * Visibility plus the one thing a custom section can lack that a built-in one
  * cannot: a name. An unnamed section is not drawn — a block of lines under no
- * heading says less than nothing on a resume, and a heading is the one part of a
- * section this open that nothing can supply a default for. The rule lives here so
+ * heading says less than nothing on a resume. A section is added with a default
+ * name, so this catches the one that had its name cleared. The rule lives here so
  * that the preview, the PDF and the HTML export cannot disagree about it.
  */
 const isSectionRenderable = (resume: Resume, id: SectionKey): boolean => {
