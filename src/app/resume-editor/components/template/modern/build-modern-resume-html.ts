@@ -1,10 +1,15 @@
 import formatDateRange from "@/lib/formatDateRange";
-import { SPLIT_TEXT } from "@/constants/textarea-split-text";
 import { sectionsHtml } from "@/lib/resume-sections";
 import { Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
 
-import { escapeHtml, paragraphsHtml, safeHref, GOOGLE_FONTS_LINKS } from "../html-utils";
+import {
+  GOOGLE_FONTS_LINKS,
+  bulletItemsHtml,
+  escapeHtml,
+  paragraphsHtml,
+  safeHref,
+} from "../html-utils";
 import panelColors from "./panel-color";
 
 /**
@@ -291,11 +296,7 @@ const summarySection = (profile: string) => `
 const experienceSection = (resume: Resume) => {
   const entries = resume.employmentHistory
     .map(({ company, jobTitle, timeline, description }) => {
-      const bullets = description
-        .split(SPLIT_TEXT)
-        .filter((item) => item.trim() !== "")
-        .map((item) => `<li>${escapeHtml(item)}</li>`)
-        .join("");
+      const bullets = bulletItemsHtml(description);
 
       return `
             <article class="entry">
@@ -321,11 +322,7 @@ const projectsSection = (resume: Resume) => {
   const entries = filledProjects(resume.projects)
     .map(({ name, url, description }) => {
       const href = safeHref(url);
-      const bullets = description
-        .split(SPLIT_TEXT)
-        .filter((item) => item.trim() !== "")
-        .map((item) => `<li>${escapeHtml(item)}</li>`)
-        .join("");
+      const bullets = bulletItemsHtml(description);
 
       return `
             <article class="entry">

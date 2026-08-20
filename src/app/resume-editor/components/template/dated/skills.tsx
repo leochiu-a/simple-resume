@@ -1,9 +1,10 @@
-import { View, Text } from "@react-pdf/renderer";
+import { View } from "@react-pdf/renderer";
 
 import { Skill } from "@/types/resume";
 
 import Section from "./section";
-import { styles } from "./styles";
+import { bulletStyles, styles } from "./styles";
+import { BulletMarks } from "../bullet-row";
 
 /**
  * Two columns of disc bullets in the entry column, with the date gutter beside
@@ -17,8 +18,7 @@ const Skills = ({ skills, accent }: { skills: Skill[]; accent: string }) => {
       <View style={styles.skillList}>
         {skills.map(({ name }, index) => (
           <View style={styles.skillItem} key={index}>
-            <Text style={styles.bullet}>•</Text>
-            <Text style={styles.bulletText}>{name}</Text>
+            <BulletMarks line={name} styles={bulletStyles} />
           </View>
         ))}
       </View>
