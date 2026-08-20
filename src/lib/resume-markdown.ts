@@ -1,7 +1,9 @@
 import { format, parseISO } from "date-fns";
 
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
-import { Education, EmploymentHistory, Project, Resume, Timeline } from "@/types/resume";
+import { Education, EmploymentHistory, Project, Resume, SectionId, Timeline } from "@/types/resume";
+
+import { normaliseSectionOrder } from "./resume-sections";
 
 /**
  * Renders a resume as Markdown.
@@ -12,8 +14,8 @@ import { Education, EmploymentHistory, Project, Resume, Timeline } from "@/types
  * chat box you paste into) can read without a parser, so this is the export for
  * "here is my resume, tailor it to this job".
  *
- * It follows the preview: hidden sections are left out, and empty fields never
- * become empty headings.
+ * It follows the preview: the sections come out in the order they are laid out
+ * in, hidden ones are left out, and empty fields never become empty headings.
  *
  * Deliberately independent of the templates: there is one Markdown rendering,
  * not one per template. Adding a template does not add a builder here.
@@ -40,6 +42,10 @@ const formatTimeline = ({ from, to }: Timeline) => {
 /** Markdown is line-based, so a section is a list of lines and blanks join them. */
 const paragraphs = (blocks: string[]) => blocks.filter(Boolean).join("\n\n");
 
+/** Bullet lines as the form stores them — see LabeledBulletTextAreaField. */
+const toBulletLines = (description: string | undefined) =>
+  description ? description.split(SPLIT_TEXT) : [];
+
 const bulletList = (items: string[]) =>
   items
     .map((item) => item.trim())
@@ -65,8 +71,7 @@ const employmentEntry = (job: EmploymentHistory) => {
     .filter(Boolean)
     .join(" — ");
   const timeline = formatTimeline(job.timeline);
-  // Bullet lines live in one string joined by SPLIT_TEXT — see LabeledBulletTextAreaField.
-  const bullets = bulletList(job.description ? job.description.split(SPLIT_TEXT) : []);
+  const bullets = bulletList(toBulletLines(job.description));
 
   return paragraphs([heading ? `### ${heading}` : "", timeline, bullets]);
 };
@@ -76,7 +81,7 @@ const projectEntry = (project: Project) => {
   const url = project.url?.trim();
   // The name carries the link when both are present, so the URL is never twice.
   const heading = name && url ? `[${name}](${url})` : name || url;
-  const bullets = bulletList(project.description ? project.description.split(SPLIT_TEXT) : []);
+  const bullets = bulletList(toBulletLines(project.description));
 
   return paragraphs([heading ? `### ${heading}` : "", bullets]);
 };
@@ -99,36 +104,49 @@ const educationEntry = (education: Education) => {
 const section = (title: string, body: string) => (body ? `## ${title}\n\n${body}` : "");
 
 export const buildResumeMarkdown = (resume: Resume): string => {
-  const { visibility } = resume;
+  /*
+    Each of the six, ready to render but not yet rendered — the order decides
+    which of them run and in what sequence, and it is the resume's order rather
+    than one written down here. A fixed sequence would mean the clipboard
+    disagreeing with the sheet for anyone who has rearranged their sections,
+    which is the one thing this export is not allowed to do: it is the copy an
+    agent reads back as "my resume".
 
-  const blocks = [
+    `socialLinks` is in the order like everything else and prints nothing, because
+    the links are already in the header block above — they are contact details in
+    Markdown, not a section with a heading.
+  */
+  const blocks: Record<SectionId, () => string> = {
+    profile: () => section("Profile", resume.profile?.trim() ?? ""),
+    skills: () =>
+      section(
+        "Skills",
+        resume.skills
+          .map((skill) => skill.name?.trim())
+          .filter(Boolean)
+          .join(", "),
+      ),
+    employmentHistory: () =>
+      section(
+        "Employment History",
+        resume.employmentHistory.map(employmentEntry).filter(Boolean).join("\n\n"),
+      ),
+    projects: () =>
+      section("Projects", (resume.projects ?? []).map(projectEntry).filter(Boolean).join("\n\n")),
+    educations: () =>
+      section("Education", resume.educations.map(educationEntry).filter(Boolean).join("\n\n")),
+    socialLinks: () => "",
+  };
+
+  const sections = normaliseSectionOrder(resume.sectionOrder).map((id) =>
+    resume.visibility[id] ? blocks[id]() : "",
+  );
+
+  return `${paragraphs([
     resume.name?.trim() ? `# ${resume.name.trim()}` : "",
     resume.wantedJob?.trim(),
     contactLine(resume),
-    visibility.socialLinks ? socialLine(resume) : "",
-    visibility.profile ? section("Profile", resume.profile?.trim() ?? "") : "",
-    visibility.skills
-      ? section(
-          "Skills",
-          resume.skills
-            .map((skill) => skill.name?.trim())
-            .filter(Boolean)
-            .join(", "),
-        )
-      : "",
-    visibility.employmentHistory
-      ? section(
-          "Employment History",
-          resume.employmentHistory.map(employmentEntry).filter(Boolean).join("\n\n"),
-        )
-      : "",
-    visibility.projects
-      ? section("Projects", (resume.projects ?? []).map(projectEntry).filter(Boolean).join("\n\n"))
-      : "",
-    visibility.educations
-      ? section("Education", resume.educations.map(educationEntry).filter(Boolean).join("\n\n"))
-      : "",
-  ];
-
-  return `${paragraphs(blocks)}\n`;
+    resume.visibility.socialLinks ? socialLine(resume) : "",
+    ...sections,
+  ])}\n`;
 };

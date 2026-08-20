@@ -202,46 +202,92 @@ describe("projects", () => {
 });
 
 describe("section order", () => {
-  /*
-    Pinning what the builder does today, which is not what the sheet does: the
-    order here is fixed, while every template renders `resume.sectionOrder`. A
-    resume whose owner moved Skills above Employment gets one order on the page
-    and another on the clipboard.
+  const resume = emptyResume({
+    name: "Ada Lovelace",
+    profile: "Ten years of frontend work.",
+    skills: [{ name: "TypeScript" }],
+    employmentHistory: [jobWith("Acme", "A line")],
+  });
 
-    Left as a pin rather than fixed here, because changing it is a change to the
-    export rather than to its tests.
-  */
-  it("emits a fixed order, ignoring the order the sections are in on the sheet", () => {
-    const resume = emptyResume({
-      name: "Ada Lovelace",
-      skills: [{ name: "TypeScript" }],
-      employmentHistory: [jobWith("Acme", "A line")],
-      sectionOrder: [
-        "skills",
-        "employmentHistory",
-        "profile",
-        "projects",
-        "educations",
-        "socialLinks",
-      ],
-    });
-    const markdown = buildResumeMarkdown(resume);
+  const positions = (markdown: string) =>
+    ["## Profile", "## Skills", "## Employment History"].map((heading) =>
+      markdown.indexOf(heading),
+    );
 
-    expect(markdown.indexOf("## Skills")).toBeLessThan(markdown.indexOf("## Employment History"));
-
-    const reordered = buildResumeMarkdown({
+  it("follows the order the sections are in on the sheet", () => {
+    const markdown = buildResumeMarkdown({
       ...resume,
       sectionOrder: [
-        "employmentHistory",
         "skills",
+        "employmentHistory",
         "profile",
         "projects",
         "educations",
         "socialLinks",
       ],
     });
+    const [profile, skills, employment] = positions(markdown);
 
-    // The same output for a different order — the bug this pin records.
-    expect(reordered).toBe(markdown);
+    expect(skills).toBeLessThan(employment);
+    expect(employment).toBeLessThan(profile);
+  });
+
+  it("gives a different order a different document", () => {
+    const one = buildResumeMarkdown({
+      ...resume,
+      sectionOrder: [
+        "skills",
+        "profile",
+        "employmentHistory",
+        "projects",
+        "educations",
+        "socialLinks",
+      ],
+    });
+    const other = buildResumeMarkdown({
+      ...resume,
+      sectionOrder: [
+        "profile",
+        "skills",
+        "employmentHistory",
+        "projects",
+        "educations",
+        "socialLinks",
+      ],
+    });
+
+    expect(one).not.toBe(other);
+  });
+
+  it("keeps the header above the sections, wherever Links sits in the order", () => {
+    const markdown = buildResumeMarkdown({
+      ...resume,
+      socialLinks: [{ name: "GitHub", url: "https://github.com/ada" }],
+      sectionOrder: [
+        "socialLinks",
+        "skills",
+        "profile",
+        "employmentHistory",
+        "projects",
+        "educations",
+      ],
+    });
+
+    expect(markdown.indexOf("[GitHub]")).toBeLessThan(markdown.indexOf("## "));
+    // And only once: Links is a contact line here, not a section with a heading.
+    expect(markdown.match(/github\.com\/ada/g)).toHaveLength(1);
+  });
+
+  it("repairs a stored order rather than dropping a section it does not name", () => {
+    const markdown = buildResumeMarkdown({
+      ...resume,
+      sectionOrder: ["skills"] as never,
+    });
+    const [profile, skills, employment] = positions(markdown);
+
+    expect(skills).toBeGreaterThan(-1);
+    expect(profile).toBeGreaterThan(-1);
+    expect(employment).toBeGreaterThan(-1);
+    expect(skills).toBeLessThan(profile);
   });
 });
