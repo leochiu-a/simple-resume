@@ -296,14 +296,14 @@ test.describe("Resume translation", () => {
 
     await languageButton(page, "中文").click();
 
-    await expect(page.getByText(/field has changed in the original/)).toBeVisible();
+    await expect(page.getByText(/field has changed in the English original/)).toBeVisible();
     // Still the old translation until the update is asked for.
     await expect(preview(page).getByText("[zh-Hant] Senior job")).toBeVisible();
 
     await page.getByRole("button", { name: "Update translation" }).click();
 
     await expect(preview(page).getByText("[zh-Hant] Principal Engineer")).toBeVisible();
-    await expect(page.getByText(/changed in the original/)).toBeHidden();
+    await expect(page.getByText(/changed in the English original/)).toBeHidden();
   });
 
   test("re-translating replaces a hand-edited field the update would have kept", async ({
