@@ -22,7 +22,7 @@ const ACTIONS = [
 const OnDevice = () => (
   <section className="border-t border-[var(--rule)] bg-[var(--wash)]">
     <div className="mx-auto w-full max-w-[1120px] px-6 py-24 lg:py-32">
-      <div className="grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12 lg:items-center">
         <div className="lg:col-span-5">
           <p className="inline-flex items-center gap-2 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--graphite-soft)]">
             <SparklesIcon aria-hidden className="size-3.5 text-[var(--accent)]" />
