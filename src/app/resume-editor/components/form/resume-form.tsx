@@ -96,6 +96,9 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
    * the ref is what the listeners below read, since they are registered once and
    * would otherwise close over the draft as it stood when the press began.
    */
+  /** The section just added, so its heading opens focused — see `custom-section.tsx`. */
+  const [addedId, setAddedId] = useState<CustomSectionId | null>(null);
+
   const [draft, setDraft] = useState<SectionKey[] | null>(null);
   const draftRef = useRef<SectionKey[] | null>(null);
 
@@ -194,6 +197,7 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
       { shouldDirty: true },
     );
     setValue("sectionOrder", [...order, id], { shouldDirty: true });
+    setAddedId(id);
   };
 
   const startGrab = (id: SectionKey) => (event: PointerEvent<HTMLElement>) => {
@@ -225,7 +229,10 @@ const ResumeForm = ({ template }: { template: TemplateDefinition }) => {
           }}
         >
           {isCustomSectionId(id) ? (
-            <CustomSectionFields index={customSections.findIndex((section) => section.id === id)} />
+            <CustomSectionFields
+              index={customSections.findIndex((section) => section.id === id)}
+              autoFocusHeading={id === addedId}
+            />
           ) : (
             SECTION_COMPONENTS[id]
           )}

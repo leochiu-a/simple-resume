@@ -14,6 +14,16 @@ import { copyMarkdown, DOC_STORAGE_KEY, preview, selectTemplate } from "./helper
 const addSection = (page: Page) => page.getByRole("button", { name: "Add a section" }).click();
 
 /**
+ * Names the section through the heading itself, which is where it is edited —
+ * there is no separate field for it. Enter is what says "done" and puts the
+ * heading back to text, so the assertions below can read it as a heading.
+ */
+const nameSection = async (page: Page, title: string) => {
+  await page.getByLabel("Section heading").fill(title);
+  await page.keyboard.press("Enter");
+};
+
+/**
  * The bullet field is a `contenteditable` whose lines are its child `div`s, so a
  * line break is `insertParagraph` rather than a typed `\n` — see
  * `LabeledBulletTextAreaField`. Filling it the way the browser does keeps the
@@ -75,9 +85,10 @@ test.describe("custom sections", () => {
   test("adds a section, names it, and keeps it across a reload", async ({ page }) => {
     await addSection(page);
 
-    await expect(section(page, "Untitled section")).toBeVisible();
+    // A new one opens on its heading input, focused, with nothing to name it yet.
+    await expect(page.getByLabel("Section heading")).toBeFocused();
 
-    await page.getByLabel("Heading").fill("Certifications");
+    await nameSection(page, "Certifications");
     await expect(section(page, "Certifications")).toBeVisible();
 
     await fillLines(page, ["AWS Solutions Architect", "Certified Kubernetes Administrator"]);
@@ -92,7 +103,7 @@ test.describe("custom sections", () => {
 
   test("reaches the Markdown export under its own heading", async ({ page }) => {
     await addSection(page);
-    await page.getByLabel("Heading").fill("Certifications");
+    await nameSection(page, "Certifications");
     await fillLines(page, ["AWS Solutions Architect", "Certified Kubernetes Administrator"]);
 
     await copyMarkdown(page);
@@ -107,7 +118,7 @@ test.describe("custom sections", () => {
 
   test("hiding one takes it out of the export and leaves the rest alone", async ({ page }) => {
     await addSection(page);
-    await page.getByLabel("Heading").fill("Certifications");
+    await nameSection(page, "Certifications");
     await fillLines(page, ["AWS Solutions Architect"]);
 
     await sectionBlock(page, "Certifications")
@@ -124,7 +135,7 @@ test.describe("custom sections", () => {
 
   test("deleting one takes it out of the form and the order", async ({ page }) => {
     await addSection(page);
-    await page.getByLabel("Heading").fill("Certifications");
+    await nameSection(page, "Certifications");
 
     await waitForStoredTitle(page, "Certifications");
     await sectionBlock(page, "Certifications").getByRole("button", { name: "Delete" }).click();
@@ -138,7 +149,7 @@ test.describe("custom sections", () => {
 
   test("is named by its own heading in the reorder list", async ({ page }) => {
     await addSection(page);
-    await page.getByLabel("Heading").fill("Certifications");
+    await nameSection(page, "Certifications");
 
     /* Reordering is pointer-only and the grips are not focusable, so the press is
        a real one — see `section-order.spec.ts`. */
@@ -160,7 +171,7 @@ test.describe("custom sections", () => {
 
   test("appears on the sheet, and stays there through a change of template", async ({ page }) => {
     await addSection(page);
-    await page.getByLabel("Heading").fill("Certifications");
+    await nameSection(page, "Certifications");
     await fillLines(page, ["AWS Solutions Architect", "Certified Kubernetes Administrator"]);
 
     const sheet = preview(page).locator("[data-resume-page]").first();
@@ -185,9 +196,37 @@ test.describe("custom sections", () => {
 
     await expect(sheet).not.toContainText("AWS Solutions Architect");
 
-    await page.getByLabel("Heading").fill("Certifications");
+    await nameSection(page, "Certifications");
 
     await expect(sheet).toContainText("Certifications");
     await expect(sheet).toContainText("AWS Solutions Architect");
+  });
+
+  test("renames from the heading, through the pencil beside it", async ({ page }) => {
+    await addSection(page);
+    await nameSection(page, "Certifications");
+
+    await sectionBlock(page, "Certifications")
+      .getByRole("button", { name: "Rename section" })
+      .click();
+
+    const input = page.getByLabel("Section heading");
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue("Certifications");
+
+    await input.fill("Awards");
+    await page.keyboard.press("Enter");
+
+    await expect(section(page, "Awards")).toBeVisible();
+    await expect(page.getByLabel("Section heading")).toBeHidden();
+  });
+
+  test("stays on the input while there is no name to fall back to", async ({ page }) => {
+    await addSection(page);
+
+    await page.getByLabel("Section heading").fill("  ");
+    await page.keyboard.press("Enter");
+
+    await expect(page.getByLabel("Section heading")).toBeVisible();
   });
 });
