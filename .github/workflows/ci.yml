@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Types, lint, format
+    name: Types, lint, format, unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -42,6 +42,12 @@ jobs:
 
       - name: Check formatting
         run: pnpm format:check
+
+      # The unit suite runs here rather than in the e2e job: it needs no browser
+      # and no build, answers in under a second, and belongs with the other
+      # checks that give a red in under a minute.
+      - name: Unit tests
+        run: pnpm test
 
   e2e:
     name: Build and e2e
