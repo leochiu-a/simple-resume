@@ -1,6 +1,6 @@
 import formatDateRange from "@/lib/formatDateRange";
 import { sectionsHtml } from "@/lib/resume-sections";
-import { Resume } from "@/types/resume";
+import { CustomSection, Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
 
 import {
@@ -466,6 +466,16 @@ ${heading("Links")}
       </aside>`;
 };
 
+/**
+ * A section the user named. Untitled prints nothing at all, exactly as it draws
+ * nothing on the sheet — see the template's `custom-section.tsx`.
+ */
+const customSection = (custom: CustomSection) => `
+        <section>
+${heading(escapeHtml(custom.title))}
+          <ul class="description">${bulletItemsHtml(custom.description)}</ul>
+        </section>`;
+
 const buildTimelineResumeHtml = ({
   resume,
   backgroundColor,
@@ -493,12 +503,16 @@ const buildTimelineResumeHtml = ({
 
       <div class="columns">
         <div class="main">
-${sectionsHtml(resume, {
-  profile: () => summarySection(resume.profile),
-  employmentHistory: () => experienceSection(resume),
-  projects: () => projectsSection(resume),
-  educations: () => educationSection(resume),
-})}
+${sectionsHtml(
+  resume,
+  {
+    profile: () => summarySection(resume.profile),
+    employmentHistory: () => experienceSection(resume),
+    projects: () => projectsSection(resume),
+    educations: () => educationSection(resume),
+  },
+  customSection,
+)}
         </div>
 ${rail(resume)}
       </div>

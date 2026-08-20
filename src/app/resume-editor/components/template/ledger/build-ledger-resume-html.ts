@@ -1,6 +1,6 @@
 import formatDateRange from "@/lib/formatDateRange";
 import { sectionsHtml } from "@/lib/resume-sections";
-import { Resume } from "@/types/resume";
+import { CustomSection, Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
 
 import {
@@ -383,6 +383,16 @@ const linksSection = (resume: Resume) => {
         </section>`;
 };
 
+/**
+ * A section the user named. Untitled prints nothing at all, exactly as it draws
+ * nothing on the sheet — see the template's `custom-section.tsx`.
+ */
+const customSection = (custom: CustomSection) => `
+        <section>
+          <h2>${escapeHtml(custom.title)}</h2>
+          <ul class="description">${bulletItemsHtml(custom.description)}</ul>
+        </section>`;
+
 const buildLedgerResumeHtml = ({
   resume,
   backgroundColor,
@@ -406,14 +416,18 @@ const buildLedgerResumeHtml = ({
 ${header(resume)}
 
       <div class="body">
-${sectionsHtml(resume, {
-  profile: () => summarySection(resume.profile),
-  employmentHistory: () => experienceSection(resume),
-  projects: () => projectsSection(resume),
-  educations: () => educationSection(resume),
-  skills: () => skillsSection(resume),
-  socialLinks: () => linksSection(resume),
-})}
+${sectionsHtml(
+  resume,
+  {
+    profile: () => summarySection(resume.profile),
+    employmentHistory: () => experienceSection(resume),
+    projects: () => projectsSection(resume),
+    educations: () => educationSection(resume),
+    skills: () => skillsSection(resume),
+    socialLinks: () => linksSection(resume),
+  },
+  customSection,
+)}
       </div>
     </main>
   </body>

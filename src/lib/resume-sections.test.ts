@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { emptyResume } from "@/test/resume-fixture";
+import { customSection, emptyResume } from "@/test/resume-fixture";
 import { SECTION_IDS, SectionId } from "@/types/resume";
 
 import {
   applySubsetOrder,
+  customSectionsOf,
+  isSectionVisible,
+  resumeSectionOrder,
+  sectionLabel,
   DEFAULT_SECTION_ORDER,
   MAIN_COLUMN_SECTIONS,
   normaliseSectionOrder,
@@ -178,5 +182,111 @@ describe("applySubsetOrder", () => {
     expect(
       applySubsetOrder(full, ["profile", "employmentHistory", "projects", "educations"]),
     ).toEqual(full);
+  });
+});
+
+describe("custom sections in the order", () => {
+  const certifications = customSection("a", "Certifications", ["AWS SAA"]);
+  const awards = customSection("b", "Awards", ["Employee of the month"]);
+
+  const resume = emptyResume({
+    customSections: [certifications, awards],
+    sectionOrder: ["profile", awards.id, "employmentHistory", certifications.id],
+  });
+
+  it("keeps a custom id the resume still has, where it was put", () => {
+    const order = resumeSectionOrder(resume);
+
+    expect(order.indexOf(awards.id)).toBe(1);
+    expect(order).toContain(certifications.id);
+    expect(order).toHaveLength(SECTION_IDS.length + 2);
+  });
+
+  it("drops a custom id naming a section that was deleted", () => {
+    const deleted = { ...resume, customSections: [certifications] };
+
+    expect(resumeSectionOrder(deleted)).not.toContain(awards.id);
+    expect(resumeSectionOrder(deleted)).toContain(certifications.id);
+  });
+
+  it("appends a section the stored order has never seen, at the bottom", () => {
+    const stored = { ...resume, sectionOrder: [...DEFAULT_SECTION_ORDER] };
+    const order = resumeSectionOrder(stored);
+
+    expect(order.slice(-2)).toEqual([certifications.id, awards.id]);
+  });
+
+  it("holds every section exactly once", () => {
+    const order = resumeSectionOrder(resume);
+
+    expect(new Set(order).size).toBe(order.length);
+  });
+
+  it("reads an older document, which has no custom sections at all, as before", () => {
+    const older = emptyResume();
+    Reflect.deleteProperty(older, "customSections");
+
+    expect(customSectionsOf(older)).toEqual([]);
+    expect(resumeSectionOrder(older)).toEqual(DEFAULT_SECTION_ORDER);
+  });
+
+  it("hands a custom section to every template, in the flow rather than a sidebar", () => {
+    // A two-column template owns four of the six; a custom section is in that
+    // column too, because no sidebar's design has a place for one.
+    expect(sectionsToRender(resume, SECTION_IDS)).toContain(certifications.id);
+    expect(sectionsToRender(resume, MAIN_COLUMN_SECTIONS)).toContain(certifications.id);
+  });
+
+  it("keeps it in the position the order put it in", () => {
+    const rendered = sectionsToRender(resume, SECTION_IDS);
+
+    expect(rendered.indexOf(awards.id)).toBeLessThan(rendered.indexOf("employmentHistory"));
+  });
+
+  it("leaves out one that is hidden", () => {
+    const hidden = {
+      ...resume,
+      customSections: [{ ...certifications, visible: false }, awards],
+    };
+
+    expect(sectionsToRender(hidden, SECTION_IDS)).not.toContain(certifications.id);
+  });
+
+  it("leaves out one that has not been named — nothing can head it", () => {
+    const unnamed = {
+      ...resume,
+      customSections: [{ ...certifications, title: "   " }, awards],
+    };
+
+    expect(sectionsToRender(unnamed, SECTION_IDS)).not.toContain(certifications.id);
+    // Named, so still drawn: the rule is about the heading, not about the lines.
+    expect(sectionsToRender(unnamed, SECTION_IDS)).toContain(awards.id);
+  });
+});
+
+describe("sectionLabel and isSectionVisible", () => {
+  const named = customSection("a", "Certifications", ["AWS SAA"]);
+  const unnamed = customSection("b", "  ", ["A line"], false);
+  const resume = emptyResume({ customSections: [named, unnamed] });
+
+  it("names a built-in section with the label the form shows", () => {
+    expect(sectionLabel(resume, "employmentHistory")).toBe("Employment History");
+  });
+
+  it("names a custom section with its own heading", () => {
+    expect(sectionLabel(resume, named.id)).toBe("Certifications");
+  });
+
+  it("has something to call a section that has not been named yet", () => {
+    expect(sectionLabel(resume, unnamed.id)).toBe("Untitled section");
+  });
+
+  it("reads a custom section's own flag rather than the visibility record", () => {
+    expect(isSectionVisible(resume, named.id)).toBe(true);
+    expect(isSectionVisible(resume, unnamed.id)).toBe(false);
+  });
+
+  it("treats an id nothing answers to as not on the sheet", () => {
+    expect(isSectionVisible(resume, "custom:gone")).toBe(false);
   });
 });

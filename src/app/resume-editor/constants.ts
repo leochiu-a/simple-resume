@@ -68,6 +68,7 @@ export const DEFAULT_RESUME: Resume = {
       description: "Built a local-first resume editor with eight print-ready templates",
     },
   ],
+  customSections: [],
   visibility: {
     profile: true,
     socialLinks: true,

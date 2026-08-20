@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { emptyResume, jobWith, projectWith } from "@/test/resume-fixture";
+import { customSection, emptyResume, jobWith, projectWith } from "@/test/resume-fixture";
 import { Resume } from "@/types/resume";
 
 import { buildResumeMarkdown } from "./resume-markdown";
@@ -289,5 +289,94 @@ describe("section order", () => {
     expect(profile).toBeGreaterThan(-1);
     expect(employment).toBeGreaterThan(-1);
     expect(skills).toBeLessThan(profile);
+  });
+});
+
+describe("custom sections", () => {
+  const withCustom = (...sections: ReturnType<typeof customSection>[]) =>
+    emptyResume({
+      name: "Ada Lovelace",
+      employmentHistory: [jobWith("Acme", "A line")],
+      customSections: sections,
+      sectionOrder: [
+        "employmentHistory",
+        ...sections.map((section) => section.id),
+        "profile",
+        "projects",
+        "educations",
+        "skills",
+        "socialLinks",
+      ],
+    });
+
+  it("prints the heading the user gave it, and its lines as a list", () => {
+    const markdown = buildResumeMarkdown(
+      withCustom(customSection("a", "Certifications", ["AWS SAA", "CKA"])),
+    );
+
+    expect(markdown).toContain("## Certifications");
+    expect(markdown).toContain("- AWS SAA");
+    expect(markdown).toContain("- CKA");
+  });
+
+  it("puts it where the order puts it", () => {
+    const markdown = buildResumeMarkdown(
+      withCustom(customSection("a", "Certifications", ["AWS SAA"])),
+    );
+
+    expect(markdown.indexOf("## Employment History")).toBeLessThan(
+      markdown.indexOf("## Certifications"),
+    );
+  });
+
+  it("leaves out a hidden one", () => {
+    const markdown = buildResumeMarkdown(
+      withCustom(customSection("a", "Certifications", ["AWS SAA"], false)),
+    );
+
+    expect(markdown).not.toContain("Certifications");
+    expect(markdown).not.toContain("AWS SAA");
+  });
+
+  it("prints nothing for one that has no lines yet", () => {
+    expect(buildResumeMarkdown(withCustom(customSection("a", "Certifications")))).not.toContain(
+      "Certifications",
+    );
+  });
+
+  it("prints nothing for one that has not been named yet", () => {
+    const markdown = buildResumeMarkdown(withCustom(customSection("a", "  ", ["AWS SAA"])));
+
+    expect(markdown).not.toContain("AWS SAA");
+    expect(markdown).not.toContain("##  ");
+  });
+
+  it("keeps several of them apart, in their own order", () => {
+    const markdown = buildResumeMarkdown(
+      withCustom(
+        customSection("a", "Certifications", ["AWS SAA"]),
+        customSection("b", "Awards", ["Employee of the month"]),
+      ),
+    );
+
+    expect(markdown.indexOf("## Certifications")).toBeLessThan(markdown.indexOf("## Awards"));
+  });
+
+  it("drops a line the order names but the resume no longer has", () => {
+    const orphaned = emptyResume({
+      name: "Ada Lovelace",
+      customSections: [],
+      sectionOrder: ["custom:gone", "profile"] as never,
+    });
+
+    expect(() => buildResumeMarkdown(orphaned)).not.toThrow();
+    expect(buildResumeMarkdown(orphaned)).not.toContain("custom:");
+  });
+
+  it("survives a document written before custom sections existed", () => {
+    const older = emptyResume({ name: "Ada Lovelace" });
+    Reflect.deleteProperty(older, "customSections");
+
+    expect(() => buildResumeMarkdown(older)).not.toThrow();
   });
 });

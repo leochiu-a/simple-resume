@@ -24,6 +24,17 @@ answer by looking at the design — see [Whether it survives a parser](#whether-
 [`e2e/template-picker.spec.ts`](../e2e/template-picker.spec.ts) asserts the full set — add yours to
 its `EXPECTED_TEMPLATES` or it will fail.
 
+A template also has to draw a section the user named. That is a `custom-section.tsx` beside the
+others in the folder, taking a `CustomSection` and rendering its heading through the template's own
+`Section` and its lines through
+[`custom-lines.tsx`](../src/app/resume-editor/components/template/custom-lines.tsx) — the shared
+component that turns a description into that template's bullets, one unbreakable block per line.
+Classic writes its own instead, because its bullets are typography components rather than styles.
+`sectionsToRender` hands the id over like any other section, so the dispatch in the template document
+is one branch. [`custom-sections.test.ts`](../src/app/resume-editor/components/template/custom-sections.test.ts)
+renders every registered template and asserts a custom section reaches both the tree and the HTML
+export, so a new folder that forgets one fails there rather than in someone's PDF.
+
 Only two fonts are available: **Noto Sans** (400/700) and **Noto Serif** (**bold only** — see
 [`fonts.ts`](../src/app/resume-editor/components/template/fonts.ts)). A serif template therefore uses
 Noto Serif for bold display text and Noto Sans for body copy, as Classic and Formal both do.

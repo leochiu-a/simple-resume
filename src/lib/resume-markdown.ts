@@ -1,9 +1,18 @@
 import { format, parseISO } from "date-fns";
 
 import { SPLIT_TEXT } from "@/constants/textarea-split-text";
-import { Education, EmploymentHistory, Project, Resume, SectionId, Timeline } from "@/types/resume";
+import {
+  CustomSection,
+  Education,
+  EmploymentHistory,
+  isCustomSectionId,
+  Project,
+  Resume,
+  SectionId,
+  Timeline,
+} from "@/types/resume";
 
-import { normaliseSectionOrder } from "./resume-sections";
+import { customSectionById, isSectionVisible, resumeSectionOrder } from "./resume-sections";
 
 /**
  * Renders a resume as Markdown.
@@ -103,6 +112,21 @@ const educationEntry = (education: Education) => {
 /** A section with no entries prints nothing at all, heading included. */
 const section = (title: string, body: string) => (body ? `## ${title}\n\n${body}` : "");
 
+/**
+ * A user-named section: the heading they gave it, then its lines.
+ *
+ * Unnamed prints nothing, lines and all. `section` already drops a heading with
+ * no body under it, and this is the same rule from the other end — a list of
+ * certifications under no heading says less than nothing, and a section being
+ * named is the one thing this export cannot supply a default for.
+ */
+const customSectionBlock = (custom: CustomSection) => {
+  const title = custom.title?.trim();
+  if (!title) return "";
+
+  return section(title, bulletList(toBulletLines(custom.description)));
+};
+
 export const buildResumeMarkdown = (resume: Resume): string => {
   /*
     Each of the six, ready to render but not yet rendered — the order decides
@@ -138,15 +162,20 @@ export const buildResumeMarkdown = (resume: Resume): string => {
     socialLinks: () => "",
   };
 
-  const sections = normaliseSectionOrder(resume.sectionOrder).map((id) =>
-    resume.visibility[id] ? blocks[id]() : "",
-  );
+  const sections = resumeSectionOrder(resume).map((id) => {
+    if (!isSectionVisible(resume, id)) return "";
+    if (!isCustomSectionId(id)) return blocks[id]();
+
+    const custom = customSectionById(resume, id);
+
+    return custom ? customSectionBlock(custom) : "";
+  });
 
   return `${paragraphs([
     resume.name?.trim() ? `# ${resume.name.trim()}` : "",
     resume.wantedJob?.trim(),
     contactLine(resume),
-    resume.visibility.socialLinks ? socialLine(resume) : "",
+    isSectionVisible(resume, "socialLinks") ? socialLine(resume) : "",
     ...sections,
   ])}\n`;
 };

@@ -3,9 +3,9 @@
 import { Fragment } from "react";
 import { Page, View, Document } from "@react-pdf/renderer";
 
-import { Resume, SectionId } from "@/types/resume";
+import { isCustomSectionId, Resume, SectionId } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
-import { ALL_SECTIONS, sectionsToRender } from "@/lib/resume-sections";
+import { ALL_SECTIONS, customSectionById, sectionsToRender } from "@/lib/resume-sections";
 
 import { styles } from "./styles";
 import bannerColors from "./banner-color";
@@ -17,6 +17,7 @@ import Education from "./education";
 import Skills from "./skills";
 import Links from "./links";
 import Summary from "../summary";
+import CustomSectionBlock from "./custom-section";
 
 /**
  * The Banner template: a full-bleed colour band across the top of the sheet
@@ -60,7 +61,13 @@ const BannerTemplate = ({
         <View style={styles.body}>
           {/* Only the visible ones come back, so the map needs no guard of its own. */}
           {sectionsToRender(resume, ALL_SECTIONS).map((id) => (
-            <Fragment key={id}>{sections[id]}</Fragment>
+            <Fragment key={id}>
+              {isCustomSectionId(id) ? (
+                <CustomSectionBlock section={customSectionById(resume, id)} />
+              ) : (
+                sections[id]
+              )}
+            </Fragment>
           ))}
         </View>
       </Page>

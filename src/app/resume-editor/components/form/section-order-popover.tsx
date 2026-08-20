@@ -4,9 +4,8 @@ import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Reorder, useDragControls } from "motion/react";
 
-import { SECTION_LABELS } from "@/lib/resume-sections";
 import { cn } from "@/lib/utils";
-import { SectionId } from "@/types/resume";
+import { SectionKey } from "@/types/resume";
 
 /**
  * The reorder popover: the whole running order, floated over the spot the drag
@@ -36,7 +35,7 @@ const WIDTH = 260;
 const HINT_HEIGHT = 33;
 
 export interface Grab {
-  id: SectionId;
+  id: SectionKey;
   /** The handle's box when it was pressed, in viewport coordinates. */
   rect: DOMRect;
 }
@@ -65,11 +64,14 @@ const clamp = (value: number, max: number) => Math.max(MARGIN, Math.min(value, m
 
 const Row = ({
   id,
+  label,
   grabbed,
   latched,
   hidden,
 }: {
-  id: SectionId;
+  id: SectionKey;
+  /** What the row reads — the section's name in the form, or a custom heading. */
+  label: string;
   /** In the order but switched off, so not on the sheet at all. */
   hidden: boolean;
   /** True on the row the handle was pressed on: the one that keeps the gesture. */
@@ -147,7 +149,7 @@ const Row = ({
         ))}
       </svg>
 
-      <span className="truncate">{SECTION_LABELS[id]}</span>
+      <span className="truncate">{label}</span>
 
       {hidden && <span className="ml-auto shrink-0 text-xs">Hidden</span>}
     </Reorder.Item>
@@ -158,17 +160,20 @@ const SectionOrderPopover = ({
   grab,
   order,
   hiddenSections,
+  labelOf,
   latched,
   onReorder,
   onDismiss,
 }: {
   grab: Grab;
   /** Only the sections this template can actually place — see `ResumeForm`. */
-  order: SectionId[];
-  hiddenSections: readonly SectionId[];
+  order: SectionKey[];
+  hiddenSections: readonly SectionKey[];
+  /** What each row is called. A custom section is named by its own heading. */
+  labelOf: (id: SectionKey) => string;
   /** False only while the press that opened this is still down — see `ResumeForm`. */
   latched: boolean;
-  onReorder: (next: SectionId[]) => void;
+  onReorder: (next: SectionKey[]) => void;
   /** Applies the arrangement as well as closing — nothing lands before this. */
   onDismiss: () => void;
 }) => {
@@ -244,6 +249,7 @@ const SectionOrderPopover = ({
             <Row
               key={id}
               id={id}
+              label={labelOf(id)}
               grabbed={id === grab.id}
               latched={latched}
               hidden={hiddenSections.includes(id)}

@@ -1,5 +1,5 @@
 import { sectionsHtml } from "@/lib/resume-sections";
-import { Resume } from "@/types/resume";
+import { CustomSection, Resume } from "@/types/resume";
 import { filledProjects } from "@/lib/resume-projects";
 
 import {
@@ -423,6 +423,17 @@ const linksSection = (resume: Resume) => {
         </section>`;
 };
 
+/**
+ * A section the user named. Untitled prints nothing at all, exactly as it draws
+ * nothing on the sheet — see the template's `custom-section.tsx`.
+ */
+// The empty first cell is the date margin every row on this sheet is inset past.
+const customSection = (custom: CustomSection) => `
+        <section>
+          <h2>${escapeHtml(custom.title)}</h2>
+          <div class="dated dateless"><div></div><ul class="description">${bulletItemsHtml(custom.description)}</ul></div>
+        </section>`;
+
 const buildDatedResumeHtml = ({
   resume,
   backgroundColor,
@@ -446,14 +457,18 @@ const buildDatedResumeHtml = ({
 ${header(resume)}
 
       <div class="body">
-${sectionsHtml(resume, {
-  profile: () => summarySection(resume.profile),
-  employmentHistory: () => experienceSection(resume),
-  projects: () => projectsSection(resume),
-  educations: () => educationSection(resume),
-  skills: () => skillsSection(resume),
-  socialLinks: () => linksSection(resume),
-})}
+${sectionsHtml(
+  resume,
+  {
+    profile: () => summarySection(resume.profile),
+    employmentHistory: () => experienceSection(resume),
+    projects: () => projectsSection(resume),
+    educations: () => educationSection(resume),
+    skills: () => skillsSection(resume),
+    socialLinks: () => linksSection(resume),
+  },
+  customSection,
+)}
       </div>
     </main>
   </body>

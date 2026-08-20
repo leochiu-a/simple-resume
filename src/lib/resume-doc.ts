@@ -86,6 +86,7 @@ export const createEmptyResume = (): Resume => ({
   educations: [],
   employmentHistory: [],
   projects: [],
+  customSections: [],
   visibility: {
     profile: true,
     socialLinks: true,

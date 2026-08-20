@@ -27,6 +27,7 @@ export const emptyResume = (overrides: Partial<Resume> = {}): Resume => ({
   educations: [],
   employmentHistory: [],
   projects: [],
+  customSections: [],
   visibility: {
     profile: true,
     employmentHistory: true,
@@ -58,3 +59,11 @@ export const projectWith = (name: string, url: string, ...lines: string[]) => ({
 
 /** `count` words that no rule reads as anything but words. */
 export const words = (count: number) => Array.from({ length: count }, () => "word").join(" ");
+
+/** A custom section with the given heading and lines, visible unless said otherwise. */
+export const customSection = (id: string, title: string, lines: string[] = [], visible = true) => ({
+  id: `custom:${id}` as const,
+  title,
+  description: bullets(...lines),
+  visible,
+});
