@@ -30,6 +30,7 @@ import { useResumeScore } from "./hooks/useResumeScore";
 import { useAgentReview } from "./hooks/useAgentReview";
 import useTemplateOptions from "./hooks/useTemplateOptions";
 import { DEFAULT_RESUME } from "./constants";
+import modeSwap from "./appearance-transition.module.css";
 
 const ResumeEditorPage = () => {
   const [mounted, setMounted] = useState(false);
@@ -80,7 +81,9 @@ const ResumeEditorPage = () => {
       /* Tagged so the stylesheet can tell the two directions apart: the root
          snapshot is the form on the way in and a blank column on the way out, and
          it is animated in the first case and not drawn at all in the second. Which
-         is which is `globals.css`'s business, not this file's. */
+         is which is `appearance-transition.module.css`'s business, not this file's
+         — but these two names are matched there by hand, since a transition type is
+         not a class and has nothing to export. */
       addTransitionType(appearance ? "appearance-open" : "appearance-close");
       setShowAppearance(appearance);
     });
@@ -211,7 +214,7 @@ const ResumeEditorPage = () => {
                   anything else on the page started one.
                 */}
                 {showAppearance && (
-                  <ViewTransition default="none" enter="fade-in" exit="fade-out">
+                  <ViewTransition default="none" enter={modeSwap.fadeIn} exit={modeSwap.fadeOut}>
                     <AppearancePanel
                       resume={resume}
                       options={templateOptions}

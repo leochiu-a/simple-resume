@@ -555,82 +555,16 @@ body:has(> [data-editor-shell]) {
 }
 
 /**
- * View transitions.
+ * Reduced motion, for every view transition in the app.
  *
- * Deliberately outside `@layer`, with the shell rule above: these pseudo-elements
- * hang off the root during a transition rather than styling any element in the
- * tree, so they belong with the document-level rules and not among the utilities.
+ * Here rather than beside the one transition that exists today, because it is not
+ * about that transition: it is the document's answer for any of them, including
+ * ones added later that would otherwise ship without it. Same discipline as
+ * `.landing-rise` and the guide figures — no motion means the states simply swap,
+ * which is what the browser does with no transition at all.
  *
- * `vt-` on the keyframe and nothing else: `fade-in` and `fade-out` are
- * view-transition class names, which live in their own namespace and cannot
- * collide with anything Tailwind emits. `@keyframes` are global, and a bare `fade`
- * in a project that also loads tailwindcss-animate is a name waiting to be taken.
- *
- * One duration, no stagger and no blur, and each of those is a correction.
- *
- * The stagger came first — old content leaving fast, new content delayed until it
- * has gone. That is right for a *navigation*, where the two halves are whole
- * viewports. Here they are two things in the same column, and the delay is a gap
- * with nothing in it: the leaving half dissolves into blank paper rather than into
- * its replacement, which reads as content vanishing rather than content being
- * swapped. Both halves now run over the same window, so one always dissolves into
- * the other.
- *
- * The blur went for a related reason. An exiting snapshot fades out *on top of*
- * whatever replaced it, so a blurred exit is a blur applied over live text. Two
- * legible layers dissolving through each other read as a swap; one of them blurred
- * reads as a flicker. Opacity is the whole animation.
- */
-::view-transition-new(.fade-in) {
-  animation: 180ms ease-out both vt-fade;
-}
-
-::view-transition-old(.fade-out) {
-  animation: 180ms ease-in both vt-fade reverse;
-}
-
-@keyframes vt-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/**
- * The root snapshot is the other half of every swap here — everything not inside a
- * named boundary — and it means something different in each direction, which is
- * why both directions are tagged and neither rule is left to the default.
- *
- * Opening, root's old frame still has the form in it. That frame *is* the form's
- * exit, so it is animated to the same window as the panel's entrance: the two
- * cross, in the same column, over the same 180ms.
- *
- * Closing, the panel has already been lifted out of root into its own group, so
- * root's old frame is the column with nothing in it — a picture of blank paper —
- * while root's new frame paints the returning form at full opacity from the first
- * frame. Dissolving that blank over the form that is already back adds a decaying
- * layer to live text and nothing else. It is not drawn at all.
- *
- * Scoped to the types rather than set on `::view-transition-old(root)` outright,
- * because the theme wipe in `lib/theme-transition.ts` is a root transition too and
- * it wants the browser's own timing.
- */
-:root:active-view-transition-type(appearance-open)::view-transition-old(root) {
-  animation: 180ms ease-in both vt-fade reverse;
-}
-
-:root:active-view-transition-type(appearance-close)::view-transition-old(root) {
-  display: none;
-}
-
-/**
- * Same discipline as `.landing-rise` and the guide figures: no motion means the
- * states simply swap, which is what the browser does with no transition at all.
- *
- * `*` rather than the two classes above, so this covers the root crossfade as
- * well — that is the half of this transition that carries the form out.
+ * `*` covers the root snapshot as well as the named groups, which matters because
+ * root is half of every swap here.
  *
  * It does not reach the theme wipe in `lib/theme-transition.ts`: that animation is
  * driven through the Web Animations API, and `animation-duration` has nothing to
