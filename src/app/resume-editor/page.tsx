@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  addTransitionType,
+  startTransition,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  ViewTransition,
+} from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -57,6 +65,25 @@ const ResumeEditorPage = () => {
      route: the form is never unmounted, so nothing it holds is lost while the
      appearance panel is up. */
   const [showAppearance, setShowAppearance] = useState(false);
+  /*
+    Set through a Transition rather than directly, and that is the whole reason the
+    swap below animates.
+
+    React only reaches for `document.startViewTransition` when the update that
+    mounts or unmounts a `<ViewTransition>` is a Transition — a plain `setState`
+    renders the new mode with no animation at all, silently. This is the one line
+    that keeps that from happening, and it is easy to lose: nothing throws if a
+    caller sets the state directly, the column just cuts.
+  */
+  const changeMode = (appearance: boolean) =>
+    startTransition(() => {
+      /* Tagged so the stylesheet can tell the two directions apart: the root
+         snapshot is the form on the way in and a blank column on the way out, and
+         it is animated in the first case and not drawn at all in the second. Which
+         is which is `globals.css`'s business, not this file's. */
+      addTransitionType(appearance ? "appearance-open" : "appearance-close");
+      setShowAppearance(appearance);
+    });
   /* Owned here rather than in the header, because importing writes to the document
      and the header has no business holding that. */
   const [showImport, setShowImport] = useState(false);
@@ -164,12 +191,33 @@ const ResumeEditorPage = () => {
                 data-editor-column
                 className="scrollbar-overlay min-w-0 flex-1 overflow-y-auto lg:w-1/2 lg:flex-none"
               >
+                {/*
+                  The panel crossfades with the form rather than replacing it in one
+                  frame. Half the screen changes here, and a cut that size reads as a
+                  navigation — which this deliberately is not.
+
+                  Only the panel is wrapped, and only the panel can be: a
+                  `<ViewTransition>` animates a boundary that mounts or unmounts, and
+                  the form below never does either. Its half of the crossfade comes
+                  from the root snapshot, which is everything not inside a named
+                  boundary — so the old frame, form and all, fades out underneath the
+                  arriving panel. That also means there is nothing to keep in step:
+                  the form is carried by a transition it says nothing about.
+
+                  The wrapper has to sit directly inside the conditional with no
+                  element between it and `AppearancePanel`, or enter and exit never
+                  fire. `default="none"` keeps it out of every *other* transition in
+                  the app — without it this boundary would cross-fade whenever
+                  anything else on the page started one.
+                */}
                 {showAppearance && (
-                  <AppearancePanel
-                    resume={resume}
-                    options={templateOptions}
-                    onClose={() => setShowAppearance(false)}
-                  />
+                  <ViewTransition default="none" enter="fade-in" exit="fade-out">
+                    <AppearancePanel
+                      resume={resume}
+                      options={templateOptions}
+                      onClose={() => changeMode(false)}
+                    />
+                  </ViewTransition>
                 )}
 
                 {/* Hidden rather than unmounted while the appearance panel is up.
@@ -200,7 +248,7 @@ const ResumeEditorPage = () => {
                 <ResumePreview
                   resume={resume}
                   options={templateOptions}
-                  onOpenAppearance={() => setShowAppearance(true)}
+                  onOpenAppearance={() => changeMode(true)}
                 />
               ) : (
                 <ResumePreviewDialog
