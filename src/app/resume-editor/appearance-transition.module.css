@@ -2,9 +2,12 @@
  * How the editing column crosses between the form and the appearance panel.
  *
  * A module rather than a block in `globals.css`, which is what React intends for
- * these class props — see facebook/react#31999, where the `enter`/`exit` props were
- * introduced with `import transitions from './transitions.module.css'` as the
- * motivating usage. Not because anything here can be scoped: view-transition
+ * these class props — facebook/react#31999 ("Use className on <ViewTransition> to
+ * assign view-transition-class") argues the case with `import transitions from
+ * './transitions.module.css'` as its motivating usage. It is the prop *before* the
+ * ones used here: `enter` and `exit` came earlier, in #31975, and this file was
+ * wrong about that until code review caught it. Not because anything here can be
+ * scoped: view-transition
  * pseudo-elements hang off the root, not off any element in the tree, so these
  * rules are document-level wherever they are written. What the module buys is that
  * the two class names below stop being strings `page.tsx` has to spell correctly —
@@ -37,12 +40,27 @@
  * legible layers dissolving through each other read as a swap; one of them blurred
  * reads as a flicker. Opacity is the whole animation.
  */
+
+/**
+ * Declared once because three rules and one test all need the same answer, and
+ * "both halves share one window" is the whole design — three literals that have to
+ * be retuned together are three chances to leave one behind. `--c-*` in
+ * `globals.css` exists for the same reason.
+ *
+ * Custom properties are not localised by CSS Modules, so this name is global and
+ * reads as such. `appearance-transition.spec.ts` measures the animations against
+ * it rather than against a copy of the number.
+ */
+:root {
+  --appearance-swap-duration: 180ms;
+}
+
 ::view-transition-new(.fadeIn) {
-  animation: 180ms ease-out both fade;
+  animation: var(--appearance-swap-duration) ease-out both fade;
 }
 
 ::view-transition-old(.fadeOut) {
-  animation: 180ms ease-in both fade reverse;
+  animation: var(--appearance-swap-duration) ease-in both fade reverse;
 }
 
 @keyframes fade {
@@ -93,9 +111,23 @@
  * outside the `:global`.
  */
 :global(:root:active-view-transition-type(appearance-open)::view-transition-old(root)) {
-  animation: 180ms ease-in both fade reverse;
+  animation: var(--appearance-swap-duration) ease-in both fade reverse;
 }
 
 :global(:root:active-view-transition-type(appearance-close)::view-transition-old(root)) {
   display: none;
+}
+
+/**
+ * The other half of not drawing root on the way out, and the reason it is written
+ * at all: Chrome gives root's *new* frame no animation of its own today, so the
+ * returning form is already at full opacity and the rule changes nothing. That is
+ * an engine's behaviour, not a guarantee — an engine that did fade root in would
+ * fade the header and the preview in with it, over a swap that only touched one
+ * column. The recipe this came from pairs the two for that reason, and dropping
+ * the pair left the result resting on the accident. No test can see the
+ * difference while the engine agrees.
+ */
+:global(:root:active-view-transition-type(appearance-close)::view-transition-new(root)) {
+  animation: none;
 }

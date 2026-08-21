@@ -30,7 +30,7 @@ import { useResumeScore } from "./hooks/useResumeScore";
 import { useAgentReview } from "./hooks/useAgentReview";
 import useTemplateOptions from "./hooks/useTemplateOptions";
 import { DEFAULT_RESUME } from "./constants";
-import modeSwap from "./appearance-transition.module.css";
+import appearanceTransition from "./appearance-transition.module.css";
 
 const ResumeEditorPage = () => {
   const [mounted, setMounted] = useState(false);
@@ -67,26 +67,29 @@ const ResumeEditorPage = () => {
      appearance panel is up. */
   const [showAppearance, setShowAppearance] = useState(false);
   /*
-    Set through a Transition rather than directly, and that is the whole reason the
-    swap below animates.
+    Two named functions rather than one taking a flag, because a bare `true` or
+    `false` at a call site says nothing about which direction it means.
 
+    Both go through a Transition, and that is the whole reason the swap animates.
     React only reaches for `document.startViewTransition` when the update that
     mounts or unmounts a `<ViewTransition>` is a Transition — a plain `setState`
-    renders the new mode with no animation at all, silently. This is the one line
-    that keeps that from happening, and it is easy to lose: nothing throws if a
-    caller sets the state directly, the column just cuts.
+    renders the new mode with no animation at all, silently. Nothing throws if a
+    caller sets the state directly; the column just cuts.
+
+    The type tags which direction this is, because the root snapshot is the form on
+    the way in and a blank column on the way out — animated in the first case and
+    not drawn at all in the second. Which is which is
+    `appearance-transition.module.css`'s business, not this file's, but the two
+    names are matched there by hand: a transition type is not a class and has
+    nothing to export.
   */
-  const changeMode = (appearance: boolean) =>
+  const swapColumn = (type: string, appearance: boolean) =>
     startTransition(() => {
-      /* Tagged so the stylesheet can tell the two directions apart: the root
-         snapshot is the form on the way in and a blank column on the way out, and
-         it is animated in the first case and not drawn at all in the second. Which
-         is which is `appearance-transition.module.css`'s business, not this file's
-         — but these two names are matched there by hand, since a transition type is
-         not a class and has nothing to export. */
-      addTransitionType(appearance ? "appearance-open" : "appearance-close");
+      addTransitionType(type);
       setShowAppearance(appearance);
     });
+  const openAppearance = () => swapColumn("appearance-open", true);
+  const closeAppearance = () => swapColumn("appearance-close", false);
   /* Owned here rather than in the header, because importing writes to the document
      and the header has no business holding that. */
   const [showImport, setShowImport] = useState(false);
@@ -214,11 +217,15 @@ const ResumeEditorPage = () => {
                   anything else on the page started one.
                 */}
                 {showAppearance && (
-                  <ViewTransition default="none" enter={modeSwap.fadeIn} exit={modeSwap.fadeOut}>
+                  <ViewTransition
+                    default="none"
+                    enter={appearanceTransition.fadeIn}
+                    exit={appearanceTransition.fadeOut}
+                  >
                     <AppearancePanel
                       resume={resume}
                       options={templateOptions}
-                      onClose={() => changeMode(false)}
+                      onClose={closeAppearance}
                     />
                   </ViewTransition>
                 )}
@@ -251,7 +258,7 @@ const ResumeEditorPage = () => {
                 <ResumePreview
                   resume={resume}
                   options={templateOptions}
-                  onOpenAppearance={() => changeMode(true)}
+                  onOpenAppearance={openAppearance}
                 />
               ) : (
                 <ResumePreviewDialog

@@ -10,9 +10,16 @@ import type { ReactNode } from "react";
  * import resolves at build time and fails under `tsc --noEmit`, which is the check
  * CI runs.
  *
- * Declared here rather than cast to `any` at the import site, so the props are
- * still checked — a misspelled `enter` is the failure mode this file exists to
- * catch, and it is silent: the transition simply does not play.
+ * Declared here rather than cast to `any` at the import site, so the prop *names*
+ * are still checked — a misspelled `enter` is silent at runtime, the transition
+ * simply does not play, and `any` would keep it silent here too.
+ *
+ * The values are not checked and cannot usefully be: they are class names, so the
+ * type is `string`. `"auto" | "none" | string` would read as a constraint while
+ * collapsing to exactly the same `string`, which is worse than saying nothing — the
+ * two special values are documented on each prop instead. What the values are for
+ * is `appearance-transition.spec.ts`'s job, since it measures what the browser
+ * actually animated.
  *
  * Only the props the app passes. The component takes several more (`name`,
  * `share`, `update`, the `on*` callbacks, and object forms of each class prop
@@ -29,11 +36,15 @@ declare module "react" {
 
   export const ViewTransition: (props: {
     children: ReactNode;
-    /** The class applied to every trigger that is not named below. */
-    default?: "auto" | "none" | string;
+    /**
+     * The class applied to every trigger not named below. `"none"` turns those
+     * triggers off, which is what keeps a boundary out of unrelated transitions;
+     * `"auto"` is the browser's own cross-fade.
+     */
+    default?: string;
     /** Applied when this boundary is mounted during a Transition. */
-    enter?: "auto" | "none" | string;
+    enter?: string;
     /** Applied when this boundary is removed during a Transition. */
-    exit?: "auto" | "none" | string;
+    exit?: string;
   }) => ReactNode;
 }
