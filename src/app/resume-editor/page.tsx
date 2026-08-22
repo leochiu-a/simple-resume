@@ -1,5 +1,12 @@
 "use client";
 
+/*
+  `ViewTransition` and `addTransitionType` are canary React, and the App Router runs
+  canary React — Next bundles its own copy, so they exist at runtime while the
+  `react@19.2` in node_modules has neither. Their types come from `react/canary`,
+  which `@types/react` ships for exactly this and which tsconfig's `types` array
+  loads. Nothing here needs a hand-written declaration.
+*/
 import {
   addTransitionType,
   startTransition,
