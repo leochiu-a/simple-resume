@@ -1,7 +1,7 @@
 "use client";
 
-import { Palette } from "lucide-react";
-
+import { PaletteIcon } from "@/components/icons/palette";
+import { useIconHover } from "@/components/icons/use-icon-hover";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -52,11 +52,17 @@ const AppearanceTrigger = ({
   tooltip?: boolean;
   reveal?: boolean;
 }) => {
+  const { registerIcon, startIcons, stopIcons } = useIconHover();
+
   const button = (
     <Button
       type="button"
       size="icon"
       onClick={onOpen}
+      onMouseEnter={startIcons}
+      onMouseLeave={stopIcons}
+      onFocus={startIcons}
+      onBlur={stopIcons}
       aria-label="Template and colour"
       className={cn(
         "size-11 rounded-full shadow-lg transition-opacity duration-200",
@@ -83,7 +89,7 @@ const AppearanceTrigger = ({
         className,
       )}
     >
-      <Palette className="size-5" />
+      <PaletteIcon ref={registerIcon} className="size-5" />
     </Button>
   );
 
