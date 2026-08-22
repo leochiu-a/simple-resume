@@ -553,3 +553,28 @@ body:has(> [data-editor-shell]) {
   overflow: hidden;
   overscroll-behavior: none;
 }
+
+/**
+ * Reduced motion, for every view transition in the app.
+ *
+ * Here rather than beside the one transition that exists today, because it is not
+ * about that transition: it is the document's answer for any of them, including
+ * ones added later that would otherwise ship without it. Same discipline as
+ * `.landing-rise` and the guide figures — no motion means the states simply swap,
+ * which is what the browser does with no transition at all.
+ *
+ * `*` covers the root snapshot as well as the named groups, which matters because
+ * root is half of every swap here.
+ *
+ * It does not reach the theme wipe in `lib/theme-transition.ts`: that animation is
+ * driven through the Web Animations API, and `animation-duration` has nothing to
+ * say about a WAAPI animation. Reduced motion there is still owed.
+ */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

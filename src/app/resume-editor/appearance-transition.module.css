@@ -1,0 +1,133 @@
+/**
+ * How the editing column crosses between the form and the appearance panel.
+ *
+ * A module rather than a block in `globals.css`, which is what React intends for
+ * these class props — facebook/react#31999 ("Use className on <ViewTransition> to
+ * assign view-transition-class") argues the case with `import transitions from
+ * './transitions.module.css'` as its motivating usage. It is the prop *before* the
+ * ones used here: `enter` and `exit` came earlier, in #31975, and this file was
+ * wrong about that until code review caught it. Not because anything here can be
+ * scoped: view-transition
+ * pseudo-elements hang off the root, not off any element in the tree, so these
+ * rules are document-level wherever they are written. What the module buys is that
+ * the two class names below stop being strings `page.tsx` has to spell correctly —
+ * they are hashed, so the JSX has to reference them through this file's exports,
+ * and `@keyframes` are hashed with them, which is what lets the one below be called
+ * something as plain as `fade`.
+ *
+ * One known hazard, from that same PR: a CSS Modules hash may contain `+`, which is
+ * not a valid character in a `view-transition-class`, and the class then silently
+ * does nothing. Renaming until the hash comes out clean is the only fix upstream
+ * offers. `appearance-transition.spec.ts` is what would catch it — it measures the
+ * animation the browser actually ran rather than trusting that these applied.
+ *
+ * The two transition types are the seam this cannot close. `appearance-open` and
+ * `appearance-close` are set by `addTransitionType` in `page.tsx` and matched here
+ * by name; there is no export to reference. Renaming one means renaming both.
+ *
+ * One duration, no stagger and no blur, and each of those is a correction.
+ *
+ * The stagger came first — old content leaving fast, new content delayed until it
+ * has gone. That is right for a *navigation*, where the two halves are whole
+ * viewports. Here they are two things in the same column, and the delay is a gap
+ * with nothing in it: the leaving half dissolves into blank paper rather than into
+ * its replacement, which reads as content vanishing rather than content being
+ * swapped. Both halves now run over the same window, so one always dissolves into
+ * the other.
+ *
+ * The blur went for a related reason. An exiting snapshot fades out *on top of*
+ * whatever replaced it, so a blurred exit is a blur applied over live text. Two
+ * legible layers dissolving through each other read as a swap; one of them blurred
+ * reads as a flicker. Opacity is the whole animation.
+ */
+
+/**
+ * Declared once because three rules and one test all need the same answer, and
+ * "both halves share one window" is the whole design — three literals that have to
+ * be retuned together are three chances to leave one behind. `--c-*` in
+ * `globals.css` exists for the same reason.
+ *
+ * Custom properties are not localised by CSS Modules, so this name is global and
+ * reads as such. `appearance-transition.spec.ts` measures the animations against
+ * it rather than against a copy of the number.
+ */
+:root {
+  --appearance-swap-duration: 180ms;
+}
+
+::view-transition-new(.fadeIn) {
+  animation: var(--appearance-swap-duration) ease-out both fade;
+}
+
+::view-transition-old(.fadeOut) {
+  animation: var(--appearance-swap-duration) ease-in both fade reverse;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/**
+ * The root snapshot is the other half of the swap — everything not inside a named
+ * boundary — and it means something different in each direction, which is why both
+ * directions are tagged and neither is left to the browser's default.
+ *
+ * Opening, root's old frame still has the form in it. That frame *is* the form's
+ * exit, so it is animated to the same window as the panel's entrance: the two
+ * cross, in the same column, over the same 180ms.
+ *
+ * Closing, the panel has already been lifted out of root into its own group, so
+ * root's old frame is the column with nothing in it — a picture of blank paper —
+ * while root's new frame paints the returning form at full opacity from the first
+ * frame. Dissolving that blank over the form that is already back adds a decaying
+ * layer to live text and nothing else. It is not drawn at all.
+ *
+ * Scoped to the types rather than set on `::view-transition-old(root)` outright,
+ * because the theme wipe in `lib/theme-transition.ts` is a root transition too and
+ * it wants the browser's own timing. That is also why this pair cannot move into
+ * `globals.css` as-is and why it is worth having the types: unqualified, these two
+ * rules would restyle every root transition in the app.
+ *
+ * `:global(…)` around the whole selector, and it is not optional. `root` here is
+ * the name of the browser's own snapshot, but to CSS Modules it is an identifier in
+ * a place where identifiers get hashed — so written plainly these rules compile to
+ * `::view-transition-old(appearance-transition-module__…__root)`, which names a
+ * group that does not exist. Nothing errors; the two rules simply stop matching and
+ * the flicker they exist to prevent comes back.
+ *
+ * It is also what makes the output the same whichever CSS engine runs. The two
+ * disagree here — LightningCSS hashes `::view-transition-old(root)` and PostCSS
+ * does not — and `:global(…)` is the form vercel/next.js#77321 landed on for
+ * exactly that reason. That PR's other half, the file-level
+ * `cssmodules-pure-no-check` pragma, is the wrong tool here: it turns
+ * localisation off for the whole file, and the two classes above depend on it.
+ *
+ * The classes are the opposite case: they *want* hashing, which is why they sit
+ * outside the `:global`.
+ */
+:global(:root:active-view-transition-type(appearance-open)::view-transition-old(root)) {
+  animation: var(--appearance-swap-duration) ease-in both fade reverse;
+}
+
+:global(:root:active-view-transition-type(appearance-close)::view-transition-old(root)) {
+  display: none;
+}
+
+/**
+ * The other half of not drawing root on the way out, and the reason it is written
+ * at all: Chrome gives root's *new* frame no animation of its own today, so the
+ * returning form is already at full opacity and the rule changes nothing. That is
+ * an engine's behaviour, not a guarantee — an engine that did fade root in would
+ * fade the header and the preview in with it, over a swap that only touched one
+ * column. The recipe this came from pairs the two for that reason, and dropping
+ * the pair left the result resting on the accident. No test can see the
+ * difference while the engine agrees.
+ */
+:global(:root:active-view-transition-type(appearance-close)::view-transition-new(root)) {
+  animation: none;
+}

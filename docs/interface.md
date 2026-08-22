@@ -15,7 +15,9 @@ Dark mode is the same aliases over a second set of `--c-*` values under `.dark`,
 the app knows which theme is on. Both surfaces flip the same way, too:
 [`applyTheme`](../src/lib/theme-transition.ts) runs the change inside a View Transition and wipes a
 circle out from wherever you clicked — the editor's `…` menu and the landing page's toggle share it.
-A browser without the API just gets the new theme.
+A browser without the API just gets the new theme. It is one of the app's two view transitions; the
+other is the editor's [appearance swap](#the-editor), and the two must not restyle each other, which
+is what the transition types there are for.
 
 Three faces, registered in [`layout.tsx`](../src/app/layout.tsx) and used the same way on both
 surfaces: **Fraunces** for anything display, **Archivo** for body copy, **IBM Plex Mono** for labels,
@@ -106,6 +108,26 @@ slots are different widths and under flex the tabs would sit visibly off-axis.
 The tools on the right are Download, the on-device AI button, and a `…` menu holding the theme and
 the GitHub link. Appearance is not among them: it moved onto the preview, where you can see what it
 changes.
+
+**Appearance takes over the editing column, and the two cross-fade rather than cut.** It is a mode,
+not a route — the form stays mounted and keeps its focus, its scroll and any half-typed edit, so
+`hidden` is what hides it. The animation is a React
+[`<ViewTransition>`](../src/app/resume-editor/page.tsx) around the panel and nothing around the form:
+a boundary animates on mount and unmount, and the form does neither, so its half of the cross-fade
+comes from the root snapshot instead. Both directions run inside a Transition, which is the only
+reason any of it animates — React reaches for `startViewTransition` for a Transition and not for a
+plain `setState`, and losing that line is silent. Each direction is tagged with a transition type,
+because root's old frame is the form on the way in and a blank column on the way out; the rules, and
+why the two are not symmetric, are in
+[`appearance-transition.module.css`](../src/app/resume-editor/appearance-transition.module.css).
+
+**Every view transition in the app is silenced under `prefers-reduced-motion`,** by one rule over
+`::view-transition-*(*)` in `globals.css` rather than per animation — the states then swap, which is
+what a browser without the API does anyway. It is deliberately the one motion rule here that is not
+opt-in: `.landing-rise` and the guide figures each gate themselves, but a transition added later
+would otherwise ship without an answer. The theme wipe is the exception it cannot reach, since that
+animation is driven through the Web Animations API and `animation-duration` has nothing to say about
+one of those.
 
 The form is set as a document in parts rather than a stack of cards: each section is a hairline rule,
 a number in mono and a name in Fraunces — see

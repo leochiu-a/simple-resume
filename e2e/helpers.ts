@@ -15,8 +15,21 @@ import { expect, type Locator, type Page } from "@playwright/test";
 export const appearanceMenu = (page: Page): Locator =>
   page.getByRole("button", { name: "Template and colour" });
 
-export const closeAppearance = (page: Page) =>
-  page.getByRole("button", { name: "Close appearance" }).click();
+/**
+ * The panel's ✕, and then the wait for it to have actually gone.
+ *
+ * The click alone is not enough. Both directions of this swap run inside a
+ * Transition so the columns can cross-fade — see `changeMode` in
+ * `resume-editor/page.tsx` — which means the panel is still mounted, and still
+ * laid out, for a frame or two after the click returns. A caller that measures the
+ * form or the sheet immediately afterwards reads the layout the panel was in.
+ */
+export const closeAppearance = async (page: Page) => {
+  const close = page.getByRole("button", { name: "Close appearance" });
+
+  await close.click();
+  await expect(close).toBeHidden();
+};
 
 /** The desk the sheet lies on — the hover target that reveals the palette button. */
 export const previewPane = (page: Page): Locator => page.locator("[data-preview-pane]");
@@ -51,6 +64,13 @@ export const openAppearanceMenu = async (page: Page) => {
   }
 
   await appearanceMenu(page).click();
+  /* Waited for rather than assumed, for the reason spelled out on
+     `closeAppearance`: the panel arrives a frame or two after the click, and the
+     tests that measure its grid were reading an empty column. Keyed off the ✕
+     because it is the one control that exists only while the panel is up — and it
+     is already visible when a caller opens a panel that was open, which is exactly
+     what those tests do between viewport sizes. */
+  await expect(page.getByRole("button", { name: "Close appearance" })).toBeVisible();
 };
 
 /**

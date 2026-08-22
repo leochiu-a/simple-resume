@@ -11,7 +11,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["dom-chromium-ai"],
+    "types": ["dom-chromium-ai", "react/canary"],
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
